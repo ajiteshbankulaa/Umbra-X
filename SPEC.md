@@ -1,6 +1,6 @@
 # Umbra-X static site contract
 
-Each bundle lives at `web/public/data/<site_id>/`. Vite serves it as `data/<site_id>/` relative to the app base URL. The site ID is a lowercase alphanumeric slug with optional hyphen-separated segments. A bundle consists of the six files below.
+Each bundle lives at `web/public/data/<site_id>/`. Vite serves it as `data/<site_id>/` relative to the app base URL. The site ID is a lowercase alphanumeric slug with optional hyphen-separated segments. A bundle consists of the seven files below.
 
 ## manifest.json
 
@@ -31,7 +31,7 @@ Each bundle lives at `web/public/data/<site_id>/`. Vite serves it as `data/<site
   moon_trek_url: string
   proj_crs: "+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs"
   dem_grid: { width: 256, height: 256, pixel_size_m: 20.0 }
-  analysis_grid: { rows: 31, cols: 31, spacing_m: 40.0, start_pixel: 98, step_pixel: 2 }
+  analysis_grid: { rows: 31, cols: 31, spacing_m: 140.0, start_pixel: 23, step_pixel: 7 }
   mast_heights_m: [1.5, 3.0, 5.0, 10.0, 20.0]
   ephemeris: {
     start_utc: string
@@ -46,13 +46,13 @@ Each bundle lives at `web/public/data/<site_id>/`. Vite serves it as `data/<site
 }
 ```
 
-Center coordinates are planetocentric latitude and east-positive longitude in lunar ME/DE421. The center projects to the midpoint of the 5.12 km × 5.12 km tile footprint. Columns increase with projected x and rows decrease with projected y. The upper-left pixel center is `(center_x - 2550, center_y + 2550)` in projected meters. Candidate `[r,c]` maps to DEM pixel `[98 + 2*r, 98 + 2*c]` for indices 0 through 30. The 961 samples cover 1.20 km between outer candidate centers in either direction. Site selection determines whether that footprint captures both ridges and shadowed terrain.
+Center coordinates are planetocentric latitude and east-positive longitude in lunar ME/DE421. The center projects to the midpoint of the 5.12 km × 5.12 km tile footprint. Columns increase with projected x and rows decrease with projected y. The upper-left pixel center is `(center_x - 2550, center_y + 2550)` in projected meters. Candidate `[r,c]` maps to DEM pixel `[23 + 7*r, 23 + 7*c]` for indices 0 through 30. The 961 samples span pixels 23 through 233, or 4.20 km between outer candidate centers on either axis.
 
 The five ephemeris arrays have 720 elements each. UTC timestamps are ISO 8601 with a trailing `Z`, starting at `start_utc`. Positions are apparent, airless, topocentric disk-center angles at the site center. Azimuth is measured clockwise from true north in `[0,360)`. Elevation is in degrees above the local horizontal. The browser uses center ephemerides as a local approximation for the center candidate. For integer delay `d` from 0 to 15 Earth days, the nominal 15-day mission uses indices `24*d` through `24*d + 359`, inclusive. Counts represent hourly samples. Sub-hour transitions, finite disks, eclipses and radio link budgets need additional models.
 
 ## Binary payloads
 
-All values are finite little-endian IEEE-754 Float32. Files contain no headers or padding. Axes are zero-based, flattened in row-major order with the final axis contiguous.
+Terrain and horizon values are finite little-endian IEEE-754 Float32. The PSR mask uses unsigned bytes. Files contain no headers or padding. Axes are zero-based, flattened in row-major order with the final axis contiguous.
 
 | File | Shape | Bytes | Meaning |
 | --- | --- | ---: | --- |
@@ -61,10 +61,13 @@ All values are finite little-endian IEEE-754 Float32. Files contain no headers o
 | `dem_err.bin` | `[256,256]` | 262,144 | Input LOLA 1-sigma height uncertainty in meters, resampled to the export grid |
 | `horizons.bin` | `[31,31,5,360]` | 6,919,200 | Terrain horizon elevation in degrees by candidate, mast and integer true azimuth |
 | `horizons_err.bin` | `[31,31,360]` | 1,383,840 | Largest first-order angular sigma across the five mast-specific horizon samples |
+| `psr_mask.bin` | `[256,256]` | 65,536 | `Uint8Array` with 1 for mapped permanent shadow and 0 elsewhere, aligned with the DEM |
+
+For a candidate's PSR classification, read index `(23 + 7*r) * 256 + 23 + 7*c` in `psr_mask.bin`. The classification preserves the NASA LOLA PSR map by nearest-neighbor resampling.
 
 The horizon index is `(((r * 31 + c) * 5 + mast) * 360 + az)`. The error index is `((r * 31 + c) * 360 + az)`. Consumers can interpolate azimuth cyclically between bins 359 and 0. Horizon rays sample the bilinear elevation surface at half-pixel intervals starting one pixel away. They stop at the tile boundary and include a second-order curvature correction and local projection scale. Local relief outside the tile can raise the true horizon. The angular error model treats observer and blocker height errors as independent and interpolates blocker sigma with correlated corner errors. It conditions on the chosen blocker and omits uncertainty in which blocker wins, unresolved terrain and out-of-tile obstructions. Angular sigma is unsuitable as a calibrated mission failure probability.
 
-The radiosity solver accepts direct incident flux, patch albedo and view factors supplied by the caller. It solves diffuse shortwave interreflection using `B = ρ(E + FB)`. The six-file format carries no radiosity output or thermal/ice predictions.
+The radiosity solver accepts direct incident flux, patch albedo and view factors supplied by the caller. It solves diffuse shortwave interreflection using `B = ρ(E + FB)`. The bundle carries no radiosity output or thermal/ice predictions.
 
 ## Source verification
 

@@ -6,10 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "umbra-x-pipeline"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["numpy", "numba", "rasterio", "pyproj", "requests", "skyfield", "scipy", "pytest"]
+dependencies = ["numpy", "numba", "rasterio", "pyproj", "requests", "skyfield", "scipy", "pytest", "matplotlib", "jplephem"]
 
 [project.scripts]
 umbra-compile = "umbra_x.compiler:main"
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "test_ephemeris.py"]

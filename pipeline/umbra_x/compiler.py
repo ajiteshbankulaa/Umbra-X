@@ -23,8 +23,13 @@ CRS_POLAR = CRS.from_proj4(PROJECTION)
 WIDTH = 256
 PIXEL = 20.0
 ROWS = 31
-START_PIXEL = 98
-STEP_PIXEL = 2
+START_PIXEL = 23
+STEP_PIXEL = 7
+CANDIDATES = slice(START_PIXEL, START_PIXEL + STEP_PIXEL * ROWS, STEP_PIXEL)
+ANALYSIS_GRID = {
+    "rows": ROWS, "cols": ROWS, "spacing_m": PIXEL * STEP_PIXEL,
+    "start_pixel": START_PIXEL, "step_pixel": STEP_PIXEL,
+}
 MASTS = np.array([1.5, 3.0, 5.0, 10.0, 20.0])
 CITATIONS = [
     "Barker, Mazarico et al. (2023) PSJ — LRO LOLA DEM & Error",
@@ -51,6 +56,18 @@ def read_tile(path, transform):
     if not np.isfinite(destination).all():
         raise ValueError(f"Incomplete raster coverage: {path}")
     return destination
+
+
+def read_psr_mask(path, transform):
+    labels = np.full((WIDTH, WIDTH), np.nan)
+    with rasterio.open(path) as source:
+        reproject(
+            rasterio.band(source, 1), labels, dst_transform=transform,
+            dst_crs=CRS_POLAR.to_wkt(), dst_nodata=np.nan, resampling=Resampling.nearest,
+        )
+    if not np.isin(labels, (0, 1)).all():
+        raise ValueError(f"Missing or invalid values in PSR raster: {path}")
+    return labels.astype(np.uint8)
 
 
 @njit(cache=True, parallel=True)
@@ -126,6 +143,15 @@ def ephemeris(start, lat, lon, kernels):
     return result
 
 
+def compile_horizons(elevation, error, transform):
+    inverse = Transformer.from_crs(CRS_POLAR, CRS_POLAR.geodetic_crs, always_xy=True)
+    pixels = np.arange(WIDTH)[CANDIDATES] + 0.5
+    x, y = transform * tuple(np.meshgrid(pixels, pixels))
+    longitude, latitude = inverse.transform(x, y)
+    ground_pixel = PIXEL * (1 - np.sin(np.deg2rad(latitude))) / 2
+    return march(elevation, error, np.deg2rad(longitude), ground_pixel)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--site-id", required=True)
@@ -137,7 +163,7 @@ def main():
     parser.add_argument("--lon", type=float, required=True)
     parser.add_argument("--moon-trek-url", default="https://trek.nasa.gov/moon/")
     parser.add_argument("--start-utc", required=True)
-    for key in ("dem", "error", "kernels", "output"):
+    for key in ("dem", "error", "psr", "kernels", "output"):
         parser.add_argument(f"--{key}", type=Path, required=True)
     args = parser.parse_args()
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", args.site_id):
@@ -161,14 +187,14 @@ def main():
     left, top = x - WIDTH * PIXEL / 2, y + WIDTH * PIXEL / 2
     transform = from_origin(left, top, PIXEL, PIXEL)
     elev, err = (read_tile(path, transform) for path in (args.dem, args.error))
+    mask = read_psr_mask(args.psr, transform)
     if (err < 0).any():
         parser.error("Height uncertainty must be nonnegative")
     coordinates = (np.arange(WIDTH) + 0.5) * PIXEL
-    lon, lat = inverse.transform(*np.meshgrid(left + coordinates, top - coordinates))
+    _, lat = inverse.transform(*np.meshgrid(left + coordinates, top - coordinates))
     scale_corrected_pixel = PIXEL * (1 - np.sin(np.deg2rad(lat))) / 2
     dy, dx = np.gradient(elev)
     slope = np.rad2deg(np.arctan(np.hypot(dx, dy) / scale_corrected_pixel))
-    nodes = slice(START_PIXEL, START_PIXEL + STEP_PIXEL * ROWS, STEP_PIXEL)
     manifest = {
         "site_id": args.site_id, "name": args.name, "subtitle": args.subtitle,
         "mission_agency": args.agency,
@@ -182,14 +208,11 @@ def main():
         "citations": CITATIONS, "center_lat": args.lat, "center_lon": args.lon,
         "moon_trek_url": args.moon_trek_url, "proj_crs": PROJECTION,
         "dem_grid": {"width": WIDTH, "height": WIDTH, "pixel_size_m": PIXEL},
-        "analysis_grid": {
-            "rows": ROWS, "cols": ROWS, "spacing_m": PIXEL * STEP_PIXEL,
-            "start_pixel": START_PIXEL, "step_pixel": STEP_PIXEL,
-        },
+        "analysis_grid": ANALYSIS_GRID,
         "mast_heights_m": MASTS.tolist(),
         "ephemeris": ephemeris(start, args.lat, args.lon, args.kernels),
     }
-    horizons, horizons_err = march(elev, err, np.deg2rad(lon[nodes, nodes]), scale_corrected_pixel[nodes, nodes])
+    horizons, horizons_err = compile_horizons(elev, err, transform)
     args.output.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=args.output) as staging:
         tile = Path(staging) / args.site_id
@@ -199,6 +222,7 @@ def main():
             ("horizons", horizons), ("horizons_err", horizons_err),
         ):
             data.astype("<f4").tofile(tile / f"{name}.bin")
+        mask.tofile(tile / "psr_mask.bin")
         (tile / "manifest.json").write_text(json.dumps(manifest, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         tile.rename(destination)
 

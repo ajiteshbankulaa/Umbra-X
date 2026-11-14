@@ -19,9 +19,9 @@ export interface DemGrid {
 export interface AnalysisGrid {
   rows: 31
   cols: 31
-  spacing_m: 40
-  start_pixel: 98
-  step_pixel: 2
+  spacing_m: 140
+  start_pixel: 23
+  step_pixel: 7
 }
 
 export interface SiteEphemeris {
@@ -59,4 +59,5 @@ export interface SiteData {
   dem_err: Float32Array
   horizons: Float32Array
   horizons_err: Float32Array
+  psr_mask: Uint8Array
 }

@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Mountain } from 'lucide-react'
-import { PlaneGeometry } from 'three'
-import { loadSite } from './data'
+import { BufferAttribute, Color, PlaneGeometry } from 'three'
+import { candidatePixel, loadSite } from './data'
 import type { SiteData } from './types/helios'
 import './style.css'
 
@@ -13,15 +13,21 @@ function Terrain({ data }: { data: SiteData }) {
     const plane = new PlaneGeometry(5.1, 5.1, 255, 255)
     plane.rotateX(-Math.PI / 2)
     const vertices = plane.getAttribute('position')
+    const colors = new Float32Array(vertices.count * 3)
+    const terrainColor = new Color('#bab5aa')
+    const shadowColor = new Color('#56506b')
     const center = data.dem_elev[128 * 256 + 128]
     for (let i = 0; i < vertices.count; i++) {
       vertices.setY(i, (data.dem_elev[i] - center) / 1000)
+      const color = data.psr_mask[i] ? shadowColor : terrainColor
+      color.toArray(colors, i * 3)
     }
+    plane.setAttribute('color', new BufferAttribute(colors, 3))
     plane.computeVertexNormals()
     return plane
   }, [data])
   useEffect(() => () => geometry.dispose(), [geometry])
-  return <mesh geometry={geometry}><meshStandardMaterial color="#bab5aa" side={2} /></mesh>
+  return <mesh geometry={geometry}><meshStandardMaterial vertexColors side={2} /></mesh>
 }
 
 function SiteWorkspace({ data }: { data: SiteData }) {
@@ -30,6 +36,7 @@ function SiteWorkspace({ data }: { data: SiteData }) {
   const { manifest } = data
   const ephem = manifest.ephemeris
   const node = 15 * 31 + 15
+  const centerPixel = candidatePixel(manifest, 15, 15)
   const start = delay * 24
   function visibleHours(azimuth: number[], elevation: number[]) {
     let visible = 0
@@ -56,6 +63,7 @@ function SiteWorkspace({ data }: { data: SiteData }) {
       <aside className="inspector">
         <h2>{manifest.name}</h2>
         <p>{manifest.subtitle}</p>
+        <p>Violet terrain marks mapped permanent shadow.</p>
         <label htmlFor="delay">Launch delay ({delay} d)</label>
         <input id="delay" type="range" min={0} max={15} value={delay} onChange={e => setDelay(e.target.valueAsNumber)} />
         <label htmlFor="mast">Mast height</label>
@@ -67,7 +75,7 @@ function SiteWorkspace({ data }: { data: SiteData }) {
         <dl>
           <div><dt>Sun above terrain</dt><dd>{visibleHours(ephem.sun_az_deg, ephem.sun_el_deg)} / 360 h</dd></div>
           <div><dt>Earth above terrain</dt><dd>{visibleHours(ephem.earth_az_deg, ephem.earth_el_deg)} / 360 h</dd></div>
-          <div><dt>Terrain slope</dt><dd>{data.dem_slope[128 * 256 + 128].toFixed(1)}°</dd></div>
+          <div><dt>Terrain slope</dt><dd>{data.dem_slope[centerPixel].toFixed(1)}°</dd></div>
         </dl>
       </aside>
     </section>

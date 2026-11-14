@@ -6,3 +6,4 @@ node_modules/
 dist/
 *.tsbuildinfo
 web/public/data/*/
+pipeline/cache/
