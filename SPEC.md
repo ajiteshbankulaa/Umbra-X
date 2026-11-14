@@ -31,7 +31,9 @@ Each bundle lives at `web/public/data/<site_id>/`. Vite serves it as `data/<site
   moon_trek_url: string
   proj_crs: "+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs"
   dem_grid: { width: 256, height: 256, pixel_size_m: 20.0 }
-  analysis_grid: { rows: 31, cols: 31, spacing_m: 140.0, start_pixel: 23, step_pixel: 7 }
+  analysis_grid:
+    | { rows: 31, cols: 31, spacing_m: 40.0, start_pixel: 98, step_pixel: 2 }
+    | { rows: 31, cols: 31, spacing_m: 140.0, start_pixel: 23, step_pixel: 7 }
   mast_heights_m: [1.5, 3.0, 5.0, 10.0, 20.0]
   ephemeris: {
     start_utc: string
@@ -63,9 +65,9 @@ Terrain and horizon values are finite little-endian IEEE-754 Float32. The PSR ma
 | `horizons_err.bin` | `[31,31,360]` | 1,383,840 | Largest first-order angular sigma across the five mast-specific horizon samples |
 | `psr_mask.bin` | `[256,256]` | 65,536 | `Uint8Array` with 1 for mapped permanent shadow and 0 elsewhere, aligned with the DEM |
 
-For a candidate's PSR classification, read index `(23 + 7*r) * 256 + 23 + 7*c` in `psr_mask.bin`. The classification preserves the NASA LOLA PSR map by nearest-neighbor resampling.
+The compact grid maps candidate `[r,c]` to pixel `[98 + 2*r, 98 + 2*c]` and spans 1.20 km on each axis. For either grid, a candidate's PSR classification is the byte at `(start_pixel + step_pixel*r) * 256 + start_pixel + step_pixel*c`. The classification preserves the NASA LOLA PSR map by nearest-neighbor resampling.
 
-The horizon index is `(((r * 31 + c) * 5 + mast) * 360 + az)`. The error index is `((r * 31 + c) * 360 + az)`. Consumers can interpolate azimuth cyclically between bins 359 and 0. Horizon rays sample the bilinear elevation surface at half-pixel intervals starting one pixel away. They stop at the tile boundary and include a second-order curvature correction and local projection scale. Local relief outside the tile can raise the true horizon. The angular error model treats observer and blocker height errors as independent and interpolates blocker sigma with correlated corner errors. It conditions on the chosen blocker and omits uncertainty in which blocker wins, unresolved terrain and out-of-tile obstructions. Angular sigma is unsuitable as a calibrated mission failure probability.
+The horizon index is `(((r * 31 + c) * 5 + mast) * 360 + az)`. The error index is `((r * 31 + c) * 360 + az)`. Consumers can interpolate azimuth cyclically between bins 359 and 0. Rays convert each candidate's true-north azimuth to grid bearing and sample bilinear terrain every 20 m of local ground distance. They stop at the tile boundary and subtract the spherical curvature drop `d²/(2R)`. At each mast's highest-angle sample, angular uncertainty is `atan2(interpolated height sigma, distance)` in degrees. The shared error bin stores the maximum of those five values. Terrain beyond the tile, observer height error and changes in which terrain sample controls the horizon are outside this uncertainty model.
 
 The radiosity solver accepts direct incident flux, patch albedo and view factors supplied by the caller. It solves diffuse shortwave interreflection using `B = ρ(E + FB)`. The bundle carries no radiosity output or thermal/ice predictions.
 

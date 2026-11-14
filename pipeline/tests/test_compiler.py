@@ -28,7 +28,7 @@ def test_horizons_include_curvature_and_mast_height():
     assert np.all(horizon < 0)
     assert np.all(np.diff(horizon, axis=2) < 0)
     assert not np.any(sigma)
-    distances = np.arange(20, 2560 + 10, 10)
+    distances = np.arange(20, 2560 + 20, 20)
     expected = np.max(-MASTS[:, None] / distances - distances / (2 * RADIUS), axis=1)
     np.testing.assert_allclose(horizon[15, 15, :, 0], np.rad2deg(np.arctan(expected)), atol=1e-6)
 

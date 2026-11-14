@@ -30,6 +30,7 @@ ANALYSIS_GRID = {
     "rows": ROWS, "cols": ROWS, "spacing_m": PIXEL * STEP_PIXEL,
     "start_pixel": START_PIXEL, "step_pixel": STEP_PIXEL,
 }
+COMPACT_GRID = {**ANALYSIS_GRID, "start_pixel": 98, "step_pixel": 2, "spacing_m": 40.0}
 MASTS = np.array([1.5, 3.0, 5.0, 10.0, 20.0])
 CITATIONS = [
     "Barker, Mazarico et al. (2023) PSJ — LRO LOLA DEM & Error",
@@ -70,31 +71,31 @@ def read_psr_mask(path, transform):
     return labels.astype(np.uint8)
 
 
-@njit(cache=True, parallel=True)
-def march(elevation, error, longitude, ground_pixel):
+@njit(cache=True, parallel=True, fastmath=True)
+def march(elevation, error, longitude, ground_pixel, start_pixel=START_PIXEL, step_pixel=STEP_PIXEL):
     horizons = np.empty((ROWS, ROWS, len(MASTS), 360), dtype=np.float32)
     uncertainty = np.empty((ROWS, ROWS, 360), dtype=np.float32)
-    half_pixel = PIXEL / 2
     for node in prange(ROWS * ROWS):
         row, col = node // ROWS, node % ROWS
-        y = START_PIXEL + STEP_PIXEL * row
-        x = START_PIXEL + STEP_PIXEL * col
+        y = start_pixel + step_pixel * row
+        x = start_pixel + step_pixel * col
         base = elevation[y, x]
         for az in range(360):
             # A true-north ray in south-polar stereographic grid coordinates.
             angle = np.deg2rad(az) + longitude[row, col]
-            dx, dy = np.sin(angle) / 2, -np.cos(angle) / 2
-            maxima = np.full(len(MASTS), -np.inf)
+            pixel_stride = PIXEL / ground_pixel[row, col]
+            dx, dy = np.sin(angle) * pixel_stride, -np.cos(angle) * pixel_stride
+            maxima = np.full(len(MASTS), -1e30)
             sigma = np.zeros(len(MASTS))
-            step = 2
+            step = 1
             while True:
                 i, j = y + step * dy, x + step * dx
-                if i < 0 or j < 0 or i >= WIDTH - 1 or j >= WIDTH - 1:
+                if i < 0 or j < 0 or i > WIDTH - 1 or j > WIDTH - 1:
                     break
-                i0, j0 = int(i), int(j)
+                i0, j0 = min(int(i), WIDTH - 2), min(int(j), WIDTH - 2)
                 fy, fx = i - i0, j - j0
                 weights = ((1-fy)*(1-fx), (1-fy)*fx, fy*(1-fx), fy*fx)
-                distance = step * half_pixel * ground_pixel[row, col] / PIXEL
+                distance = step * PIXEL
                 height = -base - distance**2 / (2 * RADIUS)
                 # Correlated interpolation within the target sample.
                 target_sigma = 0.0
@@ -102,13 +103,12 @@ def march(elevation, error, longitude, ground_pixel):
                     ri, cj = i0 + corner // 2, j0 + corner % 2
                     height += weights[corner] * elevation[ri, cj]
                     target_sigma += weights[corner] * error[ri, cj]
-                height_sigma = np.hypot(target_sigma, error[y, x])
                 for mast in range(len(MASTS)):
                     rise = height - MASTS[mast]
                     tangent = rise / distance
                     if tangent > maxima[mast]:
                         maxima[mast] = tangent
-                        sigma[mast] = np.rad2deg(height_sigma / distance / (1 + tangent**2))
+                        sigma[mast] = np.rad2deg(np.arctan2(target_sigma, distance))
                 step += 1
             for mast in range(len(MASTS)):
                 horizons[row, col, mast, az] = np.rad2deg(np.arctan(maxima[mast]))
@@ -143,13 +143,18 @@ def ephemeris(start, lat, lon, kernels):
     return result
 
 
-def compile_horizons(elevation, error, transform):
+def compile_horizons(elevation, error, transform, grid=ANALYSIS_GRID):
+    if any(raster.shape != (WIDTH, WIDTH) or not np.isfinite(raster).all() for raster in (elevation, error)):
+        raise ValueError("Expected finite 256 × 256 elevation and uncertainty rasters")
+    if (error < 0).any():
+        raise ValueError("Height uncertainty must be nonnegative")
+    start, step = grid["start_pixel"], grid["step_pixel"]
     inverse = Transformer.from_crs(CRS_POLAR, CRS_POLAR.geodetic_crs, always_xy=True)
-    pixels = np.arange(WIDTH)[CANDIDATES] + 0.5
+    pixels = start + step * np.arange(ROWS) + 0.5
     x, y = transform * tuple(np.meshgrid(pixels, pixels))
     longitude, latitude = inverse.transform(x, y)
     ground_pixel = PIXEL * (1 - np.sin(np.deg2rad(latitude))) / 2
-    return march(elevation, error, np.deg2rad(longitude), ground_pixel)
+    return march(elevation, error, np.deg2rad(longitude), ground_pixel, start, step)
 
 
 def main():

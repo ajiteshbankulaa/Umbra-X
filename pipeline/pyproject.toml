@@ -12,4 +12,4 @@ dependencies = ["numpy", "numba", "rasterio", "pyproj", "requests", "skyfield", 
 umbra-compile = "umbra_x.compiler:main"
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "test_ephemeris.py"]
+testpaths = ["tests", "test_ephemeris.py", "test_horizons.py"]

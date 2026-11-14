@@ -30,11 +30,12 @@ export async function loadSite(id: string): Promise<SiteData> {
   const base = `${import.meta.env.BASE_URL}data/${id}`
   const manifest: SiteManifest = await (await fetchFile(`${base}/manifest.json`)).json()
   const ephem = manifest.ephemeris
+  const grid = manifest.analysis_grid
+  const layout = [grid?.start_pixel, grid?.step_pixel, grid?.spacing_m].join(',')
   if (
     manifest.site_id !== id || manifest.dem_grid?.width !== 256 || manifest.dem_grid.height !== 256 ||
     manifest.analysis_grid?.rows !== 31 || manifest.analysis_grid.cols !== 31 ||
-    manifest.analysis_grid.start_pixel !== 23 || manifest.analysis_grid.step_pixel !== 7 ||
-    manifest.analysis_grid.spacing_m !== 140 ||
+    !['98,2,40', '23,7,140'].includes(layout) ||
     manifest.mast_heights_m?.join(',') !== '1.5,3,5,10,20' || ephem?.num_steps !== 720 ||
     ephem.step_hours !== 1 || ![ephem.sun_az_deg, ephem.sun_el_deg, ephem.earth_az_deg, ephem.earth_el_deg]
       .every(series => Array.isArray(series) && series.length === 720 && series.every(Number.isFinite)) ||

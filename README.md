@@ -42,11 +42,13 @@ Sources for submission credits:
 
 ### Build a web bundle
 
-To rebuild all three browser bundles with the expanded candidate grid and PSR mask after fetching:
+To rebuild all three browser bundles with the compact 40 m candidate grid and PSR mask after fetching:
 
 ```powershell
 .\.venv\Scripts\python.exe pipeline/compile_horizons.py
 ```
+
+Pass `--grid expanded` to use 140 m candidate spacing. The verification plot from the fetcher shows the expanded footprint.
 
 Supply an elevation GeoTIFF and a height-sigma GeoTIFF in the same lunar ME/DE421 coordinate frame, with valid embedded lunar CRS definitions and coverage across the complete tile. Elevation must be relative to the 1,737,400 m reference sphere. The compiler applies source GDAL scale and offset. The [NASA Goddard south-polar LOLA archive](https://pgda.gsfc.nasa.gov/products/90) lists the `LDEM_80S_20MPP_ADJ.TIF` elevation and `LDEM_80S_20MPP_ADJ_ERR.TIF` height error products.
 
@@ -60,4 +62,12 @@ Use east-positive longitude in the range −180° to 180°. Here is a complete c
 
 Run the web dev server and enter the compiled site ID. Rebuild the web app after adding a bundle to include it in production output. The compiler publishes each bundle as a new directory and rejects existing IDs. See [SPEC.md](SPEC.md) for the byte layout, modeling limits and research sources.
 
-Three-node microgrid optimization, rover routing and actuarial underwriting are project directions beyond this foundation.
+## Client scientific engine
+
+`web/src/engine/heliosEngine.ts` takes a loaded `SiteData` bundle. Call `simulateGridWindow` and `computeTerminatorPlasmaRisk`, then pass those results to the network, route, and commercial functions. Hourly arrays use `hour * nodeCount + node`. Run `npm test` from `web` with Node 22.12+.
+
+- The solar disk calculation integrates the circular segment above a locally straight horizon. Bearings apply local meridian convergence to site-center ephemerides. Thermal equilibrium uses a fourth-power blend between configurable shadow and grazing-sun endpoints, with 65 K and 225 K defaults. Thermal inertia, terrain incidence, and local ephemeris parallax are outside this model. [Diviner cold-trap observations](https://pubmed.ncbi.nlm.nih.gov/20966246/)
+- The plasma and dust outputs are sensitivity scenarios. The default 165 V potential contrast and illustrative 4 m transition width set the subgrid field scale. Dust deposition, optical extinction, and ESD thresholds are configurable proxies. [NASA lunar plasma wake study](https://ntrs.nasa.gov/citations/20110013543)
+- Network ranking minimizes joint darkness first and uses Earth blackout hours as the tie-breaker. The receiver requires a mapped PSR, mean temperature below 110 K, and a downward terrain LOS. Passive flux uses one diffuse bounce from visible terrain facets and reports the hourly samples with positive flux. Active delivery uses an assumed efficiency and modeled surplus. [ShadowCam ice study](https://doi.org/10.1126/sciadv.aec8211) · [NASA Light Bender](https://www.nasa.gov/general/light-bender/)
+- Rover routing minimizes weighted hourly costs with cardinal moves of one candidate cell, or 40 m and 140 m for the compact and expanded grids. It checks the slope of intervening DEM pixels. The result reports residual darkness and hazard hours.
+- The commercial scenario sizes initially full batteries from the maximum cumulative net energy deficit. LCOE covers modeled battery and incremental hardware delivery capital divided by served energy over repeated mission windows. Extraction requires caller-supplied ice inventory. The underwriting output is a uniform spatial scenario across an axis-aligned landing ellipse with binary mission-loss VaR. The cost, failure thresholds, and insurance tiers are model inputs and outputs rather than NASA rates or insurance quotes.
