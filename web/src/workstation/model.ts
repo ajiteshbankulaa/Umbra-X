@@ -10,12 +10,30 @@ export const sites = [
 ] as const
 export type SiteId = typeof sites[number][0]
 export interface Settings { delay: number; mast: number; sigma: number; node: number; inventory: number }
+function longestHiddenRun(isHidden: (hour: number) => boolean) {
+  let currentRun = 0
+  let longestRun = 0
 
+  for (let hour = 0; hour < 360; hour++) {
+    if (isHidden(hour)) {
+      currentRun++
+      longestRun = Math.max(longestRun, currentRun)
+    } else {
+      currentRun = 0
+    }
+  }
+
+  return longestRun
+}
 export function analyze(site: SiteData, { delay, mast, sigma, node, inventory }: Settings) {
   const window = simulateGridWindow(site, { launchDelayHours: delay, mastIndex: mast, sigma })
   const plasma = computeTerminatorPlasmaRisk(window)
   const network = solveLightToIceNetwork(window, { primaryNode: node })
   const primary = network?.primary ?? node
+  const longestSunBlackout = longestHiddenRun(hour =>
+  window.solarFraction[hour * window.nodeCount + primary] < 0.1)
+  const longestEarthBlackout = longestHiddenRun(hour =>
+  !window.earthVisible[hour * window.nodeCount + primary])
   const route = solveShadowSurfingPath(window, plasma, { startNode: primary })
   const finance = network && computeCommercialMetrics(window, plasma, network, route, { iceInventoryKg: inventory })
   const times = Array.from({ length: 360 }, (_, hour) => hour * window.nodeCount)
@@ -55,6 +73,7 @@ export function analyze(site: SiteData, { delay, mast, sigma, node, inventory }:
     })
   })
   return { window, plasma, network, route, finance, primary, solarA, solarB, solarRover, soc, engineering,
+    longestSunBlackout, longestEarthBlackout,
     tracks: [
       { label: 'Pad A solar', unit: '%', color: palette.gold, values: solarA.map(x => x * 100), max: 100 },
       { label: 'Twin B solar', unit: '%', color: palette.cyan, values: solarB?.map(x => x * 100) ?? [], max: 100 },

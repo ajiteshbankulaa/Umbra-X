@@ -248,6 +248,8 @@ function App() {
           {result && <dl className="detail-list">
             <div><dt>Hours with usable sunlight</dt><dd>{360 - result.engineering[0].dark} / 360</dd></div>
             <div><dt>Hours with Earth in view</dt><dd>{360 - result.engineering[0].blackout} / 360</dd></div>
+            <div><dt>Longest Sun blackout</dt><dd>{result.longestSunBlackout} h</dd></div>
+            <div><dt>Longest Earth blackout</dt><dd>{result.longestEarthBlackout} h</dd></div>
           </dl>}
           <button disabled={!ephem} onClick={() => setPlaying(!playing)}>{playing ? <Pause size={14} /> : <Play size={14} />}
             {playing ? 'Pause the timeline' : 'Watch the Sun move'}</button>
