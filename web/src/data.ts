@@ -25,9 +25,9 @@ async function psrMask(path: string, count: number) {
   return mask
 }
 
-export async function loadSite(id: string): Promise<SiteData> {
+export async function loadSite(id: string, dataRoot = import.meta.env.BASE_URL + 'data/'): Promise<SiteData> {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) throw new Error('Enter a lowercase site ID.')
-  const base = `${import.meta.env.BASE_URL}data/${id}`
+  const base = `${dataRoot}${id}`
   const manifest: SiteManifest = await (await fetchFile(`${base}/manifest.json`)).json()
   const ephem = manifest.ephemeris
   const grid = manifest.analysis_grid
