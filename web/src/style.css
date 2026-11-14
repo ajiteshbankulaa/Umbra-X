@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "DM Sans", system-ui, sans-serif;
+  color: #f5f5f5;
+  background: #121212;
+  color-scheme: dark;
+  accent-color: #bb86fc;
+}
+
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-height: 68px; }
+h1 { font-size: 22px; font-weight: 700; }
+header span, p, dt { color: #c6c3ca; }
+form { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 16px 0; border-block: 1px solid #353238; }
+input:not([type=range]), button, select { background: #1e1e1e; border: 1px solid #514b56; padding: 7px 10px; border-radius: 6px; }
+button { cursor: pointer; color: #e0c2ff; }
+button:hover { background: #302738; }
+button:disabled { opacity: .65; cursor: wait; }
+main > p { margin-block: 20px; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 320px); border-bottom: 1px solid #353238; }
+.terrain { height: min(72vh, 700px); min-height: 320px; background: #1e1e1e; }
+.inspector { padding: 20px; border-left: 1px solid #353238; }
+.inspector label { display: block; margin-top: 16px; }
+.inspector h2 { font-size: 20px; font-weight: 700; }
+.inspector h3 { margin-top: 24px; font-weight: 600; }
+.inspector input { width: 100%; }
+.date { font-variant-numeric: tabular-nums; }
+dl div { display: flex; gap: 8px; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #353238; }
+@media (max-width: 700px) {
+  .workspace { grid-template-columns: 1fr; }
+  .inspector { border-left: 0; padding-inline: 0; }
+  .terrain { height: 46vh; }
+}
