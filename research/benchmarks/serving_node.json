@@ -1,0 +1,69 @@
+{
+  "benchmarkVersion": "phase4-node-serving-v1",
+  "nodeVersion": "v24.11.0",
+  "physics": {
+    "singlePadDual0And2SigmaMs": {
+      "p50": 10.146,
+      "p95": 15.577
+    },
+    "full961PadGridDualMs": 18985.27,
+    "throughputPadsPerSec": 50.6
+  },
+  "toolsAndRag": {
+    "ragBridgeColdMs": 2733.51,
+    "ragBridgeWarmUncachedMs": {
+      "p50": 11.209,
+      "p95": 18.452
+    },
+    "ragBridgeCacheHitMs": {
+      "p50": 0.003,
+      "p95": 0.042
+    },
+    "tools": {
+      "get_scenario": {
+        "coldMs": 214.94,
+        "p50Ms": 13.493,
+        "p95Ms": 33.245
+      },
+      "compare_scenarios": {
+        "coldMs": 120.25,
+        "p50Ms": 24.933,
+        "p95Ms": 52.123
+      },
+      "inspect_terrain_sensitivity": {
+        "coldMs": 72.26,
+        "p50Ms": 77.078,
+        "p95Ms": 86.874
+      },
+      "search_alternatives": {
+        "coldMs": 7807.6,
+        "p50Ms": 7554.602,
+        "p95Ms": 7821.695
+      }
+    }
+  },
+  "cacheAndConcurrency": {
+    "agentColdCompareMs": 7595.95,
+    "cacheHitMs": {
+      "p50": 0.009,
+      "p95": 0.02
+    },
+    "cacheSpeedupFactor": 843994.4,
+    "concurrency12BurstTotalMs": 16460.51,
+    "concurrency12ThroughputRps": 0.73,
+    "burstCacheHits": 3
+  },
+  "retryAndCost": {
+    "transient503Attempts": 4,
+    "recoveredStatus": "answered",
+    "groundingPassed": true,
+    "retryRecoveryElapsedMs": 537.14,
+    "tokenUsage": {
+      "promptTokens": 1100,
+      "completionTokens": 83,
+      "totalTokens": 1183
+    },
+    "estimatedCostUsd": 0.000215,
+    "costPer1kQueriesUsd": 0.215
+  }
+}

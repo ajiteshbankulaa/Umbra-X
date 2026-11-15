@@ -21,11 +21,50 @@ interface UmbraWasmExports {
     sigma: number,
     hasErr: number,
   ): number
+  alloc_site_pack(nodeCount: number): number
+  pack_coords_ptr(): number
+  pack_slopes_ptr(): number
+  pack_h96_ptr(): number
+  pack_h48_ptr(): number
+  pack_err_ptr(): number
+  pack_cov_ptr(): number
+  pack_counts_ptr(): number
+  pack_starts_ptr(): number
+  search_site_pack(
+    nodeCount: number,
+    mastM: number,
+    n: number,
+    steps: number,
+    stepMinutes: number,
+    darkLimitH: number,
+    earthLimitH: number,
+    slopeLimit: number,
+    sigma: number,
+    hasSlopes: number,
+    hasErr: number,
+    startMin: number,
+    startMax: number,
+  ): number
+}
+
+export interface SitePackSearchOptions {
+  siteKey: string
+  nodeCount: number
+  mastM: number
+  vectors: Float64Array
+  steps: number
+  meta: Metadata
+  limits: Limits
+  sigma?: number
+  minStep: number
+  maxStep: number
+  getObserver: (node: number) => Observer
 }
 
 export interface WasmSearchEngine {
   readonly byteLength: number
   searchDual(observer: Observer, vectors: Float64Array, steps: number, meta: Metadata, limits: Limits, sigma?: number): number[]
+  searchSiteDual(opts: SitePackSearchOptions): Map<number, number[]>
 }
 
 export async function createWasmSearchEngine(source: ArrayBuffer | Uint8Array | string): Promise<WasmSearchEngine> {
@@ -45,6 +84,8 @@ export async function createWasmSearchEngine(source: ArrayBuffer | Uint8Array | 
   const exp = instance.exports as unknown as UmbraWasmExports
 
   let uploadedVectors: Float64Array | null = null
+  let uploadedPackKey: string | null = null
+  let uploadedPackHasErr = 0
   let cachedBuffer: ArrayBuffer | null = null
   let f64 = new Float64Array(exp.memory.buffer)
   let f32 = new Float32Array(exp.memory.buffer)
@@ -111,6 +152,95 @@ export async function createWasmSearchEngine(source: ArrayBuffer | Uint8Array | 
         result[i] = i32[outOffset + i]
       }
       return result
+    },
+    searchSiteDual(opts: SitePackSearchOptions) {
+      const { siteKey, nodeCount, mastM, vectors, steps, meta, limits, minStep, maxStep, getObserver } = opts
+      const sigma = opts.sigma ?? 0
+      const passingStartsByNode = new Map<number, number[]>()
+      const n = meta.count - 1
+      if (n <= 0 || nodeCount <= 0) return passingStartsByNode
+
+      const vectorsChanged = uploadedVectors !== vectors
+      if (vectorsChanged) {
+        const vecPtr = exp.alloc_vectors(vectors.length)
+        syncViews()
+        f64.set(vectors, vecPtr >> 3)
+        uploadedVectors = vectors
+      }
+
+      const packKey = `${siteKey}:${meta.localHash}:${nodeCount}`
+      if (uploadedPackKey !== packKey) {
+        exp.alloc_site_pack(nodeCount)
+        syncViews()
+        const coordsOff = exp.pack_coords_ptr() >> 3
+        const slopesOff = exp.pack_slopes_ptr() >> 2
+        const h96Off = exp.pack_h96_ptr() >> 2
+        const h48Off = exp.pack_h48_ptr() >> 2
+        const errOff = exp.pack_err_ptr() >> 2
+        const covOff = exp.pack_cov_ptr()
+        let hasErr = 1
+        for (let node = 0; node < nodeCount; node++) {
+          const obs = getObserver(node)
+          f64[coordsOff + node * 3] = obs.coordinates[0]
+          f64[coordsOff + node * 3 + 1] = obs.coordinates[1]
+          f64[coordsOff + node * 3 + 2] = obs.coordinates[2]
+          f32[slopesOff + node] = obs.slope == null ? 1e6 : obs.slope
+          f32.set(obs.horizon, h96Off + node * 360)
+          f32.set(obs.reference, h48Off + node * 360)
+          if (obs.horizonError) {
+            f32.set(obs.horizonError, errOff + node * 360)
+          } else {
+            hasErr = 0
+          }
+          u8.set(obs.coverage, covOff + node * 360)
+        }
+        uploadedPackKey = packKey
+        uploadedPackHasErr = hasErr
+      } else {
+        syncViews()
+      }
+
+      const totalStarts = exp.search_site_pack(
+        nodeCount,
+        mastM,
+        n,
+        steps,
+        meta.stepMinutes,
+        limits.dark,
+        limits.earth,
+        limits.slope,
+        sigma,
+        1,
+        sigma !== 0 && uploadedPackHasErr ? 1 : 0,
+        minStep,
+        maxStep,
+      )
+      syncViews()
+
+      if (totalStarts <= 0) return passingStartsByNode
+      const countsOff = exp.pack_counts_ptr() >> 2
+      const startsOff = exp.pack_starts_ptr() >> 2
+      const stepHours = meta.stepMinutes / 60
+      let cursor = 0
+      for (let node = 0; node < nodeCount; node++) {
+        const c = i32[countsOff + node]
+        if (c > 0) {
+          const hours: number[] = []
+          let prev = Number.NaN
+          for (let j = 0; j < c; j++) {
+            const h = Math.round(i32[startsOff + cursor + j] * stepHours)
+            if (h !== prev) {
+              hours.push(h)
+              prev = h
+            }
+          }
+          if (hours.length > 0) {
+            passingStartsByNode.set(node, hours)
+          }
+          cursor += c
+        }
+      }
+      return passingStartsByNode
     },
   }
 }

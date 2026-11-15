@@ -1,0 +1,164 @@
+{
+  "manifestVersion": "phase4-corpus-v1",
+  "chunking": {
+    "strategy": "markdown_section_sliding_window",
+    "maxChars": 750,
+    "overlapChars": 120
+  },
+  "embedding": {
+    "provider": "fastembed",
+    "model": "BAAI/bge-small-en-v1.5",
+    "dimension": 384,
+    "distance": "cosine"
+  },
+  "vectorStore": {
+    "engine": "qdrant",
+    "collection": "umbra_research_corpus",
+    "storagePath": "research/rag/qdrant_db"
+  },
+  "sources": [
+    {
+      "docId": "ntrs-barker-mazarico-2020",
+      "kind": "ntrs_json",
+      "title": "Improved LOLA Elevation Maps for South Pole Landing Sites: Error Estimates and Their Impact on Illumination Conditions",
+      "url": "https://ntrs.nasa.gov/api/citations/20205009660",
+      "citation": "Barker, Mazarico, Neumann et al. (2020/2021), NASA NTRS 20205009660 / Planetary & Space Science",
+      "usagePermission": "NASA Technical Reports Server public government research metadata and abstract"
+    },
+    {
+      "docId": "ntrs-barker-lola-2022",
+      "kind": "ntrs_json",
+      "title": "New Topographic Products for the Lunar South Pole from the Lunar Orbiter Laser Altimeter (LOLA)",
+      "url": "https://ntrs.nasa.gov/api/citations/20220018440",
+      "citation": "Barker, Mazarico, Neumann (2022), NASA NTRS 20220018440",
+      "usagePermission": "NASA Technical Reports Server public government research metadata and abstract"
+    },
+    {
+      "docId": "ntrs-glaser-2017",
+      "kind": "ntrs_json",
+      "title": "Illumination Conditions at the Lunar Poles: Implications for Future Exploration",
+      "url": "https://ntrs.nasa.gov/api/citations/20170007365",
+      "citation": "Glaser, Oberst, Neumann et al. (2017/2018), NASA NTRS 20170007365 / PSS",
+      "usagePermission": "NASA Technical Reports Server public government research metadata and abstract"
+    },
+    {
+      "docId": "ntrs-lunar-site-selection-2023",
+      "kind": "ntrs_json",
+      "title": "Lunar Site Selection",
+      "url": "https://ntrs.nasa.gov/api/citations/20230016267",
+      "citation": "Bleacher, George, Esty (2023), NASA NTRS 20230016267",
+      "usagePermission": "NASA Technical Reports Server public government research metadata and abstract"
+    },
+    {
+      "docId": "ntrs-artemis3-regions-2025",
+      "kind": "ntrs_json",
+      "title": "Artemis III Site Selection Update: Downselection From Thirteen to Nine Candidate Regions",
+      "url": "https://ntrs.nasa.gov/api/citations/20250011660",
+      "citation": "George, Rubio, Lawrence (2025), NASA NTRS 20250011660",
+      "usagePermission": "NASA Technical Reports Server public government research metadata and abstract"
+    },
+    {
+      "docId": "ntrs-polar-energy-2008",
+      "kind": "ntrs_json",
+      "title": "Lunar Polar Illumination & Power/Energy Storage Analysis",
+      "url": "https://ntrs.nasa.gov/api/citations/20080045536",
+      "citation": "NASA NTRS 20080045536",
+      "usagePermission": "NASA Technical Reports Server public government research metadata and abstract"
+    },
+    {
+      "docId": "ntrs-mazarico-2011",
+      "kind": "ntrs_json",
+      "title": "Illumination Conditions of the Lunar Polar Regions Using LOLA Topography",
+      "url": "https://ntrs.nasa.gov/api/citations/20110015800",
+      "citation": "Mazarico, Neumann, Smith, Zuber, Torrence (2011), NASA NTRS 20110015800 / Icarus",
+      "usagePermission": "NASA Technical Reports Server public government research metadata and abstract"
+    },
+    {
+      "docId": "nasa-pgda-lola-spole",
+      "kind": "html",
+      "title": "NASA GSFC PGDA Improved LOLA Elevation Maps for Lunar South Pole Sites (Products 90)",
+      "url": "https://pgda.gsfc.nasa.gov/products/90",
+      "citation": "NASA GSFC Planetary Geodesy Data Archive (PGDA Product 90; Barker et al. 2023)",
+      "usagePermission": "NASA GSFC public scientific data documentation (17 U.S.C. 105)"
+    },
+    {
+      "docId": "jpl-de440-doc",
+      "kind": "html",
+      "title": "JPL Planetary and Lunar Ephemerides DE440 and DE441",
+      "url": "https://ssd.jpl.nasa.gov/doc/de440_de441.html",
+      "citation": "Park, Folkner, Williams, Boggs (2021), NASA/JPL SSD DE440 & DE441 Documentation",
+      "usagePermission": "NASA/JPL Solar System Dynamics public technical documentation"
+    },
+    {
+      "docId": "jpl-horizons-manual",
+      "kind": "html",
+      "title": "JPL Horizons On-Line Ephemeris System User Manual",
+      "url": "https://ssd.jpl.nasa.gov/horizons/manual.html",
+      "citation": "NASA/JPL Solar System Dynamics Horizons System Documentation",
+      "usagePermission": "NASA/JPL Solar System Dynamics public documentation"
+    },
+    {
+      "docId": "umbrax-scientific-method",
+      "kind": "local_markdown",
+      "path": "docs/SCIENTIFIC_METHOD.md",
+      "title": "Umbra-X Scientific Methodology & Ephemeris/Horizon Geometry",
+      "url": "repo://docs/SCIENTIFIC_METHOD.md",
+      "citation": "Umbra-X Scientific Method Specification (verified local doc)",
+      "usagePermission": "Repository source documentation"
+    },
+    {
+      "docId": "umbrax-validation-matrix",
+      "kind": "local_markdown",
+      "path": "docs/VALIDATION_MATRIX.md",
+      "title": "Umbra-X Validation Matrix & Withheld-Pad JPL Horizons Agreement",
+      "url": "repo://docs/VALIDATION_MATRIX.md",
+      "citation": "Umbra-X Validation Matrix (verified local doc)",
+      "usagePermission": "Repository source documentation"
+    },
+    {
+      "docId": "umbrax-uncertainty-limitations",
+      "kind": "local_markdown",
+      "path": "docs/UNCERTAINTY_AND_LIMITATIONS.md",
+      "title": "Umbra-X Uncertainty Bounds & Physical Scope Limitations",
+      "url": "repo://docs/UNCERTAINTY_AND_LIMITATIONS.md",
+      "citation": "Umbra-X Uncertainty & Limitations Specification (verified local doc)",
+      "usagePermission": "Repository source documentation"
+    },
+    {
+      "docId": "umbrax-data-provenance",
+      "kind": "local_markdown",
+      "path": "docs/DATA_PROVENANCE.md",
+      "title": "Umbra-X NASA Dataset Provenance & Kernel SHA-256 Checksums",
+      "url": "repo://docs/DATA_PROVENANCE.md",
+      "citation": "Umbra-X Data Provenance Specification (verified local doc)",
+      "usagePermission": "Repository source documentation"
+    },
+    {
+      "docId": "umbrax-mission-recovery",
+      "kind": "local_markdown",
+      "path": "docs/MISSION_RECOVERY.md",
+      "title": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine",
+      "url": "repo://docs/MISSION_RECOVERY.md",
+      "citation": "Umbra-X Mission Recovery Architecture (verified local doc)",
+      "usagePermission": "Repository source documentation"
+    },
+    {
+      "docId": "umbrax-optimization-objectives",
+      "kind": "local_markdown",
+      "path": "docs/OPTIMIZATION_OBJECTIVES.md",
+      "title": "Umbra-X 7-Objective Pareto Optimization Formulation",
+      "url": "repo://docs/OPTIMIZATION_OBJECTIVES.md",
+      "citation": "Umbra-X Optimization Objectives Specification (verified local doc)",
+      "usagePermission": "Repository source documentation"
+    },
+    {
+      "docId": "umbrax-decision-certificate",
+      "kind": "local_markdown",
+      "path": "docs/DECISION_CERTIFICATE.md",
+      "title": "Umbra-X Deterministic Decision Certificate Specification",
+      "url": "repo://docs/DECISION_CERTIFICATE.md",
+      "citation": "Umbra-X Decision Certificate Specification (verified local doc)",
+      "usagePermission": "Repository source documentation"
+    }
+  ]
+}

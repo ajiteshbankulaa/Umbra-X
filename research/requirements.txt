@@ -1,0 +1,7 @@
+# Phase 4 Verifiable Scientific AI, Hybrid RAG, ML Surrogate, and Inference Benchmark dependencies
+scikit-learn>=1.5
+torch>=2.3
+qdrant-client>=1.12
+fastembed>=0.5
+numpy>=1.26
+scipy>=1.12

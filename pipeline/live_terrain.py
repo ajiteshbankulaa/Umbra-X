@@ -38,8 +38,12 @@ def _march_point(terrain, left, top, pixel_size, lat_deg, lon_deg, mast_m, max_d
     if not np.isfinite(base):
         raise ValueError("Elevation is missing (NaN) at coordinate.")
 
-    dz_dx = (terrain[r0, c0 + 1] - terrain[r0, c0 - 1]) / (2.0 * pixel_size)
-    dz_dy = (terrain[r0 + 1, c0] - terrain[r0 - 1, c0]) / (2.0 * pixel_size)
+    # Conformal stereographic map distances stretch away from the pole by k = 2 / (1 - sin(lat)).
+    # Convert map-grid finite differences to true lunar surface slope via dx_true = dx_map * (1 - sin(lat)) / 2.
+    surface_scale = (1.0 - np.sin(lt)) / 2.0
+    true_step = 2.0 * pixel_size * surface_scale
+    dz_dx = (terrain[r0, c0 + 1] - terrain[r0, c0 - 1]) / true_step
+    dz_dy = (terrain[r0 + 1, c0] - terrain[r0 - 1, c0]) / true_step
     slope_deg = float(np.rad2deg(np.arctan(np.hypot(dz_dx, dz_dy))))
 
     horizons = np.full(360, -90.0, dtype=np.float32)

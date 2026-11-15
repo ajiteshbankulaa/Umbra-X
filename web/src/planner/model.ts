@@ -1,14 +1,24 @@
 export type Triple = [number, number, number]
+export interface SlopeBenchmark {
+  sampleCount: number
+  medianAbsDiffDeg: number
+  p95AbsDiffDeg: number
+  maxAbsDiffDeg: number
+  pad481DemDeg: number
+  pad481LolaDeg: number
+}
 export interface Metadata {
   schema: number
   start: string
   stepMinutes: number
   count: number
+  ephemerisModel?: string
   vectorHash: string
   localHash: string
   frame: string
   station: { name: string; maskDeg: number; source: string }
   kernels: Record<string, { url: string; sha256: string }>
+  slopeBenchmark?: SlopeBenchmark | null
   observers: Triple[]
   regional: null | { radiusM: number; comparisonRadiusM: number; source: string; regional: string; distance: string; coverage: string; sensitivity: string }
 }
@@ -107,8 +117,54 @@ export function horizonAt(profile: Float32Array, az: number) {
   return profile[i] + (profile[(i+1)%360]-profile[i]) * (az-i)
 }
 
-export function diskFraction(clearance: number) {
-  const x = Math.max(-1, Math.min(1, clearance / .2665))
+export const SOLAR_HALF_DEG = 0.2665
+const SOLAR_RADIUS_M = 6.957e8
+const EARTH_RADIUS_M = 6371000
+const MIN_PHYSICAL_SUN_DIST_M = 1.0e11
+const MIN_PHYSICAL_EARTH_DIST_M = 1.0e8
+
+export function solarSemiDiameterDeg(sunDistM: number): number {
+  if (!(sunDistM > MIN_PHYSICAL_SUN_DIST_M)) return SOLAR_HALF_DEG
+  return Math.asin(Math.min(1, SOLAR_RADIUS_M / sunDistM)) / rad
+}
+
+export function earthEclipseFactorFromVecs(
+  sx: number, sy: number, sz: number,
+  ex: number, ey: number, ez: number,
+): number {
+  const dSun2 = sx * sx + sy * sy + sz * sz
+  const dEarth2 = ex * ex + ey * ey + ez * ez
+  if (!(dSun2 > MIN_PHYSICAL_SUN_DIST_M * MIN_PHYSICAL_SUN_DIST_M) ||
+      !(dEarth2 > MIN_PHYSICAL_EARTH_DIST_M * MIN_PHYSICAL_EARTH_DIST_M) ||
+      !(dSun2 > dEarth2)) {
+    return 1
+  }
+  const dSun = Math.sqrt(dSun2)
+  const dEarth = Math.sqrt(dEarth2)
+  const dot = (sx * ex + sy * ey + sz * ez) / (dSun * dEarth)
+  if (dot < 0.999) return 1
+  const usx = sx / dSun, usy = sy / dSun, usz = sz / dSun
+  const uex = ex / dEarth, uey = ey / dEarth, uez = ez / dEarth
+  const cx = usy * uez - usz * uey
+  const cy = usz * uex - usx * uez
+  const cz = usx * uey - usy * uex
+  const sep = Math.atan2(Math.hypot(cx, cy, cz), dot)
+  const rS = Math.asin(Math.min(1, SOLAR_RADIUS_M / dSun))
+  const rE = Math.asin(Math.min(1, EARTH_RADIUS_M / dEarth))
+  if (sep >= rS + rE) return 1
+  if (sep <= rE - rS) return 0
+  if (sep <= rS - rE) return Math.max(0, 1 - (rE * rE) / (rS * rS))
+  const d2 = sep * sep, rS2 = rS * rS, rE2 = rE * rE
+  const a1 = Math.acos(Math.max(-1, Math.min(1, (d2 + rS2 - rE2) / (2 * sep * rS))))
+  const a2 = Math.acos(Math.max(-1, Math.min(1, (d2 + rE2 - rS2) / (2 * sep * rE))))
+  const k = (-sep + rS + rE) * (sep + rS - rE) * (sep - rS + rE) * (sep + rS + rE)
+  const overlap = rS2 * a1 + rE2 * a2 - 0.5 * Math.sqrt(Math.max(0, k))
+  return Math.max(0, Math.min(1, 1 - overlap / (Math.PI * rS2)))
+}
+
+export function diskFraction(clearance: number, semiDiameterDeg = SOLAR_HALF_DEG) {
+  const r = semiDiameterDeg > 0 ? semiDiameterDeg : SOLAR_HALF_DEG
+  const x = Math.max(-1, Math.min(1, clearance / r))
   return (Math.acos(-x)+x*Math.sqrt(1-x*x))/Math.PI
 }
 
@@ -152,7 +208,8 @@ export interface Sky {
   dss14Access: boolean; dss65Access: boolean; dss43Access: boolean
   dsnAccess: boolean; dsnCovered: boolean; dsnMaxUp: number
   dsnActiveStation: DsnComplexName | null
-  solar: number; incidenceFactor: number; regionalComplete: boolean; obstructionM: number
+  solar: number; sunSemiDeg: number; eclipseFactor: number
+  incidenceFactor: number; regionalComplete: boolean; obstructionM: number
 }
 function directionOffset(
   px: number,
@@ -280,6 +337,13 @@ function sample(
     observer.coverage, 0, mask, sigma, station, stationHorizon, stationUp,
   )
 
+  const rx = frame.r * frame.up[0], ry = frame.r * frame.up[1], rz = frame.r * frame.up[2]
+  const sx = vectors[i] - rx, sy = vectors[i + 1] - ry, sz = vectors[i + 2] - rz
+  const ex = vectors[i + 3] - rx, ey = vectors[i + 4] - ry, ez = vectors[i + 5] - rz
+  const sunSemiDeg = solarSemiDiameterDeg(Math.hypot(sx, sy, sz))
+  const eclipseFactor = earthEclipseFactorFromVecs(sx, sy, sz, ex, ey, ez)
+  const solar = diskFraction(sunMargin, sunSemiDeg) * eclipseFactor
+
   return {sun, earth, station, sunHorizon, earthHorizon, sunSigma, earthSigma, sunMargin, earthMargin, stationUp,
     stationCovered: dsn.dss14Covered,
     stationAccess: dsn.dss14Access,
@@ -290,7 +354,7 @@ function sample(
     dsnCovered: dsn.dsnCovered,
     dsnMaxUp: dsn.dsnMaxUp,
     dsnActiveStation: dsn.active,
-    solar: diskFraction(sunMargin), incidenceFactor: arrayEfficiency(sun.el, arrayMode),
+    solar, sunSemiDeg, eclipseFactor, incidenceFactor: arrayEfficiency(sun.el, arrayMode),
     regionalComplete: covered(sun.az) && covered(earth.az),
     obstructionM: observer.distance[Math.round(earth.az)%360] }
 }
@@ -379,7 +443,7 @@ export function analyze(observer: Observer, vectors: Float64Array, start: number
     minSunEl = Math.min(minSunEl, s.sun.el)
     maxEarthEl = Math.max(maxEarthEl, s.earth.el)
     minEarthEl = Math.min(minEarthEl, s.earth.el)
-    const d=diskFraction(s.sun.el-(horizonAt(observer.reference,s.sun.az)+sigma*s.sunSigma))<solarThreshold
+    const d=diskFraction(s.sun.el-(horizonAt(observer.reference,s.sun.az)+sigma*s.sunSigma), s.sunSemiDeg)*s.eclipseFactor<solarThreshold
     const e=s.earth.el<=(horizonAt(observer.reference,s.earth.az)+sigma*s.earthSigma)
     referenceDark += +d
     referenceEarth += +e
@@ -424,11 +488,17 @@ export function searchObserver(observer: Observer, vectors: Float64Array, steps:
   const n = meta.count-1
   const sun = new Float64Array(n), earth = new Float64Array(n)
   const gaps = new Uint32Array(n+1)
+  const rx = frame.r * frame.up[0], ry = frame.r * frame.up[1], rz = frame.r * frame.up[2]
   for (let i=0; i<n; i++) {
-    const a=direction(vectors,i*12,frame), b=direction(vectors,i*12+3,frame)
+    const off = i*12
+    const a=direction(vectors,off,frame), b=direction(vectors,off+3,frame)
+    const sx = vectors[off] - rx, sy = vectors[off + 1] - ry, sz = vectors[off + 2] - rz
+    const ex = vectors[off + 3] - rx, ey = vectors[off + 4] - ry, ez = vectors[off + 5] - rz
+    const sunSemi = solarSemiDiameterDeg(Math.hypot(sx, sy, sz))
+    const ec = earthEclipseFactorFromVecs(sx, sy, sz, ex, ey, ez)
     const sunErr = observer.horizonError ? horizonAt(observer.horizonError, a.az) : 0
     const earthErr = observer.horizonError ? horizonAt(observer.horizonError, b.az) : 0
-    sun[i]=+(diskFraction(a.el-(horizonAt(observer.horizon,a.az)+sigma*sunErr))<solarThreshold)
+    sun[i]=+(diskFraction(a.el-(horizonAt(observer.horizon,a.az)+sigma*sunErr), sunSemi)*ec<solarThreshold)
     earth[i]=+(b.el<=horizonAt(observer.horizon,b.az)+sigma*earthErr)
     gaps[i+1]=gaps[i]+ +(!(observer.coverage[Math.floor(a.az)] && observer.coverage[Math.ceil(a.az)%360] &&
       observer.coverage[Math.floor(b.az)] && observer.coverage[Math.ceil(b.az)%360]))
@@ -528,8 +598,10 @@ export function searchObserverDual(observer: Observer, vectors: Float64Array, st
 
     const sh96 = h96[si] + (h96[siNext] - h96[si]) * sf + sErr
     const sh48 = h48[si] + (h48[siNext] - h48[si]) * sf + sErr
-    sun96[i] = diskFraction(sel - sh96) < solarThreshold ? 1 : 0
-    sun48[i] = diskFraction(sel - sh48) < solarThreshold ? 1 : 0
+    const sunSemi = solarSemiDiameterDeg(Math.hypot(sx, sy, sz))
+    const ec = earthEclipseFactorFromVecs(sx, sy, sz, ex, ey, ez)
+    sun96[i] = diskFraction(sel - sh96, sunSemi) * ec < solarThreshold ? 1 : 0
+    sun48[i] = diskFraction(sel - sh48, sunSemi) * ec < solarThreshold ? 1 : 0
 
     const eh96 = h96[ei] + (h96[eiNext] - h96[ei]) * ef + eErr
     const eh48 = h48[ei] + (h48[eiNext] - h48[ei]) * ef + eErr
@@ -593,6 +665,7 @@ export function evaluateWindowSummary(
   sigma = 0,
 ) {
   const frame = basis(observer)
+  const rx = frame.r * frame.up[0], ry = frame.r * frame.up[1], rz = frame.r * frame.up[2]
   const dt = meta.stepMinutes / 60
   let darkRun = 0, maxDark = 0, earthRun = 0, maxEarth = 0
   let refDarkRun = 0, refMaxDark = 0, refEarthRun = 0, refMaxEarth = 0
@@ -605,13 +678,17 @@ export function evaluateWindowSummary(
     const sun = direction(vectors, i, frame)
     const earth = direction(vectors, i + 3, frame)
     const station = direction(vectors, i + 6, frame)
+    const sx = vectors[i] - rx, sy = vectors[i + 1] - ry, sz = vectors[i + 2] - rz
+    const ex = vectors[i + 3] - rx, ey = vectors[i + 4] - ry, ez = vectors[i + 5] - rz
+    const sunSemi = solarSemiDiameterDeg(Math.hypot(sx, sy, sz))
+    const ec = earthEclipseFactorFromVecs(sx, sy, sz, ex, ey, ez)
     const sunErr = sigma !== 0 && observer.horizonError ? horizonAt(observer.horizonError, sun.az) * sigma : 0
     const earthErr = sigma !== 0 && observer.horizonError ? horizonAt(observer.horizonError, earth.az) * sigma : 0
     const stErr = sigma !== 0 && observer.horizonError ? horizonAt(observer.horizonError, station.az) * sigma : 0
 
-    const sDark = diskFraction(sun.el - (horizonAt(observer.horizon, sun.az) + sunErr)) < solarThreshold
+    const sDark = diskFraction(sun.el - (horizonAt(observer.horizon, sun.az) + sunErr), sunSemi) * ec < solarThreshold
     const eBlock = earth.el <= horizonAt(observer.horizon, earth.az) + earthErr
-    const rsDark = diskFraction(sun.el - (horizonAt(observer.reference, sun.az) + sunErr)) < solarThreshold
+    const rsDark = diskFraction(sun.el - (horizonAt(observer.reference, sun.az) + sunErr), sunSemi) * ec < solarThreshold
     const reBlock = earth.el <= horizonAt(observer.reference, earth.az) + earthErr
 
     if (!sDark) solarSteps++
@@ -666,6 +743,7 @@ export function computePadViabilityMap(opts: {
   const nodeCount = meta.observers.length
   const viability = new Uint8Array(nodeCount)
   const solarPct = new Uint8Array(nodeCount)
+  const earthPct = new Uint8Array(nodeCount)
   const startStep = startHour * Math.round(60 / meta.stepMinutes)
   const allowedDark = Math.floor((limits.dark * 60) / meta.stepMinutes + 1e-9)
   const allowedEarth = Math.floor((limits.earth * 60) / meta.stepMinutes + 1e-9)
@@ -687,10 +765,15 @@ export function computePadViabilityMap(opts: {
     let darkRun = 0, maxDark = 0, earthRun = 0, maxEarth = 0
     let refDarkRun = 0, refMaxDark = 0, refEarthRun = 0, refMaxEarth = 0
     let solarSteps = 0
+    let earthSteps = 0
     let hasGap = false
 
     for (let k = 0; k < steps; k++) {
       const off = (startStep + k) * 12
+      const sx = vectors[off] - rx, sy = vectors[off + 1] - ry, sz = vectors[off + 2] - rz
+      const ex = vectors[off + 3] - rx, ey = vectors[off + 4] - ry, ez = vectors[off + 5] - rz
+      const sunSemi = solarSemiDiameterDeg(Math.hypot(sx, sy, sz))
+      const ec = earthEclipseFactorFromVecs(sx, sy, sz, ex, ey, ez)
       const sun = directionOffset(vectors[off], vectors[off + 1], vectors[off + 2], rx, ry, rz, e0, e1, e2, n0, n1, n2, u0, u1, u2)
       const earth = directionOffset(vectors[off + 3], vectors[off + 4], vectors[off + 5], rx, ry, rz, e0, e1, e2, n0, n1, n2, u0, u1, u2)
 
@@ -704,12 +787,13 @@ export function computePadViabilityMap(opts: {
       const eh96 = horizons[hOff + ei] + (horizons[hOff + eiNext] - horizons[hOff + ei]) * ef + eErr
       const eh48 = reference[hOff + ei] + (reference[hOff + eiNext] - reference[hOff + ei]) * ef + eErr
 
-      const sDark = diskFraction(sun.el - sh96) < solarThreshold
+      const sDark = diskFraction(sun.el - sh96, sunSemi) * ec < solarThreshold
       const eBlock = earth.el <= eh96
-      const rsDark = diskFraction(sun.el - sh48) < solarThreshold
+      const rsDark = diskFraction(sun.el - sh48, sunSemi) * ec < solarThreshold
       const reBlock = earth.el <= eh48
 
       if (!sDark) solarSteps++
+      if (!eBlock) earthSteps++
       darkRun = sDark ? darkRun + 1 : 0; if (darkRun > maxDark) maxDark = darkRun
       earthRun = eBlock ? earthRun + 1 : 0; if (earthRun > maxEarth) maxEarth = earthRun
       refDarkRun = rsDark ? refDarkRun + 1 : 0; if (refDarkRun > refMaxDark) refMaxDark = refDarkRun
@@ -722,6 +806,7 @@ export function computePadViabilityMap(opts: {
     }
 
     solarPct[node] = steps > 0 ? Math.round((solarSteps / steps) * 100) : 0
+    earthPct[node] = steps > 0 ? Math.round((earthSteps / steps) * 100) : 0
     if (hasGap || slopeBad || maxDark > allowedDark) {
       viability[node] = 0
     } else if (refMaxDark <= allowedDark && maxEarth <= allowedEarth && refMaxEarth <= allowedEarth) {
@@ -730,7 +815,7 @@ export function computePadViabilityMap(opts: {
       viability[node] = 1
     }
   }
-  return { viability, solarPct }
+  return { viability, solarPct, earthPct }
 }
 
 export function costTradeoff(massAvoided: number, incrementalEquipment: number, rate: number | null) {

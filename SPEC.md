@@ -1,6 +1,8 @@
 # Umbra-X static site contract
 
-Each bundle lives at `web/public/data/<site_id>/`. Vite serves it as `data/<site_id>/` relative to the app base URL. The site ID is a lowercase alphanumeric slug with optional hyphen-separated segments. A bundle consists of the seven files below.
+> **Historical Scope Note:** This document archives the legacy hourly (`720` steps, `5.12 km`) per-site binary bundle layout (`umbra-compile`, `DE421` `MOON_ME`; the legacy `?legacy=1` UI route has been removed). The active **Planner Release** (`web/public/data/planner-release/`, five-minute `DE440` `MOON_ME_DE440_ME421`, `96 km` hybrid terrain, content-addressed shared binaries, `planner.json`) is documented in [PLANNER.md](PLANNER.md) and [docs/SCIENTIFIC_METHOD.md](docs/SCIENTIFIC_METHOD.md).
+
+Each legacy bundle lives at `web/public/data/<site_id>/`. Vite serves it as `data/<site_id>/` relative to the app base URL. The site ID is a lowercase alphanumeric slug with optional hyphen-separated segments. A bundle consists of the seven files below.
 
 ## manifest.json
 
@@ -73,7 +75,7 @@ The radiosity solver accepts direct incident flux, patch albedo and view factors
 
 ## Source verification
 
-- NASA’s challenge asks for comparisons of landing sites and dates using terrain-relative Sun and Earth visibility. The current app displays the center candidate of one compiled site at a time. [2026 Lunar Landing Site Navigator](https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/)
+- NASA’s challenge asks for comparisons of landing sites and dates using terrain-relative Sun and Earth visibility. The active Decision Planner (`planner-release/`) compares pairs of pads, launch windows, terrain extents, and sites across 30 days (`8,641` five-minute steps), replacing the retired `?legacy=1` workstation documented historically above. [2026 Lunar Landing Site Navigator](https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/)
 - Barker et al. (2023) describe updated polar LOLA terrain, uncertainties and a 20 m PSR map. Their 2021 four-site study analyzes how height errors affect illumination. A raster’s sampling interval can be finer than the effective terrain resolution. Preserve product filenames, versions and units with each input. [Barker et al. 2023](https://doi.org/10.3847/PSJ/acf3e1), [Barker et al. 2021](https://doi.org/10.1016/j.pss.2020.105119), [NASA Goddard terrain products](https://pgda.gsfc.nasa.gov/products/90)
 - Gläser et al. (2018) identify favorable locations on Shackleton rim and Connecting Ridge from simulations spanning 20 years. A proposed pair’s complementary coverage requires evaluating the union of its time-aligned illumination samples over the mission period. The 30-day bundle cannot establish permanent shadow. [Gläser et al. 2018](https://ntrs.nasa.gov/api/citations/20170007365/downloads/20170007365.pdf)
 - Diviner identifies temperatures that can preserve volatiles. ShadowCam images use scattered light and their radiance also depends on surface reflectance and viewing geometry. Local ice abundance requires independent evidence. [Paige et al. 2010](https://doi.org/10.1126/science.1187726), [Li et al. 2026](https://doi.org/10.1126/sciadv.aec8211)

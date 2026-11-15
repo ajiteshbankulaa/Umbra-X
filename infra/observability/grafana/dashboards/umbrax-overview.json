@@ -1,0 +1,62 @@
+{
+  "title": "Umbra-X Production Scientific Platform",
+  "uid": "umbrax-ops-v1",
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Study Queue Depth by Lifecycle State",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 7 },
+      "targets": [{ "expr": "umbrax_study_queue_depth", "legendFormat": "{{state}}" }]
+    },
+    {
+      "id": 2,
+      "title": "API Request Rate by Route & Status",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 7 },
+      "targets": [{ "expr": "sum by (route, status) (rate(umbrax_http_requests_total[5m]))", "legendFormat": "{{route}} [{{status}}]" }]
+    },
+    {
+      "id": 3,
+      "title": "API p95 Latency (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 7 },
+      "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, route) (rate(umbrax_http_request_duration_ms_bucket[5m])))", "legendFormat": "p95 {{route}}" }]
+    },
+    {
+      "id": 4,
+      "title": "Study Execution p95 Latency & Retries",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 7, "w": 8, "h": 7 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le, kind) (rate(umbrax_study_job_duration_ms_bucket[5m])))", "legendFormat": "job p95 {{kind}}" },
+        { "expr": "increase(umbrax_study_job_retries_total[5m])", "legendFormat": "retries {{kind}}" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "RAG p95 Latency (ms) & Research Cache Ratio",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 7, "w": 8, "h": 7 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le, mode) (rate(umbrax_rag_latency_ms_bucket[5m])))", "legendFormat": "rag p95 {{mode}}" },
+        { "expr": "sum(rate(umbrax_cache_events_total{outcome=\"hit\"}[5m])) / clamp_min(sum(rate(umbrax_cache_events_total[5m])), 1e-6)", "legendFormat": "cache hit ratio" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Browser WASM Fallbacks & Data Version Errors",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 7, "w": 8, "h": 7 },
+      "targets": [
+        { "expr": "sum(umbrax_wasm_fallbacks_total)", "legendFormat": "WASM Fallbacks" },
+        { "expr": "sum(umbrax_data_version_errors_total)", "legendFormat": "Version/SHA Errors" },
+        { "expr": "sum(umbrax_auth_rejections_total)", "legendFormat": "Auth Rejections" }
+      ]
+    }
+  ]
+}

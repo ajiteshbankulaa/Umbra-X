@@ -3,6 +3,10 @@ use std::f64::consts::PI;
 const RADIUS_M: f64 = 1_737_400.0;
 const RAD: f64 = PI / 180.0;
 const SOLAR_HALF_DEG: f64 = 0.2665;
+const SOLAR_RADIUS_M: f64 = 6.957e8;
+const EARTH_RADIUS_M: f64 = 6_371_000.0;
+const MIN_PHYSICAL_SUN_DIST_M: f64 = 1.0e11;
+const MIN_PHYSICAL_EARTH_DIST_M: f64 = 1.0e8;
 const SOLAR_THRESHOLD: f64 = 0.1;
 
 #[inline]
@@ -20,9 +24,73 @@ pub fn horizon_at(profile: &[f32; 360], az: f64) -> f64 {
 }
 
 #[inline]
-pub fn disk_fraction(clearance_deg: f64) -> f64 {
-    let x = (clearance_deg / SOLAR_HALF_DEG).clamp(-1.0, 1.0);
+pub fn solar_semi_diameter_deg(sun_dist_m: f64) -> f64 {
+    if !(sun_dist_m > MIN_PHYSICAL_SUN_DIST_M) {
+        return SOLAR_HALF_DEG;
+    }
+    (SOLAR_RADIUS_M / sun_dist_m).min(1.0).asin() / RAD
+}
+
+#[inline]
+pub fn earth_eclipse_factor_from_vecs(
+    sx: f64, sy: f64, sz: f64,
+    ex: f64, ey: f64, ez: f64,
+) -> f64 {
+    let d_sun2 = sx * sx + sy * sy + sz * sz;
+    let d_earth2 = ex * ex + ey * ey + ez * ez;
+    if !(d_sun2 > MIN_PHYSICAL_SUN_DIST_M * MIN_PHYSICAL_SUN_DIST_M)
+        || !(d_earth2 > MIN_PHYSICAL_EARTH_DIST_M * MIN_PHYSICAL_EARTH_DIST_M)
+        || !(d_sun2 > d_earth2)
+    {
+        return 1.0;
+    }
+    let d_sun = d_sun2.sqrt();
+    let d_earth = d_earth2.sqrt();
+    let dot = (sx * ex + sy * ey + sz * ez) / (d_sun * d_earth);
+    if dot < 0.999 {
+        return 1.0;
+    }
+    let (usx, usy, usz) = (sx / d_sun, sy / d_sun, sz / d_sun);
+    let (uex, uey, uez) = (ex / d_earth, ey / d_earth, ez / d_earth);
+    let cx = usy * uez - usz * uey;
+    let cy = usz * uex - usx * uez;
+    let cz = usx * uey - usy * uex;
+    let sep = (cx * cx + cy * cy + cz * cz).sqrt().atan2(dot);
+    let r_s = (SOLAR_RADIUS_M / d_sun).min(1.0).asin();
+    let r_e = (EARTH_RADIUS_M / d_earth).min(1.0).asin();
+    if sep >= r_s + r_e {
+        return 1.0;
+    }
+    if sep <= r_e - r_s {
+        return 0.0;
+    }
+    if sep <= r_s - r_e {
+        return (1.0 - (r_e * r_e) / (r_s * r_s)).max(0.0);
+    }
+    let d2 = sep * sep;
+    let r_s2 = r_s * r_s;
+    let r_e2 = r_e * r_e;
+    let a1 = ((d2 + r_s2 - r_e2) / (2.0 * sep * r_s)).clamp(-1.0, 1.0).acos();
+    let a2 = ((d2 + r_e2 - r_s2) / (2.0 * sep * r_e)).clamp(-1.0, 1.0).acos();
+    let k = (-sep + r_s + r_e) * (sep + r_s - r_e) * (sep - r_s + r_e) * (sep + r_s + r_e);
+    let overlap = r_s2 * a1 + r_e2 * a2 - 0.5 * k.max(0.0).sqrt();
+    (1.0 - overlap / (PI * r_s2)).clamp(0.0, 1.0)
+}
+
+#[inline]
+pub fn disk_fraction_with_radius(clearance_deg: f64, semi_diameter_deg: f64) -> f64 {
+    let r = if semi_diameter_deg > 0.0 {
+        semi_diameter_deg
+    } else {
+        SOLAR_HALF_DEG
+    };
+    let x = (clearance_deg / r).clamp(-1.0, 1.0);
     ((-x).acos() + x * (1.0 - x * x).sqrt()) / PI
+}
+
+#[inline]
+pub fn disk_fraction(clearance_deg: f64) -> f64 {
+    disk_fraction_with_radius(clearance_deg, SOLAR_HALF_DEG)
 }
 
 pub struct Scratch {
@@ -162,8 +230,10 @@ pub fn search_observer_dual_core(
 
         let sh96 = (h96[si] as f64) + ((h96[si_next] as f64) - (h96[si] as f64)) * sf + s_err;
         let sh48 = (h48[si] as f64) + ((h48[si_next] as f64) - (h48[si] as f64)) * sf + s_err;
-        sc.sun96[i] = u8::from(disk_fraction(sel - sh96) < SOLAR_THRESHOLD);
-        sc.sun48[i] = u8::from(disk_fraction(sel - sh48) < SOLAR_THRESHOLD);
+        let sun_semi = solar_semi_diameter_deg((sx * sx + sy * sy + sz * sz).sqrt());
+        let ec = earth_eclipse_factor_from_vecs(sx, sy, sz, ex, ey, ez);
+        sc.sun96[i] = u8::from(disk_fraction_with_radius(sel - sh96, sun_semi) * ec < SOLAR_THRESHOLD);
+        sc.sun48[i] = u8::from(disk_fraction_with_radius(sel - sh48, sun_semi) * ec < SOLAR_THRESHOLD);
 
         let eh96 = (h96[ei] as f64) + ((h96[ei_next] as f64) - (h96[ei] as f64)) * ef + e_err;
         let eh48 = (h48[ei] as f64) + ((h48[ei_next] as f64) - (h48[ei] as f64)) * ef + e_err;
@@ -250,6 +320,14 @@ struct WasmBuffers {
     cov: [u8; 360],
     scratch: Scratch,
     out_starts: Vec<i32>,
+    pack_coords: Vec<f64>,
+    pack_slopes: Vec<f32>,
+    pack_h96: Vec<f32>,
+    pack_h48: Vec<f32>,
+    pack_err: Vec<f32>,
+    pack_cov: Vec<u8>,
+    pack_counts: Vec<i32>,
+    pack_starts: Vec<i32>,
 }
 
 struct SyncCell(UnsafeCell<WasmBuffers>);
@@ -273,6 +351,14 @@ static WASM_STATE: SyncCell = SyncCell(UnsafeCell::new(WasmBuffers {
         next_e48: Vec::new(),
     },
     out_starts: Vec::new(),
+    pack_coords: Vec::new(),
+    pack_slopes: Vec::new(),
+    pack_h96: Vec::new(),
+    pack_h48: Vec::new(),
+    pack_err: Vec::new(),
+    pack_cov: Vec::new(),
+    pack_counts: Vec::new(),
+    pack_starts: Vec::new(),
 }));
 
 #[no_mangle]
@@ -348,6 +434,147 @@ pub extern "C" fn search_pad_dual(
         &mut st.out_starts,
     );
     st.out_starts.len()
+}
+
+#[no_mangle]
+pub extern "C" fn alloc_site_pack(node_count: usize) -> usize {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    st.pack_coords.resize(node_count * 3, 0.0);
+    st.pack_slopes.resize(node_count, -1.0);
+    st.pack_h96.resize(node_count * 360, 0.0);
+    st.pack_h48.resize(node_count * 360, 0.0);
+    st.pack_err.resize(node_count * 360, 0.0);
+    st.pack_cov.resize(node_count * 360, 0);
+    st.pack_counts.resize(node_count, 0);
+    st.pack_starts.clear();
+    node_count
+}
+
+#[no_mangle]
+pub extern "C" fn pack_coords_ptr() -> *mut f64 {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    st.pack_coords.as_mut_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pack_slopes_ptr() -> *mut f32 {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    st.pack_slopes.as_mut_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pack_h96_ptr() -> *mut f32 {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    st.pack_h96.as_mut_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pack_h48_ptr() -> *mut f32 {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    st.pack_h48.as_mut_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pack_err_ptr() -> *mut f32 {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    st.pack_err.as_mut_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pack_cov_ptr() -> *mut u8 {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    st.pack_cov.as_mut_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pack_counts_ptr() -> *const i32 {
+    let st = unsafe { &*WASM_STATE.0.get() };
+    st.pack_counts.as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pack_starts_ptr() -> *const i32 {
+    let st = unsafe { &*WASM_STATE.0.get() };
+    st.pack_starts.as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn search_site_pack(
+    node_count: usize,
+    mast_m: f64,
+    n: usize,
+    steps: usize,
+    step_minutes: usize,
+    dark_limit_h: f64,
+    earth_limit_h: f64,
+    slope_limit: f64,
+    sigma: f64,
+    has_slopes: i32,
+    has_err: i32,
+    start_min: i32,
+    start_max: i32,
+) -> usize {
+    let st = unsafe { &mut *WASM_STATE.0.get() };
+    if node_count == 0
+        || st.pack_coords.len() < node_count * 3
+        || st.pack_h96.len() < node_count * 360
+        || st.pack_h48.len() < node_count * 360
+        || st.pack_cov.len() < node_count * 360
+    {
+        st.pack_counts.fill(0);
+        st.pack_starts.clear();
+        return 0;
+    }
+    st.pack_counts.resize(node_count, 0);
+    st.pack_starts.clear();
+
+    for node in 0..node_count {
+        if has_slopes != 0 {
+            let s_val = st.pack_slopes[node] as f64;
+            if s_val >= 0.0 && s_val > slope_limit {
+                st.pack_counts[node] = 0;
+                continue;
+            }
+        }
+        let c_off = node * 3;
+        let p_off = node * 360;
+        let h96: &[f32; 360] = st.pack_h96[p_off..p_off + 360].try_into().unwrap();
+        let h48: &[f32; 360] = st.pack_h48[p_off..p_off + 360].try_into().unwrap();
+        let cov: &[u8; 360] = st.pack_cov[p_off..p_off + 360].try_into().unwrap();
+        let err_opt: Option<&[f32; 360]> = if has_err != 0 && st.pack_err.len() >= p_off + 360 {
+            Some(st.pack_err[p_off..p_off + 360].try_into().unwrap())
+        } else {
+            None
+        };
+        search_observer_dual_core(
+            st.pack_coords[c_off],
+            st.pack_coords[c_off + 1],
+            st.pack_coords[c_off + 2],
+            mast_m,
+            &st.vectors,
+            n,
+            steps,
+            step_minutes,
+            dark_limit_h,
+            earth_limit_h,
+            sigma,
+            h96,
+            h48,
+            err_opt,
+            cov,
+            &mut st.scratch,
+            &mut st.out_starts,
+        );
+        let mut count = 0i32;
+        for &s in &st.out_starts {
+            if s >= start_min && s <= start_max {
+                st.pack_starts.push(s);
+                count += 1;
+            }
+        }
+        st.pack_counts[node] = count;
+    }
+    st.pack_starts.len()
 }
 
 #[cfg(test)]
@@ -446,5 +673,82 @@ mod tests {
             &mut out,
         );
         assert!(out.is_empty());
+    }
+
+    #[test]
+    fn test_solar_semidiameter_and_eclipse_physics() {
+        // Synthetic test distances keep legacy 0.2665 deg / un-eclipsed behavior.
+        assert!((solar_semi_diameter_deg(1e8) - 0.2665).abs() < 1e-12);
+        assert_eq!(earth_eclipse_factor_from_vecs(1e8, 0.0, 0.0, 1e8, 0.0, 0.0), 1.0);
+
+        // Real ephemeris perihelion Sun distance (~0.983 AU = 1.471e11 m -> ~0.271 deg).
+        let semi = solar_semi_diameter_deg(1.471e11);
+        assert!(semi > 0.270 && semi < 0.272);
+
+        // Collinear total lunar eclipse: Sun at 1.496e11 m, Earth at 3.844e8 m.
+        assert_eq!(
+            earth_eclipse_factor_from_vecs(1.496e11, 0.0, 0.0, 3.844e8, 0.0, 0.0),
+            0.0
+        );
+
+        // Off-axis non-eclipsed geometry (> 2 deg apart).
+        let ang = 2.0 * RAD;
+        assert_eq!(
+            earth_eclipse_factor_from_vecs(
+                1.496e11,
+                0.0,
+                0.0,
+                3.844e8 * ang.cos(),
+                3.844e8 * ang.sin(),
+                0.0
+            ),
+            1.0
+        );
+
+        // Grazing penumbral/partial eclipse (~1.0 deg angular separation: rE~0.95 deg, rS~0.2665 deg).
+        let graze = 1.0 * RAD;
+        let partial = earth_eclipse_factor_from_vecs(
+            1.496e11,
+            0.0,
+            0.0,
+            3.844e8 * graze.cos(),
+            3.844e8 * graze.sin(),
+            0.0,
+        );
+        assert!(partial > 0.0 && partial < 1.0);
+    }
+
+    #[test]
+    fn test_site_pack_batch_parity() {
+        let n = 24usize;
+        let vec_ptr = alloc_vectors(n * 12);
+        let r = 1e8f64;
+        let el = 1.0f64 * RAD;
+        unsafe {
+            let vecs = std::slice::from_raw_parts_mut(vec_ptr, n * 12);
+            for i in 0..n {
+                vecs[i * 12] = r * el.sin();
+                vecs[i * 12 + 2] = r * el.cos();
+                vecs[i * 12 + 3] = r * el.sin();
+                vecs[i * 12 + 5] = r * el.cos();
+            }
+        }
+        alloc_site_pack(2);
+        unsafe {
+            let coords = std::slice::from_raw_parts_mut(pack_coords_ptr(), 6);
+            coords.copy_from_slice(&[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
+            let slopes = std::slice::from_raw_parts_mut(pack_slopes_ptr(), 2);
+            slopes.copy_from_slice(&[2.0, 8.0]);
+            let cov = std::slice::from_raw_parts_mut(pack_cov_ptr(), 720);
+            cov.fill(1);
+        }
+        let total = search_site_pack(2, 0.0, n, 12, 5, 0.0, 0.0, 5.0, 0.0, 1, 0, 0, 24);
+        assert_eq!(total, 2);
+        unsafe {
+            let counts = std::slice::from_raw_parts(pack_counts_ptr(), 2);
+            let starts = std::slice::from_raw_parts(pack_starts_ptr(), total);
+            assert_eq!(counts, &[2, 0]);
+            assert_eq!(starts, &[0, 12]);
+        }
     }
 }

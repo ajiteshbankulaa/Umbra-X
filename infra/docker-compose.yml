@@ -1,0 +1,123 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.web
+    ports:
+      - "8080:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    mem_limit: 256m
+    cpus: 0.50
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.api
+    environment:
+      UMBRA_HOST: "0.0.0.0"
+      UMBRA_PORT: "8787"
+      UMBRA_API_TOKEN: "${UMBRA_API_TOKEN:-umbra_local_dev_token_min_24_chars}"
+      UMBRA_EMBEDDED_WORKER: "0"
+      UMBRA_STUDY_DB: "/data/studies.sqlite"
+      UMBRA_ARTIFACTS_DIR: "/data/artifacts"
+      UMBRA_TERRAIN_URL: "http://terrain:8788"
+      UMBRA_DISABLE_PYTHON_RAG: "1"
+      UMBRA_MODEL_URL: "${UMBRA_MODEL_URL:-}"
+      UMBRA_MODEL: "${UMBRA_MODEL:-}"
+      UMBRA_MODEL_KEY: "${UMBRA_MODEL_KEY:-}"
+    depends_on:
+      terrain:
+        condition: service_healthy
+    ports:
+      - "8787:8787"
+    volumes:
+      - umbra-state:/data
+    mem_limit: 512m
+    cpus: 1.00
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8787/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.worker
+    environment:
+      UMBRA_STUDY_DB: "/data/studies.sqlite"
+      UMBRA_ARTIFACTS_DIR: "/data/artifacts"
+      UMBRA_WORKER_LEASE_MS: "15000"
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - umbra-state:/data
+    deploy:
+      replicas: 2
+    mem_limit: 1024m
+    cpus: 1.00
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  terrain:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.terrain
+    environment:
+      UMBRA_HOST: "0.0.0.0"
+      PORT: "8788"
+      UMBRA_TERRAIN_TIF: "/data/terrain.tif"
+      UMBRA_TERRAIN_PREWARM: "1"
+    ports:
+      - "8788:8788"
+    mem_limit: 2048m
+    cpus: 1.00
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8788/healthz', timeout=2)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    ports:
+      - "9090:9090"
+    mem_limit: 256m
+    cpus: 0.25
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-umbra_local_grafana}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    mem_limit: 256m
+    cpus: 0.25
+    restart: unless-stopped
+
+volumes:
+  umbra-state:

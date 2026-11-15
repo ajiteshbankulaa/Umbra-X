@@ -1,69 +1,73 @@
-/* UMBRA X Design System — Dark-First Swiss Editorial × Chiaroscuro Observatory
- * "Darkness is the environment. Light is the information. Geometry is the language."
+/* UMBRA X Design System — Obsidian Flat Minimalism × Neo-Brutalism
+ * Solid flat charcoal surfaces, crisp 1px borders, rectilinear edges, restrained micro-interactions.
  */
 
 .mission {
-  /* Void & Graphite Surfaces */
-  --paper-0: #07080b;
-  --paper-1: #0e1014;
-  --paper-2: #15181e;
-  --paper-3: #1c2028;
-  --paper-4: #242934;
+  /* Obsidian Depth Flat Surfaces */
+  --paper-0: #0f0f0f;
+  --paper-1: #161616;
+  --paper-2: #1f1f1f;
+  --paper-3: #282828;
+  --paper-4: #323232;
 
-  /* Lunar White, Regolith Gray & Structural Hairlines */
-  --ink-0: #ecebe6;
-  --ink-1: #c5c8ce;
-  --ink-2: #8e949f;
-  --ink-3: #686e78;
-  --rule-subtle: rgba(236, 235, 230, 0.09);
-  --rule-strong: rgba(236, 235, 230, 0.19);
-  --rule-heavy: rgba(236, 235, 230, 0.34);
+  /* Crisp Monochrome Ink & Hard Structural Rules */
+  --ink-0: #f5f5f5;
+  --ink-1: #d0d0d0;
+  --ink-2: #8c8c8c;
+  --ink-3: #666666;
+  --rule-subtle: #242424;
+  --rule-strong: #333333;
+  --rule-heavy: #454545;
 
-  /* Optical Deep-Space Viewport Plate */
-  --plate-bg: #050608;
-  --plate-surface: #0e1118;
-  --plate-ink: #ecebe6;
-  --plate-muted: #8e949f;
-  --plate-rule: rgba(236, 235, 230, 0.15);
-  --canvas-plate: #080a0f;
-  --surface-glass: rgba(14, 16, 20, 0.9);
-  --surface-elevated: rgba(21, 24, 30, 0.96);
+  /* Optical Viewport Plate */
+  --plate-bg: #0a0a0a;
+  --plate-surface: #141414;
+  --plate-ink: #f5f5f5;
+  --plate-muted: #8c8c8c;
+  --plate-rule: #2e2e2e;
+  --canvas-plate: #0a0a0a;
+  --surface-glass: #141414;
+  --surface-elevated: #1f1f1f;
 
-  /* Calibrated Scientific & Illumination Semantics */
-  --solar-ink: #ffc36d;
-  --solar-stroke: #f5a623;
-  --solar-fill: rgba(245, 166, 35, 0.14);
-  --solar-bar: #e59922;
-  --solar-glow: #ffc36d;
+  /* Calibrated Accent & Telemetry Semantics */
+  --accent: #00d4aa;
+  --accent-bg: rgba(0, 212, 170, 0.12);
+  --accent-border: rgba(0, 212, 170, 0.48);
 
-  --earth-ink: #8ec9ff;
-  --earth-stroke: #60a5fa;
-  --earth-fill: rgba(96, 165, 250, 0.13);
-  --earth-glow: #8ec9ff;
+  --solar-ink: #f5a623;
+  --solar-stroke: #e59922;
+  --solar-fill: rgba(245, 166, 35, 0.12);
+  --solar-bar: #d97706;
+  --solar-glow: #f5a623;
 
-  --good-ink: #34d399;
-  --good-bg: rgba(52, 211, 153, 0.1);
-  --dsn-ink: #2dd4bf;
+  --earth-ink: #47a3d8;
+  --earth-stroke: #388ec2;
+  --earth-fill: rgba(71, 163, 216, 0.12);
+  --earth-glow: #47a3d8;
 
-  --warn-ink: #fbbf24;
-  --warn-bg: rgba(251, 191, 36, 0.1);
+  --good-ink: #22c55e;
+  --good-bg: rgba(34, 197, 94, 0.1);
+  --dsn-ink: #00d4aa;
 
-  --danger-ink: #f87171;
-  --danger-bg: rgba(248, 113, 113, 0.11);
+  --warn-ink: #eab308;
+  --warn-bg: rgba(234, 179, 8, 0.1);
 
-  /* Typography */
-  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --danger-ink: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+
+  /* Single Sans Family + Tabular Mono for Readouts */
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: var(--font-sans);
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
   --fs-xs: 11px;
   --fs-sm: 12px;
-  --fs-base: 13.5px;
+  --fs-base: 14px;
   --fs-md: 15px;
-  --fs-lg: 19px;
-  --fs-display: clamp(32px, 3.6vw, 48px);
+  --fs-lg: 18px;
+  --fs-display: clamp(28px, 3vw, 38px);
 
-  /* Strict 4/8px Spacing Scale */
+  /* Consistent 4/8px Spacing Scale */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -71,14 +75,14 @@
   --sp-5: 24px;
   --sp-6: 32px;
 
-  /* Rectilinear Geometry */
+  /* Crisp Neo-Brutalist Rectilinear Geometry */
   --r-0: 0px;
   --r-xs: 2px;
   --r-sm: 4px;
 
-  /* Motion */
-  --ease-swiss: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Crisp Flat Transitions (no bouncy springs) */
+  --ease-swiss: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
 
   color: var(--ink-0);
   background: var(--paper-0);

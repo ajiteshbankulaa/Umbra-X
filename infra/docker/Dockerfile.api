@@ -1,0 +1,35 @@
+# Multi-stage production container for Umbra-X Study & Research API
+FROM node:24.11.0-bookworm-slim AS deps
+WORKDIR /app
+COPY web/package.json web/package-lock.json ./web/
+RUN npm --prefix web ci --omit=dev --ignore-scripts
+
+FROM node:24.11.0-bookworm-slim AS runtime
+ENV NODE_ENV=production \
+    UMBRA_HOST=0.0.0.0 \
+    UMBRA_PORT=8787 \
+    UMBRA_EMBEDDED_WORKER=0 \
+    UMBRA_STUDY_DB=/data/studies.sqlite \
+    UMBRA_ARTIFACTS_DIR=/data/artifacts \
+    UMBRA_DISABLE_PYTHON_RAG=1
+
+WORKDIR /app
+RUN mkdir -p /data/artifacts && chown -R node:node /app /data
+
+COPY --chown=node:node --from=deps /app/web/node_modules ./web/node_modules
+COPY --chown=node:node server ./server
+COPY --chown=node:node web/package.json ./web/package.json
+COPY --chown=node:node web/src/planner ./web/src/planner
+COPY --chown=node:node web/src/types ./web/src/types
+COPY --chown=node:node web/public/wasm/umbra_core.wasm ./web/public/wasm/umbra_core.wasm
+COPY --chown=node:node web/public/data/planner-release ./web/public/data/planner-release
+COPY --chown=node:node research/rag/corpus_chunks.json ./research/rag/corpus_chunks.json
+
+USER node
+EXPOSE 8787
+STOPSIGNAL SIGTERM
+
+HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:8787/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "server/server.mjs"]

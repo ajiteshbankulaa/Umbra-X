@@ -186,6 +186,22 @@ def skyfield_angles(kernels, site, dates):
         return angles
 
 
+def compute_geodetic_slope(elev, transform):
+    """Compute true lunar surface slope (deg) from stereographic DEM array and affine transform."""
+    rows, cols = elev.shape
+    pixel_x = float(transform.a)
+    pixel_y = float(-transform.e)
+    xs = transform.c + (np.arange(cols) + 0.5) * pixel_x
+    ys = transform.f - (np.arange(rows) + 0.5) * pixel_y
+    xg, yg = np.meshgrid(xs, ys)
+    inv_proj = Transformer.from_crs(CRS_POLAR, CRS_POLAR.geodetic_crs, always_xy=True)
+    _, lat_grid = inv_proj.transform(xg, yg)
+    # Conformal stereographic scale correction matching umbra_x/compiler.py: dx_true = dx_map * (1 - sin(lat)) / 2.
+    surface_scale = (1.0 - np.sin(np.deg2rad(lat_grid))) / 2.0
+    dy_map, dx_map = np.gradient(elev, pixel_y, pixel_x)
+    return np.rad2deg(np.arctan(np.hypot(dx_map / surface_scale, dy_map / surface_scale)))
+
+
 def terrain_window(site, sources):
     project = Transformer.from_crs(CRS_POLAR.geodetic_crs, CRS_POLAR, always_xy=True)
     x, y = project.transform(site.lon, site.lat)
@@ -198,8 +214,7 @@ def terrain_window(site, sources):
         arrays["psr"] = read_psr_mask(sources["psr"], transform)
     if (arrays["dem_err"] < 0).any():
         raise ValueError(f"{site.id}: negative NASA height uncertainty")
-    dy, dx = np.gradient(arrays["dem_elev"], PIXEL)
-    arrays["dem_slope"] = np.rad2deg(np.arctan(np.hypot(dx, dy)))
+    arrays["dem_slope"] = compute_geodetic_slope(arrays["dem_elev"], transform)
     return arrays, transform
 
 

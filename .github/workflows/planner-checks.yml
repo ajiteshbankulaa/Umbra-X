@@ -3,11 +3,8 @@ on:
   push:
   pull_request:
 jobs:
-  web:
+  web-and-server:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,10 +12,19 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - run: npm ci
-      - run: npm test
-      - run: node --test ../server/agent.test.mjs
-      - run: npm run build
+      - run: npm --prefix web ci
+      - run: npm --prefix web test
+      - run: node --test server/agent.test.mjs server/research.test.mjs server/phase5.test.mjs
+      - run: node infra/scripts/verify_release_integrity.mjs
+      - run: npm --prefix web run build
+  ai-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: UMBRA_DISABLE_PYTHON_RAG=1 node eval/run_eval.mjs
   pipeline:
     runs-on: ubuntu-latest
     steps:
@@ -28,7 +34,7 @@ jobs:
           python-version: '3.13'
       - run: python -m pip install -e ./pipeline
       - run: python -m pytest pipeline -q
-
+      - run: python pipeline/check_planner_release.py web/public/data/planner-release
   rust:
     runs-on: ubuntu-latest
     steps:
@@ -36,3 +42,8 @@ jobs:
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo test --locked --manifest-path rust/umbra-core/Cargo.toml
       - run: cargo build --locked --release --target wasm32-unknown-unknown --manifest-path rust/umbra-core/Cargo.toml
+  infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose --env-file infra/.env.example -f infra/docker-compose.yml config -q

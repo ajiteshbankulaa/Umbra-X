@@ -1,0 +1,1208 @@
+{
+  "schema": 1,
+  "padCount": 6,
+  "pads": [
+    {
+      "missionWindows": [
+        {
+          "startHours": 0,
+          "days": 15,
+          "mastM": 5,
+          "solarThreshold": 0.1,
+          "vectorHash": "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3",
+          "release96km": {
+            "solarHours": 307.25,
+            "longestDarkHours": 52.75,
+            "earthHours": 256.333,
+            "longestEarthOutageHours": 103.667
+          },
+          "extentMetrics": {
+            "48": {
+              "solarHours": 307.667,
+              "longestDarkHours": 52.333,
+              "earthHours": 256.333,
+              "longestEarthOutageHours": 103.667
+            },
+            "96": {
+              "solarHours": 307.667,
+              "longestDarkHours": 52.333,
+              "earthHours": 256.333,
+              "longestEarthOutageHours": 103.667
+            },
+            "144": {
+              "solarHours": 307.667,
+              "longestDarkHours": 52.333,
+              "earthHours": 256.333,
+              "longestEarthOutageHours": 103.667
+            }
+          },
+          "height2Sigma": {
+            "solarHours": 291.333,
+            "longestDarkHours": 68.667,
+            "earthHours": 252.5,
+            "longestEarthOutageHours": 107.5
+          },
+          "quarterDegree": {
+            "solarHours": 307.75,
+            "longestDarkHours": 52.25,
+            "earthHours": 256.333,
+            "longestEarthOutageHours": 103.667
+          },
+          "oneMinute": {
+            "solarHours": 307.65,
+            "longestDarkHours": 52.35,
+            "earthHours": 256.35,
+            "longestEarthOutageHours": 103.65
+          },
+          "verificationStatus": "numerical_comparison_only_coverage_not_certified"
+        },
+        {
+          "startHours": 48,
+          "days": 15,
+          "mastM": 5,
+          "solarThreshold": 0.1,
+          "vectorHash": "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3",
+          "release96km": {
+            "solarHours": 307.25,
+            "longestDarkHours": 52.75,
+            "earthHours": 270.75,
+            "longestEarthOutageHours": 55.667
+          },
+          "extentMetrics": {
+            "48": {
+              "solarHours": 307.667,
+              "longestDarkHours": 52.333,
+              "earthHours": 270.75,
+              "longestEarthOutageHours": 55.667
+            },
+            "96": {
+              "solarHours": 307.667,
+              "longestDarkHours": 52.333,
+              "earthHours": 270.75,
+              "longestEarthOutageHours": 55.667
+            },
+            "144": {
+              "solarHours": 307.667,
+              "longestDarkHours": 52.333,
+              "earthHours": 270.75,
+              "longestEarthOutageHours": 55.667
+            }
+          },
+          "height2Sigma": {
+            "solarHours": 291.333,
+            "longestDarkHours": 68.667,
+            "earthHours": 260.75,
+            "longestEarthOutageHours": 59.5
+          },
+          "quarterDegree": {
+            "solarHours": 307.75,
+            "longestDarkHours": 52.25,
+            "earthHours": 270.75,
+            "longestEarthOutageHours": 55.667
+          },
+          "oneMinute": {
+            "solarHours": 307.65,
+            "longestDarkHours": 52.35,
+            "earthHours": 270.717,
+            "longestEarthOutageHours": 55.65
+          },
+          "verificationStatus": "numerical_comparison_only_coverage_not_certified"
+        }
+      ],
+      "site": "shackleton-ridge",
+      "node": 480,
+      "pad": 481,
+      "lat": -89.449975,
+      "lon": -138.048515,
+      "heightM": 1944.31,
+      "releaseVsRaymarchMaeDeg": 0.00134,
+      "azimuthConvergence": {
+        "deg1_00": {
+          "solarHours": 667.75,
+          "longestDarkHours": 52.333,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667
+        },
+        "deg0_50": {
+          "solarHours": 667.75,
+          "longestDarkHours": 52.333,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667,
+          "horizonMaeVs1_00InterpDeg": 0.00302,
+          "maxElDeltaVs1_00InterpDeg": 0.0572
+        },
+        "deg0_25": {
+          "solarHours": 667.833,
+          "longestDarkHours": 52.25,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667,
+          "horizonMaeVs1_00InterpDeg": 0.00377,
+          "maxElDeltaVs1_00InterpDeg": 0.0572
+        }
+      },
+      "extentConvergence": {
+        "48km": {
+          "solarHours": 667.75,
+          "longestDarkHours": 52.333,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667,
+          "maxDeltaVs96kmDeg": 1.4297,
+          "binsGt0p05DegVs96km": 47
+        },
+        "96km": {
+          "solarHours": 667.75,
+          "longestDarkHours": 52.333,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "120km": {
+          "solarHours": 667.75,
+          "longestDarkHours": 52.333,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667,
+          "maxDeltaVs96kmDeg": 0.008,
+          "binsGt0p05DegVs96km": 0
+        },
+        "144km": {
+          "solarHours": 667.75,
+          "longestDarkHours": 52.333,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667,
+          "maxDeltaVs96kmDeg": 0.008,
+          "binsGt0p05DegVs96km": 0
+        }
+      },
+      "terrain80mOnlyVsHybrid": {
+        "horizonMaeDeg": 0.1675,
+        "horizonMaxDeltaDeg": 0.602,
+        "binsGt0p5Deg": 16,
+        "metrics80mOnly": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 277.333,
+          "longestEarthOutageHours": 342.75
+        }
+      },
+      "temporalSampling": {
+        "step5min": {
+          "solarHours": 667.75,
+          "longestDarkHours": 52.333,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667
+        },
+        "step1min": {
+          "solarHours": 667.667,
+          "longestDarkHours": 52.35,
+          "earthHours": 270.717,
+          "longestEarthOutageHours": 345.65
+        },
+        "deltaSolarHours": -0.083,
+        "deltaLongestDarkHours": 0.017,
+        "deltaLongestEarthHours": -0.017
+      },
+      "solarDiskModel": {
+        "straightLimb1d": {
+          "solarHours": 667.833,
+          "longestDarkHours": 52.25
+        },
+        "circular2d": {
+          "solarHours": 668.5,
+          "longestDarkHours": 51.583
+        },
+        "maxFracDiff": 0.028
+      },
+      "mastSweep": {
+        "1.5m": {
+          "solarHours": 440.75,
+          "longestDarkHours": 279.333,
+          "earthHours": 216.417,
+          "longestEarthOutageHours": 369.833
+        },
+        "3.0m": {
+          "solarHours": 521.0,
+          "longestDarkHours": 114.667,
+          "earthHours": 242.583,
+          "longestEarthOutageHours": 357.25
+        },
+        "5.0m": {
+          "solarHours": 667.333,
+          "longestDarkHours": 52.75,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667
+        },
+        "10.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 296.417,
+          "longestEarthOutageHours": 336.917
+        },
+        "20.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 347.583,
+          "longestEarthOutageHours": 311.25
+        }
+      },
+      "slopeComparison": {
+        "compiledPlanarDeg": 5.6005,
+        "geodeticScaleCorrectedDeg": 5.6006,
+        "lolaLdsmOfficialDeg": 5.6592
+      },
+      "sigmaSensitivity": {
+        "0sigma": {
+          "solarHours": 667.333,
+          "longestDarkHours": 52.75,
+          "earthHours": 270.75,
+          "longestEarthOutageHours": 345.667,
+          "medianHorizonSigmaDeg": 0.0527
+        },
+        "1sigma": {
+          "solarHours": 660.417,
+          "longestDarkHours": 59.667,
+          "earthHours": 265.667,
+          "longestEarthOutageHours": 348.833,
+          "medianHorizonSigmaDeg": 0.0527
+        },
+        "2sigma": {
+          "solarHours": 651.417,
+          "longestDarkHours": 68.667,
+          "earthHours": 260.75,
+          "longestEarthOutageHours": 351.833,
+          "medianHorizonSigmaDeg": 0.0527
+        },
+        "3sigma": {
+          "solarHours": 646.083,
+          "longestDarkHours": 74.0,
+          "earthHours": 255.75,
+          "longestEarthOutageHours": 354.917,
+          "medianHorizonSigmaDeg": 0.0527
+        }
+      }
+    },
+    {
+      "missionWindows": [
+        {
+          "startHours": 48,
+          "days": 15,
+          "mastM": 5,
+          "solarThreshold": 0.1,
+          "vectorHash": "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3",
+          "release96km": {
+            "solarHours": 360.0,
+            "longestDarkHours": 0.0,
+            "earthHours": 352.333,
+            "longestEarthOutageHours": 4.833
+          },
+          "extentMetrics": {
+            "48": {
+              "solarHours": 360.0,
+              "longestDarkHours": 0.0,
+              "earthHours": 352.25,
+              "longestEarthOutageHours": 4.917
+            },
+            "96": {
+              "solarHours": 360.0,
+              "longestDarkHours": 0.0,
+              "earthHours": 352.25,
+              "longestEarthOutageHours": 4.917
+            },
+            "144": {
+              "solarHours": 360.0,
+              "longestDarkHours": 0.0,
+              "earthHours": 329.333,
+              "longestEarthOutageHours": 17.583
+            }
+          },
+          "height2Sigma": {
+            "solarHours": 360.0,
+            "longestDarkHours": 0.0,
+            "earthHours": 347.167,
+            "longestEarthOutageHours": 8.75
+          },
+          "quarterDegree": {
+            "solarHours": 360.0,
+            "longestDarkHours": 0.0,
+            "earthHours": 352.25,
+            "longestEarthOutageHours": 4.917
+          },
+          "oneMinute": {
+            "solarHours": 360.0,
+            "longestDarkHours": 0.0,
+            "earthHours": 352.267,
+            "longestEarthOutageHours": 4.867
+          },
+          "verificationStatus": "numerical_comparison_only_coverage_not_certified"
+        }
+      ],
+      "site": "shackleton-ridge",
+      "node": 478,
+      "pad": 479,
+      "lat": -89.44376,
+      "lon": -137.341134,
+      "heightM": 1956.2,
+      "releaseVsRaymarchMaeDeg": 0.00169,
+      "azimuthConvergence": {
+        "deg1_00": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.0,
+          "longestEarthOutageHours": 298.167
+        },
+        "deg0_50": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.0,
+          "longestEarthOutageHours": 298.167,
+          "horizonMaeVs1_00InterpDeg": 0.00281,
+          "maxElDeltaVs1_00InterpDeg": 0.0549
+        },
+        "deg0_25": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.0,
+          "longestEarthOutageHours": 298.167,
+          "horizonMaeVs1_00InterpDeg": 0.00358,
+          "maxElDeltaVs1_00InterpDeg": 0.0549
+        }
+      },
+      "extentConvergence": {
+        "48km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.0,
+          "longestEarthOutageHours": 298.167,
+          "maxDeltaVs96kmDeg": 1.1704,
+          "binsGt0p05DegVs96km": 35
+        },
+        "96km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.0,
+          "longestEarthOutageHours": 298.167,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "120km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 367.417,
+          "longestEarthOutageHours": 299.75,
+          "maxDeltaVs96kmDeg": 0.7733,
+          "binsGt0p05DegVs96km": 28
+        },
+        "144km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 337.5,
+          "longestEarthOutageHours": 321.5,
+          "maxDeltaVs96kmDeg": 1.1573,
+          "binsGt0p05DegVs96km": 33
+        }
+      },
+      "terrain80mOnlyVsHybrid": {
+        "horizonMaeDeg": 0.1729,
+        "horizonMaxDeltaDeg": 0.6667,
+        "binsGt0p5Deg": 29,
+        "metrics80mOnly": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 375.083,
+          "longestEarthOutageHours": 294.25
+        }
+      },
+      "temporalSampling": {
+        "step5min": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.0,
+          "longestEarthOutageHours": 298.167
+        },
+        "step1min": {
+          "solarHours": 720.017,
+          "longestDarkHours": 0.0,
+          "earthHours": 368.95,
+          "longestEarthOutageHours": 298.2
+        },
+        "deltaSolarHours": -0.066,
+        "deltaLongestDarkHours": 0.0,
+        "deltaLongestEarthHours": 0.033
+      },
+      "solarDiskModel": {
+        "straightLimb1d": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0
+        },
+        "circular2d": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0
+        },
+        "maxFracDiff": 0.0
+      },
+      "mastSweep": {
+        "1.5m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 334.083,
+          "longestEarthOutageHours": 319.917
+        },
+        "3.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 351.167,
+          "longestEarthOutageHours": 309.5
+        },
+        "5.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.083,
+          "longestEarthOutageHours": 298.167
+        },
+        "10.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 405.583,
+          "longestEarthOutageHours": 271.917
+        },
+        "20.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 431.167,
+          "longestEarthOutageHours": 246.5
+        }
+      },
+      "slopeComparison": {
+        "compiledPlanarDeg": 0.9413,
+        "geodeticScaleCorrectedDeg": 0.9414,
+        "lolaLdsmOfficialDeg": 0.9039
+      },
+      "sigmaSensitivity": {
+        "0sigma": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 369.083,
+          "longestEarthOutageHours": 298.167,
+          "medianHorizonSigmaDeg": 0.0802
+        },
+        "1sigma": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 365.5,
+          "longestEarthOutageHours": 299.833,
+          "medianHorizonSigmaDeg": 0.0802
+        },
+        "2sigma": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 361.667,
+          "longestEarthOutageHours": 301.667,
+          "medianHorizonSigmaDeg": 0.0802
+        },
+        "3sigma": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 357.667,
+          "longestEarthOutageHours": 303.75,
+          "medianHorizonSigmaDeg": 0.0802
+        }
+      }
+    },
+    {
+      "missionWindows": [],
+      "site": "shackleton-ridge",
+      "node": 180,
+      "pad": 181,
+      "lat": -89.515162,
+      "lon": -138.458865,
+      "heightM": 1856.16,
+      "releaseVsRaymarchMaeDeg": 0.00299,
+      "azimuthConvergence": {
+        "deg1_00": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 446.333,
+          "longestEarthOutageHours": 238.667
+        },
+        "deg0_50": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 445.833,
+          "longestEarthOutageHours": 239.0,
+          "horizonMaeVs1_00InterpDeg": 0.00423,
+          "maxElDeltaVs1_00InterpDeg": 0.1014
+        },
+        "deg0_25": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 445.75,
+          "longestEarthOutageHours": 239.0,
+          "horizonMaeVs1_00InterpDeg": 0.00525,
+          "maxElDeltaVs1_00InterpDeg": 0.1014
+        }
+      },
+      "extentConvergence": {
+        "48km": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 509.833,
+          "longestEarthOutageHours": 210.25,
+          "maxDeltaVs96kmDeg": 2.0533,
+          "binsGt0p05DegVs96km": 63
+        },
+        "96km": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 446.333,
+          "longestEarthOutageHours": 238.667,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "120km": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 364.75,
+          "longestEarthOutageHours": 302.833,
+          "maxDeltaVs96kmDeg": 2.588,
+          "binsGt0p05DegVs96km": 52
+        },
+        "144km": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 333.917,
+          "longestEarthOutageHours": 323.833,
+          "maxDeltaVs96kmDeg": 3.5602,
+          "binsGt0p05DegVs96km": 65
+        }
+      },
+      "terrain80mOnlyVsHybrid": {
+        "horizonMaeDeg": 0.206,
+        "horizonMaxDeltaDeg": 1.0687,
+        "binsGt0p5Deg": 70,
+        "metrics80mOnly": {
+          "solarHours": 566.333,
+          "longestDarkHours": 153.75,
+          "earthHours": 446.333,
+          "longestEarthOutageHours": 238.667
+        }
+      },
+      "temporalSampling": {
+        "step5min": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 446.333,
+          "longestEarthOutageHours": 238.667
+        },
+        "step1min": {
+          "solarHours": 552.967,
+          "longestDarkHours": 167.05,
+          "earthHours": 446.283,
+          "longestEarthOutageHours": 238.667
+        },
+        "deltaSolarHours": -0.033,
+        "deltaLongestDarkHours": -0.033,
+        "deltaLongestEarthHours": 0.0
+      },
+      "solarDiskModel": {
+        "straightLimb1d": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083
+        },
+        "circular2d": {
+          "solarHours": 553.167,
+          "longestDarkHours": 166.917
+        },
+        "maxFracDiff": 0.0159
+      },
+      "mastSweep": {
+        "1.5m": {
+          "solarHours": 460.25,
+          "longestDarkHours": 259.833,
+          "earthHours": 445.917,
+          "longestEarthOutageHours": 238.917
+        },
+        "3.0m": {
+          "solarHours": 507.083,
+          "longestDarkHours": 213.0,
+          "earthHours": 446.167,
+          "longestEarthOutageHours": 238.75
+        },
+        "5.0m": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 446.333,
+          "longestEarthOutageHours": 238.667
+        },
+        "10.0m": {
+          "solarHours": 576.917,
+          "longestDarkHours": 143.167,
+          "earthHours": 446.75,
+          "longestEarthOutageHours": 238.333
+        },
+        "20.0m": {
+          "solarHours": 612.833,
+          "longestDarkHours": 107.25,
+          "earthHours": 447.5,
+          "longestEarthOutageHours": 237.833
+        }
+      },
+      "slopeComparison": {
+        "compiledPlanarDeg": 4.5363,
+        "geodeticScaleCorrectedDeg": 4.5364,
+        "lolaLdsmOfficialDeg": 4.7363
+      },
+      "sigmaSensitivity": {
+        "0sigma": {
+          "solarHours": 553.0,
+          "longestDarkHours": 167.083,
+          "earthHours": 446.333,
+          "longestEarthOutageHours": 238.667,
+          "medianHorizonSigmaDeg": 0.0366
+        },
+        "1sigma": {
+          "solarHours": 547.667,
+          "longestDarkHours": 172.417,
+          "earthHours": 446.167,
+          "longestEarthOutageHours": 238.75,
+          "medianHorizonSigmaDeg": 0.0366
+        },
+        "2sigma": {
+          "solarHours": 542.25,
+          "longestDarkHours": 177.833,
+          "earthHours": 445.917,
+          "longestEarthOutageHours": 238.917,
+          "medianHorizonSigmaDeg": 0.0366
+        },
+        "3sigma": {
+          "solarHours": 536.75,
+          "longestDarkHours": 183.333,
+          "earthHours": 445.667,
+          "longestEarthOutageHours": 239.083,
+          "medianHorizonSigmaDeg": 0.0366
+        }
+      }
+    },
+    {
+      "missionWindows": [],
+      "site": "mons-mouton",
+      "node": 16,
+      "pad": 17,
+      "lat": -84.727471,
+      "lon": 28.881748,
+      "heightM": 5207.06,
+      "releaseVsRaymarchMaeDeg": 0.0047,
+      "azimuthConvergence": {
+        "deg1_00": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 577.0,
+          "longestEarthOutageHours": 143.083
+        },
+        "deg0_50": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 576.75,
+          "longestEarthOutageHours": 143.333,
+          "horizonMaeVs1_00InterpDeg": 0.00239,
+          "maxElDeltaVs1_00InterpDeg": 0.044
+        },
+        "deg0_25": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 576.583,
+          "longestEarthOutageHours": 143.5,
+          "horizonMaeVs1_00InterpDeg": 0.00302,
+          "maxElDeltaVs1_00InterpDeg": 0.044
+        }
+      },
+      "extentConvergence": {
+        "48km": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 577.0,
+          "longestEarthOutageHours": 143.083,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "96km": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 577.0,
+          "longestEarthOutageHours": 143.083,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "120km": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 577.0,
+          "longestEarthOutageHours": 143.083,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "144km": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 577.0,
+          "longestEarthOutageHours": 143.083,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        }
+      },
+      "terrain80mOnlyVsHybrid": {
+        "horizonMaeDeg": 0.028,
+        "horizonMaxDeltaDeg": 0.2155,
+        "binsGt0p5Deg": 0,
+        "metrics80mOnly": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 577.0,
+          "longestEarthOutageHours": 143.083
+        }
+      },
+      "temporalSampling": {
+        "step5min": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917,
+          "earthHours": 577.0,
+          "longestEarthOutageHours": 143.083
+        },
+        "step1min": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.9,
+          "earthHours": 576.867,
+          "longestEarthOutageHours": 143.15
+        },
+        "deltaSolarHours": 0.0,
+        "deltaLongestDarkHours": -0.017,
+        "deltaLongestEarthHours": 0.067
+      },
+      "solarDiskModel": {
+        "straightLimb1d": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917
+        },
+        "circular2d": {
+          "solarHours": 346.75,
+          "longestDarkHours": 341.917
+        },
+        "maxFracDiff": 0.029
+      },
+      "mastSweep": {
+        "1.5m": {
+          "solarHours": 344.417,
+          "longestDarkHours": 344.167,
+          "earthHours": 576.25,
+          "longestEarthOutageHours": 143.833
+        },
+        "3.0m": {
+          "solarHours": 345.583,
+          "longestDarkHours": 343.083,
+          "earthHours": 576.667,
+          "longestEarthOutageHours": 143.417
+        },
+        "5.0m": {
+          "solarHours": 346.917,
+          "longestDarkHours": 341.75,
+          "earthHours": 577.167,
+          "longestEarthOutageHours": 142.917
+        },
+        "10.0m": {
+          "solarHours": 350.75,
+          "longestDarkHours": 338.0,
+          "earthHours": 578.417,
+          "longestEarthOutageHours": 141.667
+        },
+        "20.0m": {
+          "solarHours": 359.0,
+          "longestDarkHours": 330.0,
+          "earthHours": 580.917,
+          "longestEarthOutageHours": 139.167
+        }
+      },
+      "slopeComparison": {
+        "compiledPlanarDeg": 4.3325,
+        "geodeticScaleCorrectedDeg": 4.3415,
+        "lolaLdsmOfficialDeg": 4.4543
+      },
+      "sigmaSensitivity": {
+        "0sigma": {
+          "solarHours": 346.917,
+          "longestDarkHours": 341.75,
+          "earthHours": 577.167,
+          "longestEarthOutageHours": 142.917,
+          "medianHorizonSigmaDeg": 0.0164
+        },
+        "1sigma": {
+          "solarHours": 345.083,
+          "longestDarkHours": 343.5,
+          "earthHours": 576.417,
+          "longestEarthOutageHours": 143.667,
+          "medianHorizonSigmaDeg": 0.0164
+        },
+        "2sigma": {
+          "solarHours": 343.25,
+          "longestDarkHours": 345.333,
+          "earthHours": 575.667,
+          "longestEarthOutageHours": 144.417,
+          "medianHorizonSigmaDeg": 0.0164
+        },
+        "3sigma": {
+          "solarHours": 341.417,
+          "longestDarkHours": 347.083,
+          "earthHours": 575.0,
+          "longestEarthOutageHours": 145.083,
+          "medianHorizonSigmaDeg": 0.0164
+        }
+      }
+    },
+    {
+      "missionWindows": [],
+      "site": "mons-mouton",
+      "node": 480,
+      "pad": 481,
+      "lat": -84.790127,
+      "lon": 29.204932,
+      "heightM": 5321.27,
+      "releaseVsRaymarchMaeDeg": 0.00835,
+      "azimuthConvergence": {
+        "deg1_00": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.833,
+          "longestEarthOutageHours": 124.25
+        },
+        "deg0_50": {
+          "solarHours": 383.167,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.5,
+          "longestEarthOutageHours": 124.583,
+          "horizonMaeVs1_00InterpDeg": 0.00287,
+          "maxElDeltaVs1_00InterpDeg": 0.0454
+        },
+        "deg0_25": {
+          "solarHours": 383.167,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.333,
+          "longestEarthOutageHours": 124.75,
+          "horizonMaeVs1_00InterpDeg": 0.00356,
+          "maxElDeltaVs1_00InterpDeg": 0.0454
+        }
+      },
+      "extentConvergence": {
+        "48km": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.833,
+          "longestEarthOutageHours": 124.25,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "96km": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.833,
+          "longestEarthOutageHours": 124.25,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "120km": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.833,
+          "longestEarthOutageHours": 124.25,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "144km": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.833,
+          "longestEarthOutageHours": 124.25,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        }
+      },
+      "terrain80mOnlyVsHybrid": {
+        "horizonMaeDeg": 0.0149,
+        "horizonMaxDeltaDeg": 0.1675,
+        "binsGt0p5Deg": 0,
+        "metrics80mOnly": {
+          "solarHours": 383.417,
+          "longestDarkHours": 308.333,
+          "earthHours": 595.833,
+          "longestEarthOutageHours": 124.25
+        }
+      },
+      "temporalSampling": {
+        "step5min": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.833,
+          "longestEarthOutageHours": 124.25
+        },
+        "step1min": {
+          "solarHours": 383.117,
+          "longestDarkHours": 308.633,
+          "earthHours": 595.767,
+          "longestEarthOutageHours": 124.25
+        },
+        "deltaSolarHours": 0.034,
+        "deltaLongestDarkHours": -0.034,
+        "deltaLongestEarthHours": 0.0
+      },
+      "solarDiskModel": {
+        "straightLimb1d": {
+          "solarHours": 383.167,
+          "longestDarkHours": 308.667
+        },
+        "circular2d": {
+          "solarHours": 383.25,
+          "longestDarkHours": 308.667
+        },
+        "maxFracDiff": 0.0235
+      },
+      "mastSweep": {
+        "1.5m": {
+          "solarHours": 376.833,
+          "longestDarkHours": 314.917,
+          "earthHours": 594.917,
+          "longestEarthOutageHours": 125.167
+        },
+        "3.0m": {
+          "solarHours": 380.333,
+          "longestDarkHours": 311.417,
+          "earthHours": 595.25,
+          "longestEarthOutageHours": 124.833
+        },
+        "5.0m": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.75,
+          "longestEarthOutageHours": 124.333
+        },
+        "10.0m": {
+          "solarHours": 387.667,
+          "longestDarkHours": 304.167,
+          "earthHours": 596.917,
+          "longestEarthOutageHours": 123.167
+        },
+        "20.0m": {
+          "solarHours": 395.5,
+          "longestDarkHours": 296.5,
+          "earthHours": 599.333,
+          "longestEarthOutageHours": 120.75
+        }
+      },
+      "slopeComparison": {
+        "compiledPlanarDeg": 2.4572,
+        "geodeticScaleCorrectedDeg": 2.4622,
+        "lolaLdsmOfficialDeg": 2.4361
+      },
+      "sigmaSensitivity": {
+        "0sigma": {
+          "solarHours": 383.083,
+          "longestDarkHours": 308.667,
+          "earthHours": 595.75,
+          "longestEarthOutageHours": 124.333,
+          "medianHorizonSigmaDeg": 0.0104
+        },
+        "1sigma": {
+          "solarHours": 382.333,
+          "longestDarkHours": 309.417,
+          "earthHours": 595.083,
+          "longestEarthOutageHours": 125.0,
+          "medianHorizonSigmaDeg": 0.0104
+        },
+        "2sigma": {
+          "solarHours": 381.5,
+          "longestDarkHours": 310.25,
+          "earthHours": 594.583,
+          "longestEarthOutageHours": 125.5,
+          "medianHorizonSigmaDeg": 0.0104
+        },
+        "3sigma": {
+          "solarHours": 380.75,
+          "longestDarkHours": 310.917,
+          "earthHours": 594.0,
+          "longestEarthOutageHours": 126.083,
+          "medianHorizonSigmaDeg": 0.0104
+        }
+      }
+    },
+    {
+      "missionWindows": [],
+      "site": "malapert-massif",
+      "node": 480,
+      "pad": 481,
+      "lat": -86.040313,
+      "lon": 2.704989,
+      "heightM": 5061.85,
+      "releaseVsRaymarchMaeDeg": 0.00823,
+      "azimuthConvergence": {
+        "deg1_00": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.417,
+          "longestEarthOutageHours": 339.5
+        },
+        "deg0_50": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.25,
+          "longestEarthOutageHours": 339.583,
+          "horizonMaeVs1_00InterpDeg": 0.00133,
+          "maxElDeltaVs1_00InterpDeg": 0.0317
+        },
+        "deg0_25": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.167,
+          "longestEarthOutageHours": 339.583,
+          "horizonMaeVs1_00InterpDeg": 0.00172,
+          "maxElDeltaVs1_00InterpDeg": 0.0389
+        }
+      },
+      "extentConvergence": {
+        "48km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.417,
+          "longestEarthOutageHours": 339.5,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "96km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.417,
+          "longestEarthOutageHours": 339.5,
+          "maxDeltaVs96kmDeg": 0.0,
+          "binsGt0p05DegVs96km": 0
+        },
+        "120km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.417,
+          "longestEarthOutageHours": 339.5,
+          "maxDeltaVs96kmDeg": 0.0572,
+          "binsGt0p05DegVs96km": 1
+        },
+        "144km": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.417,
+          "longestEarthOutageHours": 339.5,
+          "maxDeltaVs96kmDeg": 0.1251,
+          "binsGt0p05DegVs96km": 4
+        }
+      },
+      "terrain80mOnlyVsHybrid": {
+        "horizonMaeDeg": 0.3162,
+        "horizonMaxDeltaDeg": 1.2309,
+        "binsGt0p5Deg": 75,
+        "metrics80mOnly": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 296.75,
+          "longestEarthOutageHours": 338.917
+        }
+      },
+      "temporalSampling": {
+        "step5min": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.417,
+          "longestEarthOutageHours": 339.5
+        },
+        "step1min": {
+          "solarHours": 720.017,
+          "longestDarkHours": 0.0,
+          "earthHours": 291.367,
+          "longestEarthOutageHours": 339.5
+        },
+        "deltaSolarHours": -0.066,
+        "deltaLongestDarkHours": 0.0,
+        "deltaLongestEarthHours": 0.0
+      },
+      "solarDiskModel": {
+        "straightLimb1d": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0
+        },
+        "circular2d": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0
+        },
+        "maxFracDiff": 0.0
+      },
+      "mastSweep": {
+        "1.5m": {
+          "solarHours": 413.667,
+          "longestDarkHours": 306.417,
+          "earthHours": 276.417,
+          "longestEarthOutageHours": 345.333
+        },
+        "3.0m": {
+          "solarHours": 682.917,
+          "longestDarkHours": 22.333,
+          "earthHours": 282.833,
+          "longestEarthOutageHours": 342.833
+        },
+        "5.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 290.917,
+          "longestEarthOutageHours": 339.75
+        },
+        "10.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 307.333,
+          "longestEarthOutageHours": 335.25
+        },
+        "20.0m": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 334.75,
+          "longestEarthOutageHours": 321.5
+        }
+      },
+      "slopeComparison": {
+        "compiledPlanarDeg": 5.2885,
+        "geodeticScaleCorrectedDeg": 5.2949,
+        "lolaLdsmOfficialDeg": 4.8527
+      },
+      "sigmaSensitivity": {
+        "0sigma": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 290.917,
+          "longestEarthOutageHours": 339.75,
+          "medianHorizonSigmaDeg": 0.0693
+        },
+        "1sigma": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 290.167,
+          "longestEarthOutageHours": 340.083,
+          "medianHorizonSigmaDeg": 0.0693
+        },
+        "2sigma": {
+          "solarHours": 720.083,
+          "longestDarkHours": 0.0,
+          "earthHours": 289.417,
+          "longestEarthOutageHours": 340.417,
+          "medianHorizonSigmaDeg": 0.0693
+        },
+        "3sigma": {
+          "solarHours": 712.0,
+          "longestDarkHours": 8.083,
+          "earthHours": 288.667,
+          "longestEarthOutageHours": 340.75,
+          "medianHorizonSigmaDeg": 0.0693
+        }
+      }
+    }
+  ]
+}

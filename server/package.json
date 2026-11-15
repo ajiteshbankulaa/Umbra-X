@@ -1,0 +1,12 @@
+{
+  "name": "umbra-x-services",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "node server.mjs", "test": "node --test *.test.mjs" },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.11.0",
+    "@google-cloud/storage": "^7.16.0",
+    "@google-cloud/tasks": "^6.2.0",
+    "google-auth-library": "^9.15.1"
+  }
+}

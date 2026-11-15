@@ -1,0 +1,125 @@
+{
+  "benchmarkVersion": "phase4-python-inference-v1",
+  "hardware": {
+    "deviceExecuted": "cpu",
+    "cpuCount": 12,
+    "torchVersion": "2.15.0+cpu",
+    "cudaAvailableInVenv": false
+  },
+  "embedding": {
+    "model": "BAAI/bge-small-en-v1.5",
+    "runtime": "fastembed-onnxruntime-cpu",
+    "coldModelLoadMs": 450.54,
+    "coldQueryEmbedMs": 14.6,
+    "warmQueryEmbedMs": {
+      "p50": 8.321,
+      "p95": 11.379,
+      "mean": 9.101
+    },
+    "batchThroughput": {
+      "batch_1": {
+        "itemsPerRun": 1,
+        "meanSec": 0.0263,
+        "throughputChunksPerSec": 37.99,
+        "msPerChunk": 26.319
+      },
+      "batch_8": {
+        "itemsPerRun": 8,
+        "meanSec": 0.4896,
+        "throughputChunksPerSec": 16.34,
+        "msPerChunk": 61.195
+      },
+      "batch_32": {
+        "itemsPerRun": 32,
+        "meanSec": 3.4656,
+        "throughputChunksPerSec": 9.23,
+        "msPerChunk": 108.3
+      },
+      "batch_64": {
+        "itemsPerRun": 64,
+        "meanSec": 20.3019,
+        "throughputChunksPerSec": 3.15,
+        "msPerChunk": 317.216
+      }
+    }
+  },
+  "retrieval": {
+    "coldInitMs": 677.37,
+    "modes": {
+      "bm25": {
+        "p50Ms": 0.46,
+        "p95Ms": 1.027,
+        "meanMs": 0.513,
+        "qpsMean": 1950.9
+      },
+      "dense_qdrant": {
+        "p50Ms": 14.868,
+        "p95Ms": 22.463,
+        "meanMs": 14.935,
+        "qpsMean": 66.96
+      },
+      "hybrid_rrf": {
+        "p50Ms": 13.117,
+        "p95Ms": 18.671,
+        "meanMs": 14.132,
+        "qpsMean": 70.76
+      }
+    }
+  },
+  "surrogates": {
+    "cpuThreads": 4,
+    "batches": {
+      "batch_1": {
+        "histGbdtPair": {
+          "p50Ms": 7.522,
+          "p95Ms": 11.73,
+          "throughputSamplesPerSec": 131.1
+        },
+        "pytorchResMlpSinglePass": {
+          "p50Ms": 0.305,
+          "p95Ms": 0.748,
+          "throughputSamplesPerSec": 3276.0
+        },
+        "pytorchResMlpMc16": {
+          "p50Ms": 6.838,
+          "p95Ms": 14.524,
+          "throughputSamplesPerSec": 143.0
+        }
+      },
+      "batch_100": {
+        "histGbdtPair": {
+          "p50Ms": 23.264,
+          "p95Ms": 76.346,
+          "throughputSamplesPerSec": 4262.3
+        },
+        "pytorchResMlpSinglePass": {
+          "p50Ms": 0.908,
+          "p95Ms": 2.525,
+          "throughputSamplesPerSec": 108819.8
+        },
+        "pytorchResMlpMc16": {
+          "p50Ms": 20.783,
+          "p95Ms": 47.681,
+          "throughputSamplesPerSec": 4792.6
+        }
+      },
+      "batch_961": {
+        "histGbdtPair": {
+          "p50Ms": 13.85,
+          "p95Ms": 22.878,
+          "throughputSamplesPerSec": 69385.3
+        },
+        "pytorchResMlpSinglePass": {
+          "p50Ms": 1.591,
+          "p95Ms": 3.298,
+          "throughputSamplesPerSec": 602999.3
+        },
+        "pytorchResMlpMc16": {
+          "p50Ms": 89.484,
+          "p95Ms": 116.978,
+          "throughputSamplesPerSec": 10641.9
+        }
+      }
+    }
+  }
+}

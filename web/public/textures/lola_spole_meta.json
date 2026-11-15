@@ -1,0 +1,38 @@
+{
+  "source": "NASA GSFC PGDA LDEM_80S_80MPP_ADJ.TIF",
+  "sourceUrl": "https://pgda.gsfc.nasa.gov/data/LOLA_80mpp/LDEM_80S_80MPP_ADJ.TIF",
+  "radiusM": 1737400,
+  "leftM": -304000.0,
+  "rightM": 304000.0,
+  "bottomM": -304000.0,
+  "topM": 304000.0,
+  "minElevM": -6230.2,
+  "maxElevM": 5617.4,
+  "textureSize": 1024,
+  "sites": {
+    "shackleton-ridge": {
+      "lat": -89.45,
+      "lon": 222.0,
+      "xM": -11159.7,
+      "yM": -12394.1,
+      "u": 0.481645,
+      "v": 0.520385
+    },
+    "mons-mouton": {
+      "lat": -84.79,
+      "lon": 29.2,
+      "xM": 77127.5,
+      "yM": 138003.4,
+      "u": 0.626854,
+      "v": 0.273021
+    },
+    "malapert-massif": {
+      "lat": -86.04,
+      "lon": 2.7,
+      "xM": 5658.8,
+      "yM": 119994.9,
+      "u": 0.509307,
+      "v": 0.30264
+    }
+  }
+}

@@ -1,6 +1,8 @@
 # Umbra-X
 
-Umbra-X is a lunar south pole terrain and visibility prototype for the 2026 NASA Space Apps Challenge. The Python pipeline compiles terrain and hourly ephemerides. The browser loads static site bundles, displays the elevation mesh and evaluates Sun and Earth visibility across a 15-day window.
+Umbra-X is a lunar south pole terrain and mission-screening prototype for the 2026 NASA Space Apps Challenge. The Decision Planner (`web/public/data/planner-release/`) compiles hybrid `20 m + 80 m` LOLA horizons out to `96 km` (`48 km` comparison) and five-minute `DE440` (`MOON_ME_DE440_ME421`) ephemeris vectors across a 30-day catalog (supporting 1–15 day landing windows), plus on-demand `80 m` polar terrain queries via `pipeline/terrain_server.py`.
+
+See [docs/SCIENTIFIC_METHOD.md](docs/SCIENTIFIC_METHOD.md), [docs/VALIDATION_MATRIX.md](docs/VALIDATION_MATRIX.md), [docs/UNCERTAINTY_AND_LIMITATIONS.md](docs/UNCERTAINTY_AND_LIMITATIONS.md), [docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md), and [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) for the mathematical specification, independent verification results, epistemic confidence tiers, upstream SHA-256 provenance, and exact rebuild workflow.
 
 ## Setup and verification
 
@@ -52,24 +54,12 @@ Pass `--grid expanded` to use 140 m candidate spacing. The verification plot fro
 
 Supply an elevation GeoTIFF and a height-sigma GeoTIFF in the same lunar ME/DE421 coordinate frame, with valid embedded lunar CRS definitions and coverage across the complete tile. Elevation must be relative to the 1,737,400 m reference sphere. The compiler applies source GDAL scale and offset. The [NASA Goddard south-polar LOLA archive](https://pgda.gsfc.nasa.gov/products/90) lists the `LDEM_80S_20MPP_ADJ.TIF` elevation and `LDEM_80S_20MPP_ADJ_ERR.TIF` height error products.
 
-Place `de421.bsp`, `moon_080317.tf`, `pck00008.tpc` and `moon_pa_de421_1900-2050.bpc` in a local kernel directory. The [Skyfield lunar-frame guide](https://rhodesmill.org/skyfield/planetary.html) lists the JPL files. The complete mission period must fall within kernel coverage.
+For the 5-minute Planner Release (`compile_planner.py`), use the DE440/ME421 kernel set: `de440s.bsp`, `moon_de440_250416.tf`, `moon_pa_de440_200625.bpc`, and `pck00011.tpc` (`MOON_ME_DE440_ME421`, checked in [docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md)). The complete mission period must fall within kernel coverage.
 
-Use east-positive longitude in the range −180° to 180°. Here is a complete command with illustrative coordinates and local input paths:
+## Client engine, backend services, & live terrain
 
-```powershell
-.\.venv\Scripts\umbra-compile.exe --site-id connecting-ridge --name "Connecting Ridge" --agency "NASA" --lat -89.45 --lon -137.3 --start-utc 2026-11-14T00:00:00Z --dem inputs/lola-elevation.tif --error inputs/lola-height-sigma.tif --psr inputs/lola-psr.tif --kernels inputs/kernels --output web/public/data
-```
-
-Run the web dev server and enter the compiled site ID. Rebuild the web app after adding a bundle to include it in production output. The compiler publishes each bundle as a new directory and rejects existing IDs. See [SPEC.md](SPEC.md) for the byte layout, modeling limits and research sources.
-
-## Client scientific engine
-
-`web/src/engine/heliosEngine.ts` takes a loaded `SiteData` bundle. Call `simulateGridWindow` and `computeTerminatorPlasmaRisk`, then pass those results to the network, route, and commercial functions. Hourly arrays use `hour * nodeCount + node`. Run `npm test` from `web` with Node 22.12+.
-
-- The solar disk calculation integrates the circular segment above a locally straight horizon. Bearings apply local meridian convergence to site-center ephemerides. Thermal equilibrium uses a fourth-power blend between configurable shadow and grazing-sun endpoints, with 65 K and 225 K defaults. Thermal inertia, terrain incidence, and local ephemeris parallax are outside this model. [Diviner cold-trap observations](https://pubmed.ncbi.nlm.nih.gov/20966246/)
-- The plasma and dust outputs are sensitivity scenarios. The default 165 V potential contrast and illustrative 4 m transition width set the subgrid field scale. Dust deposition, optical extinction, and ESD thresholds are configurable proxies. [NASA lunar plasma wake study](https://ntrs.nasa.gov/citations/20110013543)
-- Network ranking minimizes joint darkness first and uses Earth blackout hours as the tie-breaker. The receiver requires a mapped PSR, mean temperature below 110 K, and a downward terrain LOS. Passive flux uses one diffuse bounce from visible terrain facets and reports the hourly samples with positive flux. Active delivery uses an assumed efficiency and modeled surplus. [ShadowCam ice study](https://doi.org/10.1126/sciadv.aec8211) · [NASA Light Bender](https://www.nasa.gov/general/light-bender/)
-- Rover routing minimizes weighted hourly costs with cardinal moves of one candidate cell, or 40 m and 140 m for the compact and expanded grids. It checks the slope of intervening DEM pixels. The result reports residual darkness and hazard hours.
-- The commercial scenario sizes initially full batteries from the maximum cumulative net energy deficit. LCOE covers modeled battery and incremental hardware delivery capital divided by served energy over repeated mission windows. Extraction requires caller-supplied ice inventory. The underwriting output is a uniform spatial scenario across an axis-aligned landing ellipse with binary mission-loss VaR. The cost, failure thresholds, and insurance tiers are model inputs and outputs rather than NASA rates or insurance quotes.
+- **Client Scientific & Recovery Engine (`web/src/planner/`):** `model.ts` (`analyze`, `searchObserverDual`), `recovery.ts` (7-objective Pareto frontier + `buildDecisionCertificate`), `recoverySearch.ts`, `confidence.ts`, `planner.worker.ts`, and `wasmSearch.ts` (backed by `web/public/wasm/umbra_core.wasm`, built from `rust/umbra-core/` with `SitePack` batch scanning). Run `npm.cmd --prefix web test` and `npm.cmd --prefix web run build`.
+- **Interactive UI (`web/src/planner/`):** Modular React + Three.js workspace (`Planner.tsx`, `IntroOverlay.tsx`, `IntroScene.tsx`, `ScenarioBar.tsx`, `TelemetryPanel.tsx`, `TelemetryCharts.tsx`, `SkyScene.tsx`, `terrainOverlay.ts`, `AgentDrawer.tsx`, `RecoveryDrawer.tsx`, `PowerMethodsDrawers.tsx`). Supports `Planner` / `Learner` modes, `Minimal` / `Moderate` / `Detailed` verbosity, and 7 terrain overlays (`relief`, `viable`, `illumination`, `earth`, `solar_hours`, `slope`, `psr`).
+- **API, Worker Queue & Live Terrain (`server/`, `pipeline/terrain_server.py`):** Optional Node HTTP server (`server/server.mjs`, port `8787`) provides `Umbra Agent` (`researchAgent.mjs` + BM25/vector RAG over `research/rag/`), Prometheus/OTLP metrics, and durable `node:sqlite` WAL `StudyQueueStore` jobs. `pipeline/terrain_server.py` (port `8788`) serves on-demand `80 m/px` LOLA horizons (`/api/polar-horizon`). See `infra/docker-compose.yml` for the containerized `web` / `api` / `worker` / `terrain` / `prometheus` / `grafana` stack.
 
 The decision planner and the reproducible NASA release-data build are documented in [PLANNER.md](PLANNER.md).

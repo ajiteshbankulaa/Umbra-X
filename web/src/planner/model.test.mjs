@@ -1,6 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { analyze, arrayEfficiency, computePadViabilityMap, countdown, evaluateWindowSummary, intervals, diskFraction, horizonAt, storage, defaultPower, costTradeoff, searchObserver } from './model.ts'
+import { readFile } from 'node:fs/promises'
+import { analyze, arrayEfficiency, computePadViabilityMap, countdown, earthEclipseFactorFromVecs, evaluateWindowSummary, intervals, diskFraction, horizonAt, searchObserverDual, solarSemiDiameterDeg, storage, defaultPower, costTradeoff, searchObserver } from './model.ts'
+import { createWasmSearchEngine } from './wasmSearch.ts'
 
 test('horizon interpolates across north and finite solar disk crosses smoothly',()=>{
   const h=new Float32Array(360)
@@ -174,4 +176,79 @@ test('computePadViabilityMap classifies viable, Earth-constrained, and slope/dar
   assert.equal(summary.solarPct, 100)
   assert.equal(summary.longestDark, 0)
   assert.equal(summary.complete, true)
+})
+
+test('solarSemiDiameterDeg tracks perihelion vs aphelion angular radius and diskFraction honors radius', () => {
+  const peri = solarSemiDiameterDeg(1.471e11)
+  const aph = solarSemiDiameterDeg(1.521e11)
+  assert.ok(peri > 0.270 && peri < 0.272)
+  assert.ok(aph > 0.261 && aph < 0.263)
+  assert.ok(peri > aph)
+  assert.equal(diskFraction(0.269, peri) < 1, true)
+  assert.equal(diskFraction(0.269, aph), 1)
+  assert.equal(diskFraction(-0.269, peri) > 0, true)
+  assert.equal(diskFraction(-0.269, aph), 0)
+})
+
+test('earthEclipseFactorFromVecs detects umbra/penumbra lunar eclipses while ignoring normal geometry', () => {
+  // Normal geometry: Earth along +X, Sun along +Y (orthogonal) -> full unoccluded solar fraction
+  assert.equal(earthEclipseFactorFromVecs(0, 1.5e11, 0, 3.84e8, 0, 0), 1)
+  // Near-Earth small test sentinel guard (< 1e8 m or < 1e11 m sun): unoccluded
+  assert.equal(earthEclipseFactorFromVecs(1.5e8, 0, 0, 3.84e5, 0, 0), 1)
+  // Exact total lunar eclipse: Earth centered along Sun direction from Moon
+  assert.equal(earthEclipseFactorFromVecs(1.5e11, 0, 0, 3.84e8, 0, 0), 0)
+  // Partial penumbral/umbral grazing offset (~0.7 deg off-axis from Earth center)
+  const partial = earthEclipseFactorFromVecs(1.5e11, 0, 0, 3.84e8, Math.tan(0.7 * Math.PI / 180) * 3.84e8, 0)
+  assert.ok(partial > 0 && partial < 1)
+})
+
+test('WASM searchSiteDual matches searchObserverDual identically across multi-pad site pack', async () => {
+  const wasmUrl = new URL('../../public/wasm/umbra_core.wasm', import.meta.url)
+  const wasmBytes = await readFile(wasmUrl)
+  const wasm = await createWasmSearchEngine(wasmBytes)
+
+  const hGood = new Float32Array(360).fill(-2)
+  const hBlocked = new Float32Array(360).fill(25)
+  const ref = new Float32Array(360).fill(-2)
+  const cov = new Uint8Array(360).fill(1)
+  const err = new Float32Array(360).fill(0)
+  const obsList = [
+    { coordinates: [0, 0, 0], mast: 5, slope: 2.5, horizon: hGood, reference: ref, horizonError: err, distance: new Float32Array(360), coverage: cov },
+    { coordinates: [0, 0, 0], mast: 5, slope: 7.5, horizon: hGood, reference: ref, horizonError: err, distance: new Float32Array(360), coverage: cov },
+    { coordinates: [0, 0, 0], mast: 5, slope: 1.5, horizon: hBlocked, reference: hBlocked, horizonError: err, distance: new Float32Array(360), coverage: cov },
+  ]
+
+  // Build 48h (48*12 + 1 steps) of 5-minute vectors with Sun and Earth well above -2 deg horizon at az=0 / az=90
+  const steps = 12 * 12 // 12h window
+  const totalSteps = 24 * 12 + 1 // 24h trace
+  const vectors = new Float64Array(totalSteps * 12)
+  for (let i = 0; i < totalSteps; i++) {
+    vectors.set([1.5e11, 0, 3e10, 3e7, 3.84e8, 0, 3e7, 3.84e8, 0, 1, 0, 0], i * 12)
+  }
+  const meta = { count: totalSteps, stepMinutes: 5, station: { maskDeg: 10 }, observers: [[0, 0, 0], [0, 0, 0], [0, 0, 0]] }
+  const limits = { dark: 2, earth: 2, slope: 5 }
+  const batch = wasm.searchSiteDual({
+    siteKey: 'unit-pack',
+    nodeCount: 3,
+    mastM: 5,
+    vectors,
+    steps,
+    meta,
+    limits,
+    sigma: 0,
+    minStep: 0,
+    maxStep: totalSteps - 1 - steps,
+    getObserver: idx => obsList[idx],
+  })
+
+  for (let idx = 0; idx < 3; idx++) {
+    const tsSteps = obsList[idx].slope <= limits.slope
+      ? searchObserverDual(obsList[idx], vectors, steps, meta, limits, 0)
+      : []
+    const tsHours = Array.from(new Set(tsSteps.map(s => Math.round((s * meta.stepMinutes) / 60))))
+    assert.deepEqual(batch.get(idx) ?? [], tsHours)
+  }
+  assert.ok((batch.get(0) ?? []).length > 0)
+  assert.equal(batch.has(1), false)
+  assert.equal(batch.has(2), false)
 })

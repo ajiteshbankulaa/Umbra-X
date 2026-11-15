@@ -1,0 +1,150 @@
+{
+  "benchmarkVersion": "phase4-retrieval-bench-v1",
+  "description": "Curated 24-query retrieval benchmark across NASA PGDA LOLA, NTRS Barker/Mazarico/Glaser/Artemis-III, JPL DE440/Horizons, and Umbra-X specs.",
+  "queries": [
+    {
+      "id": "q01",
+      "category": "exact_product",
+      "query": "Where does LDEM_80S_20MPP_ADJ_ERR.TIF come from and what does it measure?",
+      "expectedDocIds": ["nasa-pgda-lola-spole", "umbrax-data-provenance", "ntrs-barker-mazarico-2020"]
+    },
+    {
+      "id": "q02",
+      "category": "semantic_paraphrase",
+      "query": "Why can small errors in spacecraft altimetry tracks flip whether a polar ridge sees sunlight?",
+      "expectedDocIds": ["ntrs-barker-mazarico-2020", "umbrax-uncertainty-limitations", "ntrs-barker-lola-2022"]
+    },
+    {
+      "id": "q03",
+      "category": "exact_science",
+      "query": "Barker Mazarico Neumann improved LOLA elevation maps error estimates illumination conditions",
+      "expectedDocIds": ["ntrs-barker-mazarico-2020", "ntrs-barker-lola-2022"]
+    },
+    {
+      "id": "q04",
+      "category": "semantic_paraphrase",
+      "query": "How far away do distant crater walls still cast shadows on south polar landing sites?",
+      "expectedDocIds": ["ntrs-glaser-2017", "ntrs-mazarico-2011", "umbrax-scientific-method", "umbrax-uncertainty-limitations"]
+    },
+    {
+      "id": "q05",
+      "category": "exact_artifact",
+      "query": "48 km vs 96 km regional horizon sensitivity and 80S latitude boundary clipping",
+      "expectedDocIds": ["umbrax-scientific-method", "umbrax-uncertainty-limitations", "umbrax-validation-matrix"]
+    },
+    {
+      "id": "q06",
+      "category": "ephemeris_exact",
+      "query": "JPL Horizons AIRLESS apparent vs geometric direction agreement for DE440 moon ephemeris",
+      "expectedDocIds": ["umbrax-validation-matrix", "jpl-horizons-manual", "jpl-de440-doc"]
+    },
+    {
+      "id": "q07",
+      "category": "ephemeris_paraphrase",
+      "query": "Which planetary kernel reference frame aligns body-fixed selenographic terrain to solar system positions?",
+      "expectedDocIds": ["umbrax-scientific-method", "umbrax-data-provenance", "jpl-de440-doc"]
+    },
+    {
+      "id": "q08",
+      "category": "nasa_artemis",
+      "query": "How did NASA downselect thirteen Artemis III candidate landing regions down to nine?",
+      "expectedDocIds": ["ntrs-artemis3-regions-2025", "ntrs-lunar-site-selection-2023"]
+    },
+    {
+      "id": "q09",
+      "category": "limitations_comm",
+      "query": "Does geometric Earth line-of-sight visibility across DSS-14 Goldstone Madrid and Canberra guarantee a working radio link?",
+      "expectedDocIds": ["umbrax-uncertainty-limitations", "umbrax-scientific-method"]
+    },
+    {
+      "id": "q10",
+      "category": "psr_science",
+      "query": "What is the difference between a mapped Permanently Shadowed Region and verified water ice?",
+      "expectedDocIds": ["umbrax-uncertainty-limitations", "ntrs-mazarico-2011", "ntrs-glaser-2017"]
+    },
+    {
+      "id": "q11",
+      "category": "recovery_design",
+      "query": "How does Mission Recovery separate geometry constraint failures from battery mass and unmet power failures?",
+      "expectedDocIds": ["umbrax-mission-recovery", "umbrax-optimization-objectives"]
+    },
+    {
+      "id": "q12",
+      "category": "pareto_objectives",
+      "query": "What seven objectives define the Pareto non-dominated frontier in Umbra-X?",
+      "expectedDocIds": ["umbrax-optimization-objectives", "umbrax-mission-recovery"]
+    },
+    {
+      "id": "q13",
+      "category": "certificate_audit",
+      "query": "fnv1a128 deterministicFingerprint verification schema in Decision Certificate JSON",
+      "expectedDocIds": ["umbrax-decision-certificate", "umbrax-mission-recovery"]
+    },
+    {
+      "id": "q14",
+      "category": "power_energy",
+      "query": "polar illumination energy storage solar battery mass at lunar south pole",
+      "expectedDocIds": ["ntrs-polar-energy-2008", "umbrax-scientific-method", "ntrs-glaser-2017"]
+    },
+    {
+      "id": "q15",
+      "category": "geodesy_scaling",
+      "query": "south polar stereographic scale factor (1 - sin lat)/2 conformal distortion",
+      "expectedDocIds": ["umbrax-scientific-method", "umbrax-validation-matrix"]
+    },
+    {
+      "id": "q16",
+      "category": "slope_validation",
+      "query": "How accurate are central-difference terrain slopes compared against NASA PGDA LDSM?",
+      "expectedDocIds": ["umbrax-validation-matrix", "umbrax-uncertainty-limitations", "nasa-pgda-lola-spole"]
+    },
+    {
+      "id": "q17",
+      "category": "horizons_observer",
+      "query": "topocentric observer coordinates selenographic longitude latitude elevation in JPL Horizons",
+      "expectedDocIds": ["jpl-horizons-manual", "umbrax-validation-matrix"]
+    },
+    {
+      "id": "q18",
+      "category": "de440_physics",
+      "query": "lunar libration physical ephemeris fit range for DE440 vs DE441",
+      "expectedDocIds": ["jpl-de440-doc", "umbrax-data-provenance"]
+    },
+    {
+      "id": "q19",
+      "category": "mazarico_2011",
+      "query": "peaks of eternal light Mazarico LOLA topography solar illumination and Earth visibility map",
+      "expectedDocIds": ["ntrs-mazarico-2011", "ntrs-glaser-2017", "ntrs-polar-energy-2008"]
+    },
+    {
+      "id": "q20",
+      "category": "solar_disk_model",
+      "query": "finite solar angular radius 0.2666 degrees limb grazing visibility model",
+      "expectedDocIds": ["umbrax-scientific-method", "umbrax-validation-matrix"]
+    },
+    {
+      "id": "q21",
+      "category": "site_selection_process",
+      "query": "NASA engineering constraints illumination slope Earth communication for human lunar landing site selection",
+      "expectedDocIds": ["ntrs-lunar-site-selection-2023", "ntrs-artemis3-regions-2025", "umbrax-mission-recovery"]
+    },
+    {
+      "id": "q22",
+      "category": "data_hashes",
+      "query": "SHA-256 checksums for de440s.bsp moon_de440_250416.tf and pck00011.tpc kernels",
+      "expectedDocIds": ["umbrax-data-provenance"]
+    },
+    {
+      "id": "q23",
+      "category": "convergence_analysis",
+      "query": "Does azimuth step 0.25 degrees vs 1 degree or 1-minute vs 5-minute time step change blackout durations?",
+      "expectedDocIds": ["umbrax-validation-matrix", "umbrax-uncertainty-limitations"]
+    },
+    {
+      "id": "q24",
+      "category": "lola_dataset_doi",
+      "query": "Barker 2023 Planetary Science Journal DOI 10.3847/PSJ/acf3e1 PGDA product 90",
+      "expectedDocIds": ["nasa-pgda-lola-spole", "umbrax-data-provenance", "ntrs-barker-lola-2022"]
+    }
+  ]
+}

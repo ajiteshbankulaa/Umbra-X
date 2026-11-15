@@ -1,0 +1,325 @@
+{
+  "benchmarkVersion": "phase5-prod-perf-v1",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "nodeVersion": "v24.11.0",
+    "cpuModel": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "logicalCores": 12,
+    "totalSystemMemoryGb": 31.72
+  },
+  "datasetLoading": {
+    "totalAll3SitesMs": 173.41,
+    "perSite": {
+      "shackleton-ridge": {
+        "coldLoadAndSha256Ms": 59.53,
+        "decodedArrayMb": 29.15
+      },
+      "mons-mouton": {
+        "coldLoadAndSha256Ms": 57.28,
+        "decodedArrayMb": 29.15
+      },
+      "malapert-massif": {
+        "coldLoadAndSha256Ms": 56.3,
+        "decodedArrayMb": 29.15
+      }
+    },
+    "rssAfterLoadMb": 217.6
+  },
+  "wasmVsTs": {
+    "site": "shackleton-ridge",
+    "totalPads": 961,
+    "slopeFilteredPadsEvaluated": 101,
+    "wasmByteLength": 45051,
+    "wasmColdInitMs": 8.83,
+    "typescript": {
+      "fullSweepMs": 229.43,
+      "perEligiblePadMs": {
+        "p50": 1.855,
+        "p95": 3.751
+      },
+      "throughputEligiblePadsPerSec": 440.2
+    },
+    "rustWasm": {
+      "fullSweepMs": 217.06,
+      "perEligiblePadMs": {
+        "p50": 1.821,
+        "p95": 3.31
+      },
+      "throughputEligiblePadsPerSec": 465.3
+    },
+    "measuredSpeedupFactor": 1.06
+  },
+  "concurrencySweep": {
+    "c_1": {
+      "concurrentRequests": 1,
+      "workerCount": 1,
+      "totalWallMs": 561.77,
+      "throughputJobsPerSec": 1.78,
+      "httpSubmitMs": {
+        "p50": 50.537,
+        "p95": 50.537
+      },
+      "workerExecMs": {
+        "p50": 303.33,
+        "p95": 303.33
+      },
+      "endToEndMs": {
+        "p50": 561.571,
+        "p95": 561.571
+      }
+    },
+    "c_2": {
+      "concurrentRequests": 2,
+      "workerCount": 1,
+      "totalWallMs": 1079.97,
+      "throughputJobsPerSec": 1.85,
+      "httpSubmitMs": {
+        "p50": 11.657,
+        "p95": 11.963
+      },
+      "workerExecMs": {
+        "p50": 382.92,
+        "p95": 408.99
+      },
+      "endToEndMs": {
+        "p50": 687.3,
+        "p95": 1079.075
+      }
+    },
+    "c_4": {
+      "concurrentRequests": 4,
+      "workerCount": 1,
+      "totalWallMs": 2988.72,
+      "throughputJobsPerSec": 1.34,
+      "httpSubmitMs": {
+        "p50": 54.17,
+        "p95": 54.902
+      },
+      "workerExecMs": {
+        "p50": 632.08,
+        "p95": 767.76
+      },
+      "endToEndMs": {
+        "p50": 1717.16,
+        "p95": 2983.495
+      }
+    },
+    "c_8": {
+      "concurrentRequests": 8,
+      "workerCount": 2,
+      "totalWallMs": 4109.6,
+      "throughputJobsPerSec": 1.95,
+      "httpSubmitMs": {
+        "p50": 81.713,
+        "p95": 83.575
+      },
+      "workerExecMs": {
+        "p50": 948.11,
+        "p95": 998.66
+      },
+      "endToEndMs": {
+        "p50": 2086.011,
+        "p95": 4101.343
+      }
+    },
+    "c_16": {
+      "concurrentRequests": 16,
+      "workerCount": 2,
+      "totalWallMs": 6622.95,
+      "throughputJobsPerSec": 2.42,
+      "httpSubmitMs": {
+        "p50": 165.318,
+        "p95": 179.891
+      },
+      "workerExecMs": {
+        "p50": 730.88,
+        "p95": 945.27
+      },
+      "endToEndMs": {
+        "p50": 3590.574,
+        "p95": 6610.667
+      }
+    }
+  },
+  "sampleTrace": [
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "0669441dd752473b872e1f60ed619645",
+      "spanId": "b48e0d67199b43a8",
+      "parentSpanId": null,
+      "name": "GET /api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+      "startTimeUnixNano": "1794712902154000000",
+      "endTimeUnixNano": "1794712902154687500",
+      "durationMs": 0.688,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "method": "GET",
+        "route": "/api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "correlationId": "775a0f9a-60a8-4dbf-ac94-96e267fd01a3",
+        "httpStatus": 200
+      }
+    },
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "a7524be127034afdaa8d50705f6d7c03",
+      "spanId": "c6dc885b93e549d1",
+      "parentSpanId": null,
+      "name": "GET /api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+      "startTimeUnixNano": "1794712902194000000",
+      "endTimeUnixNano": "1794712902194676100",
+      "durationMs": 0.676,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "method": "GET",
+        "route": "/api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "correlationId": "997f140e-1c49-4e11-a7b3-a156cc85d88f",
+        "httpStatus": 200
+      }
+    },
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "22fd76562bdb44609bc0f47ff5222351",
+      "spanId": "ff0b4206ce804354",
+      "parentSpanId": null,
+      "name": "GET /api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+      "startTimeUnixNano": "1794712902224000000",
+      "endTimeUnixNano": "1794712902224441100",
+      "durationMs": 0.441,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "method": "GET",
+        "route": "/api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "correlationId": "fb9e44ba-b45d-4517-991c-3b4e36704d96",
+        "httpStatus": 200
+      }
+    },
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "93aa51cc65014d63aafc728c9057045d",
+      "spanId": "36499f4469f34a4d",
+      "parentSpanId": null,
+      "name": "GET /api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+      "startTimeUnixNano": "1794712902255000000",
+      "endTimeUnixNano": "1794712902255490500",
+      "durationMs": 0.49,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "method": "GET",
+        "route": "/api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "correlationId": "6b3b1f9d-b08b-437d-8764-a93ea3694117",
+        "httpStatus": 200
+      }
+    },
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "ed80f25ef1704ec7a6571c451f47710c",
+      "spanId": "a977a0d760054676",
+      "parentSpanId": null,
+      "name": "GET /api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+      "startTimeUnixNano": "1794712902287000000",
+      "endTimeUnixNano": "1794712902287404500",
+      "durationMs": 0.405,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "method": "GET",
+        "route": "/api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "correlationId": "0bc806b8-78f7-4206-b6ec-dba700a1441c",
+        "httpStatus": 200
+      }
+    },
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "630199e8f457415591c53404b6b1126c",
+      "spanId": "7fee86a7ee4f49ff",
+      "parentSpanId": null,
+      "name": "GET /api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+      "startTimeUnixNano": "1794712902319000000",
+      "endTimeUnixNano": "1794712902319638700",
+      "durationMs": 0.639,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "method": "GET",
+        "route": "/api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "correlationId": "5aebae89-c906-4da3-9325-ad97dfcfc646",
+        "httpStatus": 200
+      }
+    },
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "22222222222222222222222222222200",
+      "spanId": "e02e3efddfd04c13",
+      "parentSpanId": null,
+      "name": "study.execute",
+      "startTimeUnixNano": "1794712902044000000",
+      "endTimeUnixNano": "1794712902352266400",
+      "durationMs": 308.266,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "jobId": "b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "kind": "compare",
+        "attempt": 1,
+        "workerId": "worker-42540-0c91ab",
+        "committed": true,
+        "artifactSha256": "c84fa352bf25dc8ada1f95351aef511fc5ca28cfa0d148d60149984b9feabb08",
+        "durationMs": 303.3
+      }
+    },
+    {
+      "resource": {
+        "serviceName": "umbra-api"
+      },
+      "traceId": "5233dab6a4dc49bb9e8b7ed6f42ad4fe",
+      "spanId": "bb489b34e53946dd",
+      "parentSpanId": null,
+      "name": "GET /api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+      "startTimeUnixNano": "1794712902354000000",
+      "endTimeUnixNano": "1794712902356723000",
+      "durationMs": 2.723,
+      "status": {
+        "code": "OK"
+      },
+      "attributes": {
+        "method": "GET",
+        "route": "/api/study/runs/b631073a-0916-46c0-a1fd-5131cb9eab62",
+        "correlationId": "6391a25a-e8cf-43a5-85c5-0ed6fd0ec762",
+        "httpStatus": 200
+      }
+    }
+  ],
+  "memorySummaryMb": {
+    "peakRssMb": 308.07,
+    "heapTotalMb": 89.71,
+    "heapUsedMb": 30.87,
+    "externalMb": 98.78
+  },
+  "totalBenchmarkDurationMs": 16870.9
+}

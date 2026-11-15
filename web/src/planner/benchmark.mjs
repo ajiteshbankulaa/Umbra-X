@@ -141,22 +141,43 @@ async function main() {
       const refSet = []
       const optSet = []
       const wasmSet = []
+      const batchSet = []
+      const mastM = [1.5, 3, 5, 10, 20][m] ?? 5
       for (const bundle of bundles) {
+        const batchMap = wasm.searchSiteDual({
+          siteKey: `${bundle.site}-m${m}`,
+          nodeCount: 961,
+          mastM,
+          vectors: bundle.vectors,
+          steps,
+          meta: bundle.meta,
+          limits,
+          sigma,
+          minStep: 0,
+          maxStep: Math.max(0, bundle.meta.count - 1 - steps),
+          getObserver: node => buildObserver(bundle, node, m),
+        })
         for (let node = 0; node < 961; node++) {
           const obs = buildObserver(bundle, node, m)
           if (obs.slope == null || obs.slope > limits.slope) continue
           const rA = runBaseline(obs, bundle.vectors, steps, bundle.meta, limits, sigma)
           const rB = searchObserverDual(obs, bundle.vectors, steps, bundle.meta, limits, sigma)
           const rC = wasm.searchDual(obs, bundle.vectors, steps, bundle.meta, limits, sigma)
+          const stepHours = bundle.meta.stepMinutes / 60
+          const rCHours = Array.from(new Set(rC.map(st => Math.round(st * stepHours))))
+          const rD = batchMap.get(node) ?? []
           assert.deepEqual(rB, rA, `Optimized TS parity mismatch at ${bundle.site} pad ${node} mast ${m} sigma ${sigma}`)
           assert.deepEqual(rC, rA, `WASM parity mismatch at ${bundle.site} pad ${node} mast ${m} sigma ${sigma}`)
+          assert.deepEqual(rD, rCHours, `WASM batch parity mismatch at ${bundle.site} pad ${node} mast ${m} sigma ${sigma}`)
           for (const s of rA) refSet.push(`${bundle.site}:${node}:${s}`)
           for (const s of rB) optSet.push(`${bundle.site}:${node}:${s}`)
           for (const s of rC) wasmSet.push(`${bundle.site}:${node}:${s}`)
+          for (const h of rD) batchSet.push(`${bundle.site}:${node}:${h}`)
         }
       }
       assert.equal(optSet.length, refSet.length)
       assert.equal(wasmSet.length, refSet.length)
+      assert.equal(batchSet.length, refSet.length)
       console.log(`  mast=${bundleMastLabel(m)} sigma=${sigma}: 100% exact parity (${refSet.length.toLocaleString()} pairs)`)
     }
   }
@@ -166,6 +187,30 @@ async function main() {
   const timesBase = []
   const timesOpt = []
   const timesWasm = []
+  const timesBatch = []
+
+  const runBatchSearch = sigma => {
+    const keys = []
+    for (const bundle of bundles) {
+      const mMap = wasm.searchSiteDual({
+        siteKey: `${bundle.site}-bench-m${mast}`,
+        nodeCount: 961,
+        mastM: 5,
+        vectors: bundle.vectors,
+        steps,
+        meta: bundle.meta,
+        limits,
+        sigma,
+        minStep: 0,
+        maxStep: Math.max(0, bundle.meta.count - 1 - steps),
+        getObserver: node => buildObserver(bundle, node, mast),
+      })
+      for (const [node, starts] of mMap) {
+        for (const s of starts) keys.push(`${bundle.site}:${node}:${s}`)
+      }
+    }
+    return keys
+  }
 
   for (let r = 0; r < runs; r++) {
     const t0 = performance.now()
@@ -179,11 +224,17 @@ async function main() {
     const t2 = performance.now()
     const kWasm = runSearch((o, v, s, m, l, sig) => wasm.searchDual(o, v, s, m, l, sig))
     timesWasm.push(performance.now() - t2)
+
+    const t3 = performance.now()
+    const kBatch = runBatchSearch(0)
+    timesBatch.push(performance.now() - t3)
+    assert.equal(kBatch.length, kWasm.length)
   }
 
   const sBase = summarize(timesBase)
   const sOpt = summarize(timesOpt)
   const sWasm = summarize(timesWasm)
+  const sBatch = summarize(timesBatch)
   const memMb = process.memoryUsage().rss / (1024 * 1024)
 
   console.log('\n[Phase 2 Search Performance (3 sites x 961 pads x 2 profiles x 361 starts at 15 days)]')
@@ -191,6 +242,7 @@ async function main() {
   console.log(`  Baseline TS   : cold ${sBase.coldMs.toFixed(1)} ms | warm p50 ${sBase.p50Ms.toFixed(1)} ms | warm p95 ${sBase.p95Ms.toFixed(1)} ms`)
   console.log(`  Optimized TS  : cold ${sOpt.coldMs.toFixed(1)} ms | warm p50 ${sOpt.p50Ms.toFixed(1)} ms | warm p95 ${sOpt.p95Ms.toFixed(1)} ms (${(sBase.p50Ms / sOpt.p50Ms).toFixed(2)}x vs Baseline)`)
   console.log(`  Rust -> WASM  : cold ${sWasm.coldMs.toFixed(1)} ms | warm p50 ${sWasm.p50Ms.toFixed(1)} ms | warm p95 ${sWasm.p95Ms.toFixed(1)} ms (${(sBase.p50Ms / sWasm.p50Ms).toFixed(2)}x vs Baseline, ${(sOpt.p50Ms / sWasm.p50Ms).toFixed(2)}x vs Opt TS)`)
+  console.log(`  WASM SitePack : cold ${sBatch.coldMs.toFixed(1)} ms | warm p50 ${sBatch.p50Ms.toFixed(1)} ms | warm p95 ${sBatch.p95Ms.toFixed(1)} ms (${(sBase.p50Ms / sBatch.p50Ms).toFixed(2)}x vs Baseline, ${(sOpt.p50Ms / sBatch.p50Ms).toFixed(2)}x vs Opt TS)`)
 }
 
 function bundleMastLabel(mast) {

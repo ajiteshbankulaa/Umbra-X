@@ -8,6 +8,9 @@ version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = ["numpy", "numba", "rasterio", "pyproj", "requests", "skyfield", "scipy", "pytest", "matplotlib", "jplephem"]
 
+[project.optional-dependencies]
+research = ["scikit-learn>=1.5", "torch>=2.3", "qdrant-client>=1.12", "fastembed>=0.5"]
+
 [project.scripts]
 umbra-compile = "umbra_x.compiler:main"
 

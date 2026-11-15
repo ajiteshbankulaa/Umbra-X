@@ -1,0 +1,30 @@
+# Multi-stage headless durable study worker container
+FROM node:24.11.0-bookworm-slim AS deps
+WORKDIR /app
+COPY web/package.json web/package-lock.json ./web/
+RUN npm --prefix web ci --omit=dev --ignore-scripts
+
+FROM node:24.11.0-bookworm-slim AS runtime
+ENV NODE_ENV=production \
+    UMBRA_STUDY_DB=/data/studies.sqlite \
+    UMBRA_ARTIFACTS_DIR=/data/artifacts \
+    UMBRA_WORKER_LEASE_MS=15000
+
+WORKDIR /app
+RUN mkdir -p /data/artifacts && chown -R node:node /app /data
+
+COPY --chown=node:node --from=deps /app/web/node_modules ./web/node_modules
+COPY --chown=node:node server ./server
+COPY --chown=node:node web/package.json ./web/package.json
+COPY --chown=node:node web/src/planner ./web/src/planner
+COPY --chown=node:node web/src/types ./web/src/types
+COPY --chown=node:node web/public/wasm/umbra_core.wasm ./web/public/wasm/umbra_core.wasm
+COPY --chown=node:node web/public/data/planner-release ./web/public/data/planner-release
+
+USER node
+STOPSIGNAL SIGTERM
+
+HEALTHCHECK --interval=20s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "const {existsSync}=require('node:fs'); process.exit(existsSync(process.env.UMBRA_STUDY_DB)?0:1)"
+
+CMD ["node", "server/worker.mjs"]

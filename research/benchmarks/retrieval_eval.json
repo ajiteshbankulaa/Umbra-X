@@ -1,0 +1,332 @@
+{
+  "benchmarkVersion": "phase4-retrieval-bench-v1",
+  "embeddingModel": "BAAI/bge-small-en-v1.5",
+  "vectorStore": "qdrant",
+  "chunkCount": 169,
+  "queryCount": 24,
+  "results": [
+    {
+      "mode": "tfidf_legacy",
+      "queryCount": 24,
+      "recallAt1": 0.8333,
+      "recallAt3": 0.9167,
+      "recallAt5": 0.9583,
+      "mrrAt5": 0.8854,
+      "ndcgAt5": 0.6129,
+      "latencyMs": {
+        "p50": 1.21,
+        "p95": 2.09,
+        "mean": 1.41
+      },
+      "r1MissesCount": 4,
+      "r1Misses": [
+        {
+          "id": "q04",
+          "category": "semantic_paraphrase",
+          "query": "How far away do distant crater walls still cast shadows on south polar landing sites?",
+          "expectedDocIds": [
+            "ntrs-glaser-2017",
+            "ntrs-mazarico-2011",
+            "umbrax-scientific-method",
+            "umbrax-uncertainty-limitations"
+          ],
+          "top3DocIds": [
+            "ntrs-barker-mazarico-2020",
+            "ntrs-glaser-2017",
+            "ntrs-barker-lola-2022"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q07",
+          "category": "ephemeris_paraphrase",
+          "query": "Which planetary kernel reference frame aligns body-fixed selenographic terrain to solar system positions?",
+          "expectedDocIds": [
+            "umbrax-scientific-method",
+            "umbrax-data-provenance",
+            "jpl-de440-doc"
+          ],
+          "top3DocIds": [
+            "jpl-horizons-manual",
+            "jpl-horizons-manual",
+            "jpl-horizons-manual"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q10",
+          "category": "psr_science",
+          "query": "What is the difference between a mapped Permanently Shadowed Region and verified water ice?",
+          "expectedDocIds": [
+            "umbrax-uncertainty-limitations",
+            "ntrs-mazarico-2011",
+            "ntrs-glaser-2017"
+          ],
+          "top3DocIds": [
+            "ntrs-barker-lola-2022",
+            "ntrs-glaser-2017",
+            "umbrax-uncertainty-limitations"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q23",
+          "category": "convergence_analysis",
+          "query": "Does azimuth step 0.25 degrees vs 1 degree or 1-minute vs 5-minute time step change blackout durations?",
+          "expectedDocIds": [
+            "umbrax-validation-matrix",
+            "umbrax-uncertainty-limitations"
+          ],
+          "top3DocIds": [
+            "umbrax-scientific-method",
+            "umbrax-scientific-method",
+            "umbrax-data-provenance"
+          ],
+          "r5Hit": false
+        }
+      ]
+    },
+    {
+      "mode": "bm25",
+      "queryCount": 24,
+      "recallAt1": 0.8333,
+      "recallAt3": 0.9167,
+      "recallAt5": 0.9583,
+      "mrrAt5": 0.8785,
+      "ndcgAt5": 0.6193,
+      "latencyMs": {
+        "p50": 0.74,
+        "p95": 1.3,
+        "mean": 0.82
+      },
+      "r1MissesCount": 4,
+      "r1Misses": [
+        {
+          "id": "q07",
+          "category": "ephemeris_paraphrase",
+          "query": "Which planetary kernel reference frame aligns body-fixed selenographic terrain to solar system positions?",
+          "expectedDocIds": [
+            "umbrax-scientific-method",
+            "umbrax-data-provenance",
+            "jpl-de440-doc"
+          ],
+          "top3DocIds": [
+            "jpl-horizons-manual",
+            "jpl-horizons-manual",
+            "jpl-horizons-manual"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q10",
+          "category": "psr_science",
+          "query": "What is the difference between a mapped Permanently Shadowed Region and verified water ice?",
+          "expectedDocIds": [
+            "umbrax-uncertainty-limitations",
+            "ntrs-mazarico-2011",
+            "ntrs-glaser-2017"
+          ],
+          "top3DocIds": [
+            "ntrs-barker-lola-2022",
+            "umbrax-uncertainty-limitations",
+            "ntrs-glaser-2017"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q19",
+          "category": "mazarico_2011",
+          "query": "peaks of eternal light Mazarico LOLA topography solar illumination and Earth visibility map",
+          "expectedDocIds": [
+            "ntrs-mazarico-2011",
+            "ntrs-glaser-2017",
+            "ntrs-polar-energy-2008"
+          ],
+          "top3DocIds": [
+            "ntrs-barker-lola-2022",
+            "ntrs-artemis3-regions-2025",
+            "ntrs-mazarico-2011"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q23",
+          "category": "convergence_analysis",
+          "query": "Does azimuth step 0.25 degrees vs 1 degree or 1-minute vs 5-minute time step change blackout durations?",
+          "expectedDocIds": [
+            "umbrax-validation-matrix",
+            "umbrax-uncertainty-limitations"
+          ],
+          "top3DocIds": [
+            "umbrax-scientific-method",
+            "umbrax-scientific-method",
+            "umbrax-data-provenance"
+          ],
+          "r5Hit": false
+        }
+      ]
+    },
+    {
+      "mode": "dense_qdrant",
+      "queryCount": 24,
+      "recallAt1": 0.7917,
+      "recallAt3": 0.9583,
+      "recallAt5": 1.0,
+      "mrrAt5": 0.8854,
+      "ndcgAt5": 0.5917,
+      "latencyMs": {
+        "p50": 54.56,
+        "p95": 125.16,
+        "mean": 67.08
+      },
+      "r1MissesCount": 5,
+      "r1Misses": [
+        {
+          "id": "q04",
+          "category": "semantic_paraphrase",
+          "query": "How far away do distant crater walls still cast shadows on south polar landing sites?",
+          "expectedDocIds": [
+            "ntrs-glaser-2017",
+            "ntrs-mazarico-2011",
+            "umbrax-scientific-method",
+            "umbrax-uncertainty-limitations"
+          ],
+          "top3DocIds": [
+            "ntrs-barker-lola-2022",
+            "ntrs-glaser-2017",
+            "ntrs-glaser-2017"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q07",
+          "category": "ephemeris_paraphrase",
+          "query": "Which planetary kernel reference frame aligns body-fixed selenographic terrain to solar system positions?",
+          "expectedDocIds": [
+            "umbrax-scientific-method",
+            "umbrax-data-provenance",
+            "jpl-de440-doc"
+          ],
+          "top3DocIds": [
+            "umbrax-validation-matrix",
+            "umbrax-scientific-method",
+            "jpl-horizons-manual"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q10",
+          "category": "psr_science",
+          "query": "What is the difference between a mapped Permanently Shadowed Region and verified water ice?",
+          "expectedDocIds": [
+            "umbrax-uncertainty-limitations",
+            "ntrs-mazarico-2011",
+            "ntrs-glaser-2017"
+          ],
+          "top3DocIds": [
+            "ntrs-barker-lola-2022",
+            "umbrax-uncertainty-limitations",
+            "ntrs-polar-energy-2008"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q21",
+          "category": "site_selection_process",
+          "query": "NASA engineering constraints illumination slope Earth communication for human lunar landing site selection",
+          "expectedDocIds": [
+            "ntrs-lunar-site-selection-2023",
+            "ntrs-artemis3-regions-2025",
+            "umbrax-mission-recovery"
+          ],
+          "top3DocIds": [
+            "ntrs-glaser-2017",
+            "ntrs-glaser-2017",
+            "ntrs-glaser-2017"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q24",
+          "category": "lola_dataset_doi",
+          "query": "Barker 2023 Planetary Science Journal DOI 10.3847/PSJ/acf3e1 PGDA product 90",
+          "expectedDocIds": [
+            "nasa-pgda-lola-spole",
+            "umbrax-data-provenance",
+            "ntrs-barker-lola-2022"
+          ],
+          "top3DocIds": [
+            "ntrs-glaser-2017",
+            "ntrs-barker-lola-2022",
+            "nasa-pgda-lola-spole"
+          ],
+          "r5Hit": true
+        }
+      ]
+    },
+    {
+      "mode": "hybrid_rrf",
+      "queryCount": 24,
+      "recallAt1": 0.875,
+      "recallAt3": 1.0,
+      "recallAt5": 1.0,
+      "mrrAt5": 0.9375,
+      "ndcgAt5": 0.6336,
+      "latencyMs": {
+        "p50": 68.09,
+        "p95": 133.21,
+        "mean": 70.81
+      },
+      "r1MissesCount": 3,
+      "r1Misses": [
+        {
+          "id": "q07",
+          "category": "ephemeris_paraphrase",
+          "query": "Which planetary kernel reference frame aligns body-fixed selenographic terrain to solar system positions?",
+          "expectedDocIds": [
+            "umbrax-scientific-method",
+            "umbrax-data-provenance",
+            "jpl-de440-doc"
+          ],
+          "top3DocIds": [
+            "jpl-horizons-manual",
+            "umbrax-scientific-method",
+            "jpl-horizons-manual"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q10",
+          "category": "psr_science",
+          "query": "What is the difference between a mapped Permanently Shadowed Region and verified water ice?",
+          "expectedDocIds": [
+            "umbrax-uncertainty-limitations",
+            "ntrs-mazarico-2011",
+            "ntrs-glaser-2017"
+          ],
+          "top3DocIds": [
+            "ntrs-barker-lola-2022",
+            "umbrax-uncertainty-limitations",
+            "umbrax-uncertainty-limitations"
+          ],
+          "r5Hit": true
+        },
+        {
+          "id": "q23",
+          "category": "convergence_analysis",
+          "query": "Does azimuth step 0.25 degrees vs 1 degree or 1-minute vs 5-minute time step change blackout durations?",
+          "expectedDocIds": [
+            "umbrax-validation-matrix",
+            "umbrax-uncertainty-limitations"
+          ],
+          "top3DocIds": [
+            "umbrax-mission-recovery",
+            "umbrax-uncertainty-limitations",
+            "umbrax-optimization-objectives"
+          ],
+          "r5Hit": true
+        }
+      ]
+    }
+  ]
+}

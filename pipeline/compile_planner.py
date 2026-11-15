@@ -17,10 +17,10 @@ from pyproj import Transformer
 from skyfield.api import PlanetaryConstants, load, load_file
 from skyfield.framelib import itrs
 
-from fetch_nasa_data import CACHE, PGDA, POLAR_SITES, KERNELS
+from fetch_nasa_data import CACHE, POLAR_SITES, KERNELS
 from umbra_x.compiler import CRS_POLAR, MASTS, RADIUS, compile_horizons_with_distance
 
-REGIONAL = PGDA + "LDEM_80S_80MPP_ADJ.TIF"
+REGIONAL = "https://pgda.gsfc.nasa.gov/data/LOLA_80mpp/LDEM_80S_80MPP_ADJ.TIF"
 FRAME = "MOON_ME_DE440_ME421"
 STATION = [-2353621.365667699, -4641341.49114994, 3677052.329319744]
 
@@ -47,15 +47,18 @@ def vectors(kernels, start, count, step_minutes=5):
             t = times[mask]
             frame = constants.build_frame(frame_id, _segment=segment)
             moon = planets["moon"].at(t)
-            earth = planets["earth"].at(t)
+            earth_app = None
             for offset, name in ((0, "sun"), (3, "earth")):
-                # Geometric simultaneous positions, without light-time or aberration.
-                output[mask, offset:offset+3] = (planets[name].at(t) - moon).frame_xyz(frame).m.T
+                # Apparent Moon-centered positions (light-time + stellar aberration) matching JPL Horizons AIRLESS.
+                apparent_xyz = moon.observe(planets[name]).apparent().frame_xyz(frame).m.T
+                output[mask, offset:offset+3] = apparent_xyz
+                if name == "earth":
+                    earth_app = apparent_xyz
             rotation = np.einsum("ijn,kjn->ikn", frame.rotation_at(t), itrs.rotation_at(t))
             station = np.einsum("ijn,j->in", rotation, STATION)
             axis = np.array(STATION) / np.array([6378137.0, 6378137.0, 6356752.314245])**2
             up = np.einsum("ijn,j->in", rotation, axis / np.linalg.norm(axis))
-            output[mask, 6:9] = (earth - moon).frame_xyz(frame).m.T + station.T
+            output[mask, 6:9] = earth_app + station.T
             output[mask, 9:12] = up.T
             remaining[mask] = False
     if remaining.any():
@@ -146,7 +149,7 @@ def regional_raster(transform, cache_path, extent):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--local-only", action="store_true")
-    parser.add_argument("--output", type=Path, default=CACHE.parent.parent / "web/public/data")
+    parser.add_argument("--output", type=Path, default=CACHE.parent.parent / "web/public/data/planner-release")
     args = parser.parse_args()
     start = datetime.fromisoformat(json.loads((CACHE / "apollo_11_ephemeris.json").read_text())["start_utc"])
     count = 720 * 12 + 1
@@ -172,14 +175,32 @@ def main():
             dem_err = terrain_npz["dem_err"]
             observers = np.stack((lat, lon, dem_elev[rows, cols]), axis=-1).reshape(-1, 3)
             observer_sigma = dem_err[rows, cols].reshape(-1)
+            slope_benchmark = None
+            if "dem_slope" in terrain_npz and "lola_slope" in terrain_npz:
+                dem_obs_slope = terrain_npz["dem_slope"][rows, cols].reshape(-1)
+                lola_obs_slope = terrain_npz["lola_slope"][rows, cols].reshape(-1)
+                abs_diff = np.abs(dem_obs_slope - lola_obs_slope)
+                finite = np.isfinite(abs_diff)
+                if finite.any():
+                    center_idx = 480 if len(dem_obs_slope) > 480 else len(dem_obs_slope) // 2
+                    slope_benchmark = {
+                        "sampleCount": int(finite.sum()),
+                        "medianAbsDiffDeg": round(float(np.median(abs_diff[finite])), 4),
+                        "p95AbsDiffDeg": round(float(np.percentile(abs_diff[finite], 95)), 4),
+                        "maxAbsDiffDeg": round(float(np.max(abs_diff[finite])), 4),
+                        "pad481DemDeg": round(float(dem_obs_slope[center_idx]), 4),
+                        "pad481LolaDeg": round(float(lola_obs_slope[center_idx]), 4),
+                    }
         local_bytes = (folder / "horizons.bin").read_bytes()
         local = np.frombuffer(local_bytes, dtype="<f4").reshape(-1,5,360)
         info = {"schema": 1, "start": start.isoformat(), "stepMinutes": 5, "count": count,
+                "ephemerisModel": "DE440 apparent (LT+S)",
                 "vectorHash": digest, "localHash": sha256(local_bytes).hexdigest(), "frame": FRAME,
                 "station": {"name": "Goldstone DSS-14", "maskDeg": 10, "itrfMeters": STATION,
                             "source": "https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/spicelib/spkcpt.html"},
                 "kernels": {name: {"url": url, "sha256": sha256((kernels/name).read_bytes()).hexdigest()}
                             for name, url in KERNELS.items()},
+                "slopeBenchmark": slope_benchmark,
                 "observers": observers.tolist(), "regional": None}
         if not args.local_only:
             extent = 96000

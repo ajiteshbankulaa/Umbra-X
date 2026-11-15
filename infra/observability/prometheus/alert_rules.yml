@@ -1,0 +1,24 @@
+groups:
+  - name: umbrax_slo_alerts
+    rules:
+      - alert: UmbraXApiHighErrorRate
+        expr: sum(rate(umbrax_http_requests_total{status=~"5.."}[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Umbra-X API returning 5xx responses"
+      - alert: UmbraXStudyQueueBacklog
+        expr: umbrax_study_queue_depth{state="queued"} > 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queued study jobs exceed 20 for 5 minutes; consider scaling worker replicas"
+      - alert: UmbraXArtifactIntegrityViolation
+        expr: increase(umbrax_data_version_errors_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Detected SHA-256 dataset or committed artifact mismatch"
