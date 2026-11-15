@@ -53,7 +53,7 @@ export default function Planner() {
   const [active, setActive] = useState(() => new URLSearchParams(location.search).get('replay') === 'nearby' ? 1 : 0)
   const [index, setIndex] = useState(0)
   const [canRender3D] = useState(webglAvailable)
-  const [view, setView] = useState<'orbit' | 'pad' | 'polar' | 'chart'>(canRender3D ? 'pad' : 'chart')
+  const [view, setView] = useState<'orbit' | 'pad' | 'polar' | 'chart'>(canRender3D ? 'orbit' : 'chart')
   const [overlay, setOverlay] = useState<TerrainOverlay>('relief')
   const [compareOverlay, setCompareOverlay] = useState(true)
   const [look, setLook] = useState<'sun' | 'earth' | 'north'>('earth')
@@ -659,8 +659,8 @@ export default function Planner() {
       power: { ...initial[0], node: 511 },
       custom: { site: 'custom', node: 480, start: 0, mast: 2, customLat: -89.45, customLon: -138.0 },
     }
-    if (id === 'apollo') applyPreset([{ ...initial[0], site: 'apollo-11', mast: 0 }, initial[0]], { arrayMode: 'horizontal', presetId: 'apollo' })
-    else if (alternative[id]) applyPreset([id === 'mast' ? { ...initial[0], mast: 0 } : id === 'recovery' ? initial[1] : initial[0], alternative[id]], { presetId: id, active: id === 'recovery' ? 1 : 0 })
+    if (id === 'apollo') applyPreset([{ ...initial[0], site: 'apollo-11', mast: 0 }, initial[0]], { arrayMode: 'horizontal', view: 'chart', presetId: 'apollo' })
+    else if (alternative[id]) applyPreset([id === 'mast' ? { ...initial[0], mast: 0 } : id === 'recovery' ? initial[1] : initial[0], alternative[id]], { presetId: id, view: canRender3D ? 'orbit' : 'chart', active: id === 'recovery' ? 1 : 0 })
     if (id === 'power') setActiveDrawer('power')
     else setActiveDrawer(null)
     setExperiment(id)
@@ -680,8 +680,6 @@ export default function Planner() {
     return (
       <IntroOverlay
         canRender3D={canRender3D}
-        view={view}
-        setView={setView}
         introFocus={introFocus}
         onEnter={() => {
           entered.current = true

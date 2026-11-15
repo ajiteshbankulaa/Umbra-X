@@ -387,7 +387,7 @@ function latRingPoints(latDeg: number, segments = 128, lift = 0.015): [number, n
   return pts
 }
 
-function LdaReliefGlobe({ focus, selectedView }: { focus: IntroFocus; selectedView: IntroView }) {
+function LdaReliefGlobe({ focus, selectedView, onReady }: { focus: IntroFocus; selectedView: IntroView; onReady?: () => void }) {
   const moonRef = useRef<Group>(null)
   const controlsRef = useRef<OrbitControlsImpl>(null)
   const { camera } = useThree()
@@ -512,6 +512,10 @@ function LdaReliefGlobe({ focus, selectedView }: { focus: IntroFocus; selectedVi
     baseDistance.current = FOCUS_DISTANCE[focus]
   }, [focus])
 
+  useEffect(() => {
+    if (heightReady || albedoTex) onReady?.()
+  }, [heightReady, albedoTex, onReady])
+
   const ring85 = useMemo(() => latRingPoints(-85, 128, 0.048), [])
   const ring80 = useMemo(() => latRingPoints(-80, 144, 0.025), [])
 
@@ -634,10 +638,10 @@ function LdaReliefGlobe({ focus, selectedView }: { focus: IntroFocus; selectedVi
   )
 }
 
-export default function IntroScene({ focus, selectedView }: { focus: IntroFocus; selectedView: IntroView }) {
+export default function IntroScene({ focus, selectedView = 'orbit', onReady }: { focus: IntroFocus; selectedView?: IntroView; onReady?: () => void }) {
   return (
-    <Canvas camera={{ position: [0.1, 1.35, 8.6], fov: 40, near: 0.1, far: 45 }} dpr={[1, 1.5]}>
-      <LdaReliefGlobe focus={focus} selectedView={selectedView} />
+    <Canvas camera={{ position: [0.1, 1.35, 8.6], fov: 40, near: 0.1, far: 45 }} dpr={[1, 1.5]} onCreated={() => onReady?.()}>
+      <LdaReliefGlobe focus={focus} selectedView={selectedView} onReady={onReady} />
     </Canvas>
   )
 }

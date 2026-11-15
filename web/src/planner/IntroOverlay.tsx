@@ -1,41 +1,30 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useCallback, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
-import type { IntroFocus } from './IntroScene'
-import { VIEW_CARDS } from './missionHelpers'
-import { LunarLocator } from './TelemetryCharts'
 import { CursorTriangles } from './CursorTriangles'
+import type { IntroFocus } from './IntroScene'
+import { LunarLocator } from './TelemetryCharts'
 
 const IntroScene = lazy(() => import('./IntroScene'))
 
-type ViewId = 'orbit' | 'pad' | 'polar' | 'chart'
-
-const VIEW_GUIDE: Record<ViewId, string> = {
-  pad: 'Eye-level 3D view across crater rims toward the Sun and Earth.',
-  orbit: 'Local 5.12 km relief with a horizon modeled up to 96 km.',
-  polar: '360° azimuth dome plotting Sun and Earth horizon arcs.',
-  chart: '2D horizon elevation profile chart of ridge obstacle angles.',
-}
-
 interface IntroOverlayProps {
   canRender3D: boolean
-  view: ViewId
-  setView: (view: ViewId) => void
   introFocus: IntroFocus
   onEnter: () => void
 }
 
 export function IntroOverlay({
   canRender3D,
-  view,
-  setView,
   introFocus,
   onEnter,
 }: IntroOverlayProps) {
+  const [sceneReady, setSceneReady] = useState(false)
+  const handleReady = useCallback(() => setSceneReady(true), [])
+
   return (
     <div className="mission">
+      <CursorTriangles />
       <div className="intro-shell">
         <section className="intro-content" aria-label="Welcome to Umbra-X">
-          <CursorTriangles />
           <div className="intro-topbar">
             <div className="intro-brand">
               <span className="brand-mark" aria-hidden="true">
@@ -63,36 +52,14 @@ export function IntroOverlay({
 
           <div className="intro-main">
             <div className="intro-greeting">
-              <h1>Lunar South Pole Navigator</h1>
-              <p className="intro-subtitle">Compare where and when to land. See how a two-day delay changes what a lunar lander can see from the same pad.</p>
-            </div>
-
-            <div className="intro-section">
-              <div className="intro-section-head">
-                <span className="intro-prompt">Starting view (optional)</span>
-              </div>
-              <div className="intro-view-strip" role="group" aria-label="Select your starting view">
-                {VIEW_CARDS.map(card => (
-                  <button
-                    key={card.id}
-                    type="button"
-                    className="view-cell"
-                    title={VIEW_GUIDE[card.id]}
-                    aria-pressed={view === card.id}
-                    disabled={(card.id === 'orbit' || card.id === 'pad') && !canRender3D}
-                    onClick={() => setView(card.id)}
-                  >
-                    <strong>{card.title}</strong>
-                  </button>
-                ))}
-              </div>
+              <h1>Lunar Navigator</h1>
+              <p className="intro-subtitle">Compare sunlight, Earth visibility &amp; landing-pad recovery.</p>
             </div>
 
             <div className="intro-actions">
               <button type="button" className="intro-enter-btn" onClick={onEnter}>
-                Open landing comparison <ArrowRight size={14} />
+                Enter Navigator <ArrowRight size={14} />
               </button>
-              <div className="intro-telemetry-meta">NASA lunar terrain · JPL Sun and Earth positions</div>
             </div>
           </div>
 
@@ -109,19 +76,26 @@ export function IntroOverlay({
           {canRender3D ? (
             <Suspense
               fallback={
-                <div className="intro-fallback">
+                <div className="intro-fallback" role="status" aria-live="polite">
                   <div className="orbital-loader" aria-hidden="true">
                     <span className="orbital-ring" />
                     <span className="orbital-moon" />
                   </div>
+                  <span className="intro-loading-label">Loading 3D lunar globe…</span>
                 </div>
               }
             >
-              <IntroScene focus={introFocus} selectedView={view} />
+              <IntroScene focus={introFocus} selectedView="orbit" onReady={handleReady} />
             </Suspense>
           ) : (
             <div className="intro-fallback">
               <LunarLocator coordinates={[-89.5, 0, 0]} />
+            </div>
+          )}
+          {canRender3D && !sceneReady && (
+            <div className="intro-loading-pill" role="status" aria-live="polite">
+              <span className="intro-loading-spinner" aria-hidden="true" />
+              Loading 3D lunar relief…
             </div>
           )}
           <div className="intro-stage-hud" aria-hidden="true">
@@ -130,7 +104,7 @@ export function IntroOverlay({
               <i style={{ background: '#f59e0b' }} /> Malapert
               <i style={{ background: '#60a5fa' }} /> Mons Mouton
             </span>
-            <span className="intro-hint">{canRender3D ? 'Illustrative globe · LOLA south-pole relief · Drag to orbit' : 'South-pole preview · 2D views available'}</span>
+            <span className="intro-hint">Drag to orbit · Scroll to zoom</span>
           </div>
         </section>
       </div>
