@@ -8,3 +8,5 @@ dist/
 web/public/data/*/
 pipeline/cache/
 web/public/data/apollo-11.json
+rust/**/target/
+server/state/

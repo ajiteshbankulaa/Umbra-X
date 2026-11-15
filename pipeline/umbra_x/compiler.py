@@ -71,10 +71,20 @@ def read_psr_mask(path, transform):
     return labels.astype(np.uint8)
 
 
-@njit(cache=True, parallel=True, fastmath=True)
 def march(elevation, error, longitude, ground_pixel, start_pixel=START_PIXEL, step_pixel=STEP_PIXEL):
+    horizons, uncertainty, _distances, _mast_sigma = march_with_distance(
+        elevation, error, longitude, ground_pixel, start_pixel, step_pixel
+    )
+    return horizons, uncertainty
+
+
+@njit(cache=True, parallel=True, fastmath=True)
+def march_with_distance(elevation, error, longitude, ground_pixel, start_pixel=START_PIXEL, step_pixel=STEP_PIXEL):
+    """Ray-march horizons and preserve per-mast controlling occluder distance and sigma."""
     horizons = np.empty((ROWS, ROWS, len(MASTS), 360), dtype=np.float32)
     uncertainty = np.empty((ROWS, ROWS, 360), dtype=np.float32)
+    distances = np.zeros((ROWS, ROWS, len(MASTS), 360), dtype=np.float32)
+    mast_sigma = np.zeros((ROWS, ROWS, len(MASTS), 360), dtype=np.float32)
     for node in prange(ROWS * ROWS):
         row, col = node // ROWS, node % ROWS
         y = start_pixel + step_pixel * row
@@ -87,6 +97,7 @@ def march(elevation, error, longitude, ground_pixel, start_pixel=START_PIXEL, st
             dx, dy = np.sin(angle) * pixel_stride, -np.cos(angle) * pixel_stride
             maxima = np.full(len(MASTS), -1e30)
             sigma = np.zeros(len(MASTS))
+            best_dist = np.zeros(len(MASTS))
             step = 1
             while True:
                 i, j = y + step * dy, x + step * dx
@@ -109,11 +120,14 @@ def march(elevation, error, longitude, ground_pixel, start_pixel=START_PIXEL, st
                     if tangent > maxima[mast]:
                         maxima[mast] = tangent
                         sigma[mast] = np.rad2deg(np.arctan2(target_sigma, distance))
+                        best_dist[mast] = distance
                 step += 1
             for mast in range(len(MASTS)):
                 horizons[row, col, mast, az] = np.rad2deg(np.arctan(maxima[mast]))
+                distances[row, col, mast, az] = best_dist[mast]
+                mast_sigma[row, col, mast, az] = sigma[mast]
             uncertainty[row, col, az] = sigma.max()
-    return horizons, uncertainty
+    return horizons, uncertainty, distances, mast_sigma
 
 
 def ephemeris(start, lat, lon, kernels):
@@ -143,7 +157,7 @@ def ephemeris(start, lat, lon, kernels):
     return result
 
 
-def compile_horizons(elevation, error, transform, grid=ANALYSIS_GRID):
+def _prepare_horizon_grid(elevation, error, transform, grid):
     if any(raster.shape != (WIDTH, WIDTH) or not np.isfinite(raster).all() for raster in (elevation, error)):
         raise ValueError("Expected finite 256 × 256 elevation and uncertainty rasters")
     if (error < 0).any():
@@ -152,9 +166,20 @@ def compile_horizons(elevation, error, transform, grid=ANALYSIS_GRID):
     inverse = Transformer.from_crs(CRS_POLAR, CRS_POLAR.geodetic_crs, always_xy=True)
     pixels = start + step * np.arange(ROWS) + 0.5
     x, y = transform * tuple(np.meshgrid(pixels, pixels))
-    longitude, latitude = inverse.transform(x, y)
-    ground_pixel = PIXEL * (1 - np.sin(np.deg2rad(latitude))) / 2
-    return march(elevation, error, np.deg2rad(longitude), ground_pixel, start, step)
+    longitude, _latitude = inverse.transform(x, y)
+    ground_pixel = PIXEL * (1 - np.sin(np.deg2rad(_latitude))) / 2
+    return start, step, np.deg2rad(longitude), ground_pixel
+
+
+def compile_horizons(elevation, error, transform, grid=ANALYSIS_GRID):
+    start, step, lon_rad, ground_pixel = _prepare_horizon_grid(elevation, error, transform, grid)
+    return march(elevation, error, lon_rad, ground_pixel, start, step)
+
+
+def compile_horizons_with_distance(elevation, error, transform, grid=ANALYSIS_GRID):
+    """Compile 20m horizons along with per-mast occluder distances and angular uncertainties."""
+    start, step, lon_rad, ground_pixel = _prepare_horizon_grid(elevation, error, transform, grid)
+    return march_with_distance(elevation, error, lon_rad, ground_pixel, start, step)
 
 
 def main():

@@ -1,0 +1,260 @@
+{
+  "days": 15,
+  "limits": {
+    "dark": 48,
+    "earth": 72,
+    "slope": 5
+  },
+  "mastM": 5,
+  "startsPerPad": 361,
+  "changes": [
+    {
+      "site": "shackleton-ridge",
+      "eligible": 4509,
+      "oldEligible": 4509,
+      "gained": 0,
+      "lost": 0,
+      "example": null
+    },
+    {
+      "site": "mons-mouton",
+      "eligible": 39185,
+      "oldEligible": 39354,
+      "gained": 0,
+      "lost": 169,
+      "example": {
+        "pad": 17,
+        "start": 67,
+        "before": {
+          "utc": "2026-11-16T19:00:00.000Z",
+          "lowLightHours": 45.08333333333333,
+          "earthObstructionHours": 0,
+          "slopeDeg": 4.33251428604126,
+          "requiredBatteryKg": 47.910293655011024,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        },
+        "corrected": {
+          "utc": "2026-11-16T19:00:00.000Z",
+          "lowLightHours": 48.666666666666664,
+          "earthObstructionHours": 0,
+          "slopeDeg": 4.33251428604126,
+          "requiredBatteryKg": 51.62597594656686,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        }
+      }
+    },
+    {
+      "site": "malapert-massif",
+      "eligible": 18108,
+      "oldEligible": 18108,
+      "gained": 0,
+      "lost": 0,
+      "example": null
+    }
+  ],
+  "cases": [
+    {
+      "id": "launch-delay",
+      "title": "Recover a viable option after a 48-hour launch delay",
+      "query": "?comparison=%7B%22schema%22%3A1%2C%22scenarios%22%3A%5B%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A0%7D%2C%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A180%2C%22start%22%3A48%2C%22mast%22%3A2%7D%5D%2C%22days%22%3A15%2C%22limits%22%3A%7B%22dark%22%3A48%2C%22earth%22%3A72%2C%22slope%22%3A5%7D%2C%22power%22%3A%7B%22arrayW%22%3A400%2C%22loadW%22%3A120%2C%22specificWh%22%3A150%2C%22hardwareKg%22%3A20%2C%22budgetKg%22%3A100%2C%22arrayMode%22%3A%22tracked%22%2C%22sigma%22%3A0%7D%2C%22rates%22%3A%5B%22%22%2C%22%22%2C%22%22%5D%2C%22equipment%22%3A0%2C%22versions%22%3A%5B%228e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%2C%228e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%5D%7D",
+      "inputs": {
+        "schema": 1,
+        "scenarios": [
+          {
+            "site": "shackleton-ridge",
+            "node": 480,
+            "mast": 2,
+            "start": 0
+          },
+          {
+            "site": "shackleton-ridge",
+            "node": 180,
+            "start": 48,
+            "mast": 2
+          }
+        ],
+        "days": 15,
+        "limits": {
+          "dark": 48,
+          "earth": 72,
+          "slope": 5
+        },
+        "power": {
+          "arrayW": 400,
+          "loadW": 120,
+          "specificWh": 150,
+          "hardwareKg": 20,
+          "budgetKg": 100,
+          "arrayMode": "tracked",
+          "sigma": 0
+        },
+        "rates": [
+          "",
+          "",
+          ""
+        ],
+        "equipment": 0,
+        "versions": [
+          "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1",
+          "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1"
+        ]
+      },
+      "expected": [
+        {
+          "utc": "2026-11-14T00:00:00.000Z",
+          "lowLightHours": 52.75,
+          "earthObstructionHours": 103.66666666666666,
+          "slopeDeg": 5.600488185882568,
+          "requiredBatteryKg": 57.10019793571933,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        },
+        {
+          "utc": "2026-11-16T00:00:00.000Z",
+          "lowLightHours": 0,
+          "earthObstructionHours": 0,
+          "slopeDeg": 4.536265850067139,
+          "requiredBatteryKg": 0,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        }
+      ]
+    },
+    {
+      "id": "trade-off",
+      "title": "Compare Earth obstruction and storage under identical power assumptions",
+      "query": "?comparison=%7B%22schema%22%3A1%2C%22scenarios%22%3A%5B%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A0%7D%2C%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A216%2C%22start%22%3A48%2C%22mast%22%3A2%7D%5D%2C%22days%22%3A15%2C%22limits%22%3A%7B%22dark%22%3A48%2C%22earth%22%3A72%2C%22slope%22%3A5%7D%2C%22power%22%3A%7B%22arrayW%22%3A400%2C%22loadW%22%3A120%2C%22specificWh%22%3A150%2C%22hardwareKg%22%3A20%2C%22budgetKg%22%3A100%2C%22arrayMode%22%3A%22tracked%22%2C%22sigma%22%3A0%7D%2C%22rates%22%3A%5B%22%22%2C%22%22%2C%22%22%5D%2C%22equipment%22%3A0%2C%22versions%22%3A%5B%228e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%2C%228e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%5D%7D",
+      "inputs": {
+        "schema": 1,
+        "scenarios": [
+          {
+            "site": "shackleton-ridge",
+            "node": 480,
+            "mast": 2,
+            "start": 0
+          },
+          {
+            "site": "shackleton-ridge",
+            "node": 216,
+            "start": 48,
+            "mast": 2
+          }
+        ],
+        "days": 15,
+        "limits": {
+          "dark": 48,
+          "earth": 72,
+          "slope": 5
+        },
+        "power": {
+          "arrayW": 400,
+          "loadW": 120,
+          "specificWh": 150,
+          "hardwareKg": 20,
+          "budgetKg": 100,
+          "arrayMode": "tracked",
+          "sigma": 0
+        },
+        "rates": [
+          "",
+          "",
+          ""
+        ],
+        "equipment": 0,
+        "versions": [
+          "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1",
+          "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1"
+        ]
+      },
+      "expected": [
+        {
+          "utc": "2026-11-14T00:00:00.000Z",
+          "lowLightHours": 52.75,
+          "earthObstructionHours": 103.66666666666666,
+          "slopeDeg": 5.600488185882568,
+          "requiredBatteryKg": 57.10019793571933,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        },
+        {
+          "utc": "2026-11-16T00:00:00.000Z",
+          "lowLightHours": 91.08333333333333,
+          "earthObstructionHours": 0,
+          "slopeDeg": 3.67470121383667,
+          "requiredBatteryKg": 96.08216325796572,
+          "batteryFeasible": false,
+          "coverageComplete": true
+        }
+      ]
+    },
+    {
+      "id": "no-option",
+      "title": "Stress test zero allowable outages and zero slope",
+      "query": "?comparison=%7B%22schema%22%3A1%2C%22scenarios%22%3A%5B%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A0%7D%2C%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A48%7D%5D%2C%22days%22%3A15%2C%22limits%22%3A%7B%22dark%22%3A0%2C%22earth%22%3A0%2C%22slope%22%3A0%7D%2C%22power%22%3A%7B%22arrayW%22%3A400%2C%22loadW%22%3A120%2C%22specificWh%22%3A150%2C%22hardwareKg%22%3A20%2C%22budgetKg%22%3A100%2C%22arrayMode%22%3A%22tracked%22%2C%22sigma%22%3A0%7D%2C%22rates%22%3A%5B%22%22%2C%22%22%2C%22%22%5D%2C%22equipment%22%3A0%2C%22versions%22%3A%5B%228e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%2C%228e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%5D%7D",
+      "inputs": {
+        "schema": 1,
+        "scenarios": [
+          {
+            "site": "shackleton-ridge",
+            "node": 480,
+            "mast": 2,
+            "start": 0
+          },
+          {
+            "site": "shackleton-ridge",
+            "node": 480,
+            "mast": 2,
+            "start": 48
+          }
+        ],
+        "days": 15,
+        "limits": {
+          "dark": 0,
+          "earth": 0,
+          "slope": 0
+        },
+        "power": {
+          "arrayW": 400,
+          "loadW": 120,
+          "specificWh": 150,
+          "hardwareKg": 20,
+          "budgetKg": 100,
+          "arrayMode": "tracked",
+          "sigma": 0
+        },
+        "rates": [
+          "",
+          "",
+          ""
+        ],
+        "equipment": 0,
+        "versions": [
+          "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1",
+          "8e00533685a702c31d8f1eaaac894006e0c5eae6da8b661fc9f3e981d3e0cfe3:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1"
+        ]
+      },
+      "expected": [
+        {
+          "utc": "2026-11-14T00:00:00.000Z",
+          "lowLightHours": 52.75,
+          "earthObstructionHours": 103.66666666666666,
+          "slopeDeg": 5.600488185882568,
+          "requiredBatteryKg": 57.10019793571933,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        },
+        {
+          "utc": "2026-11-16T00:00:00.000Z",
+          "lowLightHours": 52.75,
+          "earthObstructionHours": 55.666666666666664,
+          "slopeDeg": 5.600488185882568,
+          "requiredBatteryKg": 57.10019793571933,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        }
+      ]
+    }
+  ]
+}

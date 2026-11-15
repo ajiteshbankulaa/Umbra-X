@@ -1,0 +1,229 @@
+{
+  "source": "https://ssd.jpl.nasa.gov/api/horizons.api",
+  "epoch": "2026-11-14T00:00:00+00:00",
+  "frame": "MOON_ME_DE440_ME421",
+  "kernels": {
+    "de440s.bsp": {
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp",
+      "sha256": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2"
+    },
+    "moon_de440_250416.tf": {
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_de440_250416.tf",
+      "sha256": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768"
+    },
+    "moon_pa_de440_200625.bpc": {
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de440_200625.bpc",
+      "sha256": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f"
+    },
+    "pck00011.tpc": {
+      "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00011.tpc",
+      "sha256": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1"
+    }
+  },
+  "fixtures": [
+    {
+      "site": "shackleton_ridge",
+      "lat": -89.45,
+      "lon": 222.0,
+      "height_m": 0,
+      "horizons_payload_sha256": {
+        "sun": "7113b5c211f9a35dfcd703f0ab37612f853d07fd7fc0b2b76c14f3cb2c431f1e",
+        "earth": "f56ff74bd6446b7daadf2d3db490a3e5ae13a1367a5df42ef0f82f5e4a21fb3c"
+      },
+      "records": [
+        {
+          "hour": 0,
+          "utc": "2026-11-14T00:00:00Z",
+          "sun_az_deg": 264.60282901,
+          "sun_el_deg": 1.504942305,
+          "earth_az_deg": 136.742302492,
+          "earth_el_deg": -5.048776145
+        },
+        {
+          "hour": 48,
+          "utc": "2026-11-16T00:00:00Z",
+          "sun_az_deg": 240.239221398,
+          "sun_el_deg": 1.282219741,
+          "earth_az_deg": 134.00601861,
+          "earth_el_deg": -2.693334513
+        },
+        {
+          "hour": 103,
+          "utc": "2026-11-18T07:00:00Z",
+          "sun_az_deg": 212.355986994,
+          "sun_el_deg": 1.085497214,
+          "earth_az_deg": 131.529903085,
+          "earth_el_deg": 0.480520848
+        },
+        {
+          "hour": 295,
+          "utc": "2026-11-26T07:00:00Z",
+          "sun_az_deg": 115.253302624,
+          "sun_el_deg": 1.272056028,
+          "earth_az_deg": 138.838499624,
+          "earth_el_deg": 4.773480009
+        },
+        {
+          "hour": 359,
+          "utc": "2026-11-28T23:00:00Z",
+          "sun_az_deg": 82.888148156,
+          "sun_el_deg": 1.552203959,
+          "earth_az_deg": 143.098388519,
+          "earth_el_deg": 1.199523643
+        },
+        {
+          "hour": 407,
+          "utc": "2026-11-30T23:00:00Z",
+          "sun_az_deg": 58.583639897,
+          "sun_el_deg": 1.75711727,
+          "earth_az_deg": 144.644390768,
+          "earth_el_deg": -1.994660632
+        },
+        {
+          "hour": 719,
+          "utc": "2026-12-13T23:00:00Z",
+          "sun_az_deg": 260.182702771,
+          "sun_el_deg": 1.292156858,
+          "earth_az_deg": 133.610505464,
+          "earth_el_deg": -1.50598211
+        }
+      ]
+    },
+    {
+      "site": "mons_mouton",
+      "lat": -84.79,
+      "lon": 29.2,
+      "height_m": 0,
+      "horizons_payload_sha256": {
+        "sun": "60711e844f79d6ca1d30ef358675394b3347251f02cf249803b664f4ec3226f6",
+        "earth": "d675cdd701c5e7d629826f20d210cf2f80a4e95728f4bc578d168683aa411925"
+      },
+      "records": [
+        {
+          "hour": 0,
+          "utc": "2026-11-14T00:00:00Z",
+          "sun_az_deg": 97.52739935,
+          "sun_el_deg": 0.878589277,
+          "earth_az_deg": 329.67189669,
+          "earth_el_deg": -0.15355859
+        },
+        {
+          "hour": 48,
+          "utc": "2026-11-16T00:00:00Z",
+          "sun_az_deg": 73.252454788,
+          "sun_el_deg": 3.066192834,
+          "earth_az_deg": 326.815799512,
+          "earth_el_deg": 2.050082371
+        },
+        {
+          "hour": 103,
+          "utc": "2026-11-18T07:00:00Z",
+          "sun_az_deg": 45.381826817,
+          "sun_el_deg": 5.217848956,
+          "earth_az_deg": 324.152315271,
+          "earth_el_deg": 5.074789812
+        },
+        {
+          "hour": 295,
+          "utc": "2026-11-26T07:00:00Z",
+          "sun_az_deg": 307.817848473,
+          "sun_el_deg": 4.71057322,
+          "earth_az_deg": 331.265845329,
+          "earth_el_deg": 9.767077927
+        },
+        {
+          "hour": 359,
+          "utc": "2026-11-28T23:00:00Z",
+          "sun_az_deg": 275.516156449,
+          "sun_el_deg": 1.992335326,
+          "earth_az_deg": 335.728477039,
+          "earth_el_deg": 6.393962264
+        },
+        {
+          "hour": 407,
+          "utc": "2026-11-30T23:00:00Z",
+          "sun_az_deg": 251.315476235,
+          "sun_el_deg": -0.197354362,
+          "earth_az_deg": 337.413497821,
+          "earth_el_deg": 3.265770523
+        },
+        {
+          "hour": 719,
+          "utc": "2026-12-13T23:00:00Z",
+          "sun_az_deg": 93.108773107,
+          "sun_el_deg": 1.108286503,
+          "earth_az_deg": 326.352946357,
+          "earth_el_deg": 3.213415773
+        }
+      ]
+    },
+    {
+      "site": "malapert_massif",
+      "lat": -86.04,
+      "lon": 2.7,
+      "height_m": 0,
+      "horizons_payload_sha256": {
+        "sun": "f8cdc69d8b8b27114b1b638691e1a859a26b7f50af0f4ca02e776d2454ba433b",
+        "earth": "4c9a0bb3458340eca797dff861669c2ef136b810de2a2fa5ee2b156cc5a05a25"
+      },
+      "records": [
+        {
+          "hour": 0,
+          "utc": "2026-11-14T00:00:00Z",
+          "sun_az_deg": 123.943386273,
+          "sun_el_deg": -0.654416698,
+          "earth_az_deg": 356.084135154,
+          "earth_el_deg": -0.698320284
+        },
+        {
+          "hour": 48,
+          "utc": "2026-11-16T00:00:00Z",
+          "sun_az_deg": 99.634632933,
+          "sun_el_deg": 0.895008661,
+          "earth_az_deg": 353.322382411,
+          "earth_el_deg": 1.621804392
+        },
+        {
+          "hour": 103,
+          "utc": "2026-11-18T07:00:00Z",
+          "sun_az_deg": 71.80541294,
+          "sun_el_deg": 2.79170789,
+          "earth_az_deg": 350.789568806,
+          "earth_el_deg": 4.755186803
+        },
+        {
+          "hour": 295,
+          "utc": "2026-11-26T07:00:00Z",
+          "sun_az_deg": 334.443030256,
+          "sun_el_deg": 5.080917732,
+          "earth_az_deg": 358.087996045,
+          "earth_el_deg": 9.147825864
+        },
+        {
+          "hour": 359,
+          "utc": "2026-11-28T23:00:00Z",
+          "sun_az_deg": 302.024972039,
+          "sun_el_deg": 3.588943808,
+          "earth_az_deg": 2.399889588,
+          "earth_el_deg": 5.597094501
+        },
+        {
+          "hour": 407,
+          "utc": "2026-11-30T23:00:00Z",
+          "sun_az_deg": 277.751166923,
+          "sun_el_deg": 2.00875538,
+          "earth_az_deg": 3.956064647,
+          "earth_el_deg": 2.404583057
+        },
+        {
+          "hour": 719,
+          "utc": "2026-12-13T23:00:00Z",
+          "sun_az_deg": 119.520110815,
+          "sun_el_deg": -0.5651751,
+          "earth_az_deg": 352.908683396,
+          "earth_el_deg": 2.803391052
+        }
+      ]
+    }
+  ]
+}

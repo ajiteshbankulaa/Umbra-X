@@ -1,0 +1,92 @@
+/* UMBRA X Design System — Dark-First Swiss Editorial × Chiaroscuro Observatory
+ * "Darkness is the environment. Light is the information. Geometry is the language."
+ */
+
+.mission {
+  /* Void & Graphite Surfaces */
+  --paper-0: #07080b;
+  --paper-1: #0e1014;
+  --paper-2: #15181e;
+  --paper-3: #1c2028;
+  --paper-4: #242934;
+
+  /* Lunar White, Regolith Gray & Structural Hairlines */
+  --ink-0: #ecebe6;
+  --ink-1: #c5c8ce;
+  --ink-2: #8e949f;
+  --ink-3: #686e78;
+  --rule-subtle: rgba(236, 235, 230, 0.09);
+  --rule-strong: rgba(236, 235, 230, 0.19);
+  --rule-heavy: rgba(236, 235, 230, 0.34);
+
+  /* Optical Deep-Space Viewport Plate */
+  --plate-bg: #050608;
+  --plate-surface: #0e1118;
+  --plate-ink: #ecebe6;
+  --plate-muted: #8e949f;
+  --plate-rule: rgba(236, 235, 230, 0.15);
+  --canvas-plate: #080a0f;
+  --surface-glass: rgba(14, 16, 20, 0.9);
+  --surface-elevated: rgba(21, 24, 30, 0.96);
+
+  /* Calibrated Scientific & Illumination Semantics */
+  --solar-ink: #ffc36d;
+  --solar-stroke: #f5a623;
+  --solar-fill: rgba(245, 166, 35, 0.14);
+  --solar-bar: #e59922;
+  --solar-glow: #ffc36d;
+
+  --earth-ink: #8ec9ff;
+  --earth-stroke: #60a5fa;
+  --earth-fill: rgba(96, 165, 250, 0.13);
+  --earth-glow: #8ec9ff;
+
+  --good-ink: #34d399;
+  --good-bg: rgba(52, 211, 153, 0.1);
+  --dsn-ink: #2dd4bf;
+
+  --warn-ink: #fbbf24;
+  --warn-bg: rgba(251, 191, 36, 0.1);
+
+  --danger-ink: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.11);
+
+  /* Typography */
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13.5px;
+  --fs-md: 15px;
+  --fs-lg: 19px;
+  --fs-display: clamp(32px, 3.6vw, 48px);
+
+  /* Strict 4/8px Spacing Scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* Rectilinear Geometry */
+  --r-0: 0px;
+  --r-xs: 2px;
+  --r-sm: 4px;
+
+  /* Motion */
+  --ease-swiss: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color: var(--ink-0);
+  background: var(--paper-0);
+  color-scheme: dark;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.48;
+  -webkit-font-smoothing: antialiased;
+}

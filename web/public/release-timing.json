@@ -1,0 +1,74 @@
+[
+  {
+    "site": "shackleton-ridge",
+    "pad": 481,
+    "startHours": 0,
+    "mastM": 5.0,
+    "sun": {
+      "eventShiftMinutes": 4,
+      "fineEvents": 2,
+      "coarseEvents": 2,
+      "availabilityDeltaPoints": -0.004629629629637755
+    },
+    "earth": {
+      "eventShiftMinutes": 1,
+      "fineEvents": 1,
+      "coarseEvents": 1,
+      "availabilityDeltaPoints": -0.004629629629626653
+    }
+  },
+  {
+    "site": "shackleton-ridge",
+    "pad": 181,
+    "startHours": 48,
+    "mastM": 5.0,
+    "sun": {
+      "eventShiftMinutes": 0,
+      "fineEvents": 0,
+      "coarseEvents": 0,
+      "availabilityDeltaPoints": 0.0
+    },
+    "earth": {
+      "eventShiftMinutes": 0,
+      "fineEvents": 0,
+      "coarseEvents": 0,
+      "availabilityDeltaPoints": 0.0
+    }
+  },
+  {
+    "site": "shackleton-ridge",
+    "pad": 217,
+    "startHours": 48,
+    "mastM": 5.0,
+    "sun": {
+      "eventShiftMinutes": 0,
+      "fineEvents": 1,
+      "coarseEvents": 1,
+      "availabilityDeltaPoints": 0.0
+    },
+    "earth": {
+      "eventShiftMinutes": 0,
+      "fineEvents": 0,
+      "coarseEvents": 0,
+      "availabilityDeltaPoints": 0.0
+    }
+  },
+  {
+    "site": "shackleton-ridge",
+    "pad": 481,
+    "startHours": 48,
+    "mastM": 5.0,
+    "sun": {
+      "eventShiftMinutes": 4,
+      "fineEvents": 2,
+      "coarseEvents": 2,
+      "availabilityDeltaPoints": -0.004629629629637755
+    },
+    "earth": {
+      "eventShiftMinutes": 3,
+      "fineEvents": 2,
+      "coarseEvents": 2,
+      "availabilityDeltaPoints": 0.009259259259253305
+    }
+  }
+]

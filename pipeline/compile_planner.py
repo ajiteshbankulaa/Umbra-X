@@ -18,7 +18,7 @@ from skyfield.api import PlanetaryConstants, load, load_file
 from skyfield.framelib import itrs
 
 from fetch_nasa_data import CACHE, PGDA, POLAR_SITES, KERNELS
-from umbra_x.compiler import CRS_POLAR, MASTS, RADIUS
+from umbra_x.compiler import CRS_POLAR, MASTS, RADIUS, compile_horizons_with_distance
 
 REGIONAL = PGDA + "LDEM_80S_80MPP_ADJ.TIF"
 FRAME = "MOON_ME_DE440_ME421"
@@ -63,25 +63,50 @@ def vectors(kernels, start, count, step_minutes=5):
     return output
 
 
+def calibrated_horizon_uncertainty(distance, local_distance, local_mast_sigma, observer_sigma, regional_error_m=2.5):
+    """Calibrate per-pad horizon uncertainty from local vs regional occluder distance."""
+    regional_controls = distance > local_distance
+    safe_distance = np.maximum(distance, 1.0)
+    combined_vertical_err = np.hypot(observer_sigma[:, None, None], regional_error_m)
+    regional_sigma = np.rad2deg(np.arctan2(combined_vertical_err, safe_distance))
+    per_mast = np.where(regional_controls, regional_sigma, local_mast_sigma)
+    return per_mast.max(axis=1).astype("<f4")
+
+
+def extend(local, terrain, observers, transform, stop, local_bounds, local_distance=None):
+    """Extend local horizons across regional terrain while preserving local occluder distances."""
+    distance = (
+        np.zeros(local.shape, dtype=np.float32)
+        if local_distance is None
+        else np.array(local_distance, dtype=np.float32, copy=True)
+    )
+    return _extend_kernel(local, terrain, observers, transform, stop, local_bounds, distance)
+
+
 @njit(cache=True, parallel=True)
-def extend(local, terrain, observers, transform, stop):
+def _extend_kernel(local, terrain, observers, transform, stop, local_bounds, distance):
     result = local.copy()
-    distance = np.zeros(local.shape, dtype=np.float32)
     complete = np.ones((local.shape[0], 360), dtype=np.uint8)
     left, top = transform
+    west, south, east, north = local_bounds
     for node in prange(local.shape[0]):
         lat, lon, base = observers[node]
         lt, ln = np.deg2rad(lat), np.deg2rad(lon)
         for az in range(360):
             bearing = np.deg2rad(az)
-            for d in range(1800, stop + 1, 80):
+            for d in range(40, stop + 1, 80):
                 a = d / RADIUS
                 target_lat = np.arcsin(np.sin(lt)*np.cos(a) + np.cos(lt)*np.sin(a)*np.cos(bearing))
                 target_lon = ln + np.arctan2(np.sin(bearing)*np.sin(a)*np.cos(lt),
                                              np.cos(a)-np.sin(lt)*np.sin(target_lat))
                 rho = 2*RADIUS*np.tan((np.pi/2 + target_lat)/2)
-                col = (rho*np.sin(target_lon)-left)/80 - .5
-                row = (top-rho*np.cos(target_lon))/80 - .5
+                x, y = rho*np.sin(target_lon), rho*np.cos(target_lon)
+                # At short range use fine terrain until 160 m before its edge.
+                # Farther out retain the existing coarse samples and grid phase.
+                if d < 1800 and west+160 <= x <= east-160 and south+160 <= y <= north-160:
+                    continue
+                col = (x-left)/80 - .5
+                row = (top-y)/80 - .5
                 if not (0 <= row < terrain.shape[0]-1 and 0 <= col < terrain.shape[1]-1):
                     complete[node, az] = 0
                     break
@@ -137,13 +162,16 @@ def main():
         folder = args.output / site.id.replace("_", "-")
         manifest = json.loads((folder / "manifest.json").read_text())
         grid = manifest["analysis_grid"]
-        with np.load(CACHE / f"{site.id}_terrain.npz") as terrain:
-            transform = Affine(*terrain["transform"][:6])
+        with np.load(CACHE / f"{site.id}_terrain.npz") as terrain_npz:
+            transform = Affine(*terrain_npz["transform"][:6])
             pixels = grid["start_pixel"] + grid["step_pixel"] * np.arange(31)
             cols, rows = np.meshgrid(pixels, pixels)
             x, y = transform * (cols+.5, rows+.5)
             lon, lat = inverse.transform(x, y)
-            observers = np.stack((lat, lon, terrain["dem_elev"][rows,cols]), axis=-1).reshape(-1,3)
+            dem_elev = terrain_npz["dem_elev"]
+            dem_err = terrain_npz["dem_err"]
+            observers = np.stack((lat, lon, dem_elev[rows, cols]), axis=-1).reshape(-1, 3)
+            observer_sigma = dem_err[rows, cols].reshape(-1)
         local_bytes = (folder / "horizons.bin").read_bytes()
         local = np.frombuffer(local_bytes, dtype="<f4").reshape(-1,5,360)
         info = {"schema": 1, "start": start.isoformat(), "stepMinutes": 5, "count": count,
@@ -155,9 +183,17 @@ def main():
                 "observers": observers.tolist(), "regional": None}
         if not args.local_only:
             extent = 96000
+            _, _, local_distance, local_mast_sigma = compile_horizons_with_distance(dem_elev, dem_err, transform, grid)
+            local_distance = local_distance.reshape(-1, len(MASTS), 360)
+            local_mast_sigma = local_mast_sigma.reshape(-1, len(MASTS), 360)
             terrain, affine = regional_raster(transform, CACHE / f"{site.id}_regional_{extent}.npy", extent)
-            middle, _, _ = extend(local, terrain, observers, (affine.c, affine.f), 48000)
-            result, distance, coverage = extend(local, terrain, observers, (affine.c, affine.f), extent)
+            west, north = transform * (.5, .5)
+            east, south = transform * (255.5, 255.5)
+            bounds = (west, south, east, north)
+            middle, _, _ = extend(local, terrain, observers, (affine.c, affine.f), 48000, bounds, local_distance)
+            result, distance, coverage = extend(local, terrain, observers, (affine.c, affine.f), extent, bounds, local_distance)
+            horizon_err = calibrated_horizon_uncertainty(distance, local_distance, local_mast_sigma, observer_sigma)
+            (folder / "horizons_err.bin").write_bytes(horizon_err.tobytes())
             paths = {}
             for key, values in (("regional",result), ("distance",distance), ("coverage",coverage),
                                 ("sensitivity",middle)):
@@ -166,6 +202,7 @@ def main():
                 (shared / f"{checksum}.bin").write_bytes(payload)
                 paths[key] = checksum
             info["regional"] = {"radiusM": extent, "comparisonRadiusM": 48000, "source": REGIONAL,
+                                "localOverlapM": 160,
                                 **paths}
         (folder / "planner.json").write_text(json.dumps(info, allow_nan=False), encoding="utf-8")
         print(f"{site.id}: planner vectors and {'local' if args.local_only else 'regional'} geometry", flush=True)

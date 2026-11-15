@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "node --test src/engine/heliosEngine.test.mjs src/planner/model.test.mjs",
-    "preview": "vite preview"
+    "test": "node --test src/engine/heliosEngine.test.mjs src/planner/model.test.mjs src/planner/explain.test.mjs src/planner/studyRequest.test.mjs",
+    "benchmark": "node src/planner/benchmark.mjs",
+    "preview": "vite preview",
+    "study-api": "node ../server/server.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

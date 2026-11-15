@@ -1,0 +1,45 @@
+name: Verified planner package
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_url:
+        description: HTTPS URL to the compiled planner-release ZIP
+        required: true
+      bundle_sha256:
+        description: SHA-256 of the ZIP
+        required: true
+permissions:
+  contents: read
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - env:
+          BUNDLE_URL: ${{ inputs.bundle_url }}
+          BUNDLE_SHA256: ${{ inputs.bundle_sha256 }}
+        run: |
+          curl --fail --location --proto '=https' --proto-redir '=https' --output release.zip "$BUNDLE_URL"
+          echo "$BUNDLE_SHA256  release.zip" | sha256sum -c -
+          unzip -q release.zip -d web/public/data/planner-release
+          python pipeline/check_planner_release.py web/public/data/planner-release
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo test --locked --manifest-path rust/umbra-core/Cargo.toml
+      - run: cargo build --locked --release --target wasm32-unknown-unknown --manifest-path rust/umbra-core/Cargo.toml
+      - run: cp rust/umbra-core/target/wasm32-unknown-unknown/release/umbra_core.wasm web/public/wasm/umbra_core.wasm
+      - run: node web/src/planner/release-evidence.mjs
+      - working-directory: web
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-planner
+          path: web/dist

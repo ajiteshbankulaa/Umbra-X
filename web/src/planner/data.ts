@@ -152,3 +152,42 @@ export async function findNearestPolarPad(lat: number, lon: number) {
   const distanceM = 2*1737400*Math.asin(Math.sqrt(Math.min(1, best)))
   return { site: bestSite, node: bestNode, distanceM, insideTile: distanceM <= 2500 }
 }
+
+export interface LivePolarHorizonResponse {
+  lat: number
+  lon: number
+  mast_m: number
+  elevation_m: number
+  slope_80m_deg: number
+  complete: boolean
+  covered_azimuths: number
+  horizon_96km: number[]
+  horizon_48km: number[]
+  distance_m: number[]
+  coverage: number[]
+  latency_ms: number
+}
+
+const liveHorizonCache = new Map<string, LivePolarHorizonResponse | null>()
+export async function fetchLivePolarHorizon(lat: number, lon: number, mastM: number): Promise<LivePolarHorizonResponse | null> {
+  if (lat < -90 || lat > -80) return null
+  const key = `${lat.toFixed(4)}:${lon.toFixed(4)}:${mastM.toFixed(1)}`
+  if (liveHorizonCache.has(key)) return liveHorizonCache.get(key) ?? null
+  try {
+    const res = await fetch(`/api/polar-horizon?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&mast=${encodeURIComponent(mastM)}`)
+    if (!res.ok) {
+      liveHorizonCache.set(key, null)
+      return null
+    }
+    const payload = (await res.json()) as LivePolarHorizonResponse
+    if (!Array.isArray(payload.horizon_96km) || payload.horizon_96km.length !== 360 || !Array.isArray(payload.coverage)) {
+      liveHorizonCache.set(key, null)
+      return null
+    }
+    liveHorizonCache.set(key, payload)
+    return payload
+  } catch {
+    liveHorizonCache.set(key, null)
+    return null
+  }
+}

@@ -6,7 +6,7 @@ import type { SiteData } from '../types/helios'
 import type { Observer, Sky } from './model'
 import { padPixel } from './data'
 
-export type TerrainOverlay = 'relief' | 'slope' | 'psr'
+export type TerrainOverlay = 'relief' | 'viable' | 'slope' | 'psr'
 
 const rad=Math.PI/180
 function ray(az:number, el:number, d:number) {
@@ -22,6 +22,7 @@ function Scene({
   overlay = 'relief',
   series,
   secondaryNode = null,
+  padViability,
 }: {
   site: SiteData | null
   node: number
@@ -32,6 +33,7 @@ function Scene({
   overlay?: TerrainOverlay
   series?: Sky[]
   secondaryNode?: number | null
+  padViability?: Uint8Array
 }) {
   const lng=site?pad.coordinates[1]:0
   const pixel=site?padPixel(site,node):0
@@ -64,14 +66,33 @@ function Scene({
     const spanE = Math.max(1, maxE - minE)
     const c = new Color()
     const lowCol = new Color('#47505c'), highCol = new Color('#9ca7b5')
-    const emerald = new Color('#10b981'), red = new Color('#ef4444'), violet = new Color('#a855f7')
+    const emerald = new Color('#10b981'), amber = new Color('#f59e0b'), red = new Color('#ef4444'), violet = new Color('#a855f7')
+    const grid = site?.manifest.analysis_grid
+    const halfStep = grid ? grid.step_pixel / 2 : 0
     for (let i = 0; i < count; i++) {
       if (!site) {
         c.set('#646d79')
       } else {
         const t = (site.dem_elev[i] - minE) / spanE
         c.copy(lowCol).lerp(highCol, t)
-        if (overlay === 'slope') {
+        if (overlay === 'viable' && padViability && grid) {
+          const py = Math.floor(i / 256)
+          const px = i % 256
+          const cellR = Math.round((py - grid.start_pixel) / grid.step_pixel)
+          const cellC = Math.round((px - grid.start_pixel) / grid.step_pixel)
+          if (
+            cellR >= 0 && cellR < grid.rows && cellC >= 0 && cellC < grid.cols &&
+            py >= grid.start_pixel - halfStep && py <= grid.start_pixel + (grid.rows - 1) * grid.step_pixel + halfStep &&
+            px >= grid.start_pixel - halfStep && px <= grid.start_pixel + (grid.cols - 1) * grid.step_pixel + halfStep
+          ) {
+            const v = padViability[cellR * grid.cols + cellC]
+            if (v === 2) c.lerp(emerald, 0.62)
+            else if (v === 1) c.lerp(amber, 0.56)
+            else c.lerp(red, 0.42)
+          } else {
+            c.multiplyScalar(0.72)
+          }
+        } else if (overlay === 'slope') {
           const sl = site.dem_slope[i]
           if (sl < 5) c.lerp(emerald, 0.52)
           else c.lerp(red, Math.min(0.75, 0.28 + sl / 42))
@@ -82,18 +103,19 @@ function Scene({
       colors.setXYZ(i, c.r, c.g, c.b)
     }
     colors.needsUpdate = true
-  },[terrain, site, overlay])
+  },[terrain, site, overlay, padViability])
   const camera=useThree(s=>s.camera)
   const eye=useMemo(()=>new Vector3(0,pad.mast+(site?0:1.5),0),[pad.mast,site])
   const sun=ray(sky.sun.az,sky.sun.el,1)
   const earth=ray(sky.earth.az,sky.earth.el,1)
+  const orbitTarget=useMemo(()=>new Vector3(),[])
   const target=useMemo(()=>{
-    if(mode==='orbit') return new Vector3()
+    if(mode==='orbit') return orbitTarget
     const body=look==='north'?{az:0,el:0}:sky[look]
     return ray(body.az,body.el,1000).add(eye)
-  },[mode,eye,look,sky])
+  },[mode,eye,look,sky,orbitTarget])
   useEffect(()=>{
-    camera.position.copy(mode==='orbit'?new Vector3(3400,2450,3800):eye)
+    camera.position.copy(mode==='orbit'?new Vector3(2550,1680,2850):eye)
     camera.lookAt(target)
     camera.updateProjectionMatrix()
   },[camera,mode,eye,target])
@@ -133,9 +155,9 @@ function Scene({
     return [dx, dy, dz] as [number, number, number]
   }, [site, secondaryNode, node, x, z, pad.coordinates])
   return <>
-    <color attach="background" args={['#0b1017']}/>
-    <ambientLight intensity={.48}/>
-    <directionalLight position={[-3000, 5000, 3000]} intensity={.26} color="#9ec9f3"/>
+    <color attach="background" args={['#080a0f']}/>
+    <ambientLight intensity={.46}/>
+    <directionalLight position={[-3000, 5000, 3000]} intensity={.28} color="#9ec9f3"/>
     <directionalLight
       position={sun.clone().multiplyScalar(9000)}
       intensity={sky.sun.el > -5 ? 2.15 : 0.15}
@@ -164,8 +186,19 @@ function Scene({
       <Line points={[[0,8,0],[0,8,-500]]} color="#e3e5e8" depthTest={false}/>
       <Billboard position={[0,65,-500]}><Text fontSize={62} color="#e3e5e8" material-depthTest={false}>N · 500 m</Text></Billboard>
     </>}
-    {mode==='pad'&&<mesh geometry={silhouette}><meshBasicMaterial color="#33383e" side={DoubleSide}/></mesh>}
-    <Line points={skyline} color="#a0b1c5" lineWidth={1} transparent opacity={.65} depthTest={false}/>
+    {mode==='pad'&&<mesh geometry={silhouette}><meshBasicMaterial color="#141923" side={DoubleSide}/></mesh>}
+    <Line points={skyline} color="#9fb2c9" lineWidth={1.1} transparent opacity={.72} depthTest={false}/>
+    {[0, 90, 180, 270].map((az) => {
+      const label = az === 0 ? 'N' : az === 90 ? 'E' : az === 180 ? 'S' : 'W'
+      const p = ray(az, pad.horizon[az] + 2.5, mode === 'orbit' ? 3100 : 4200).add(eye)
+      return (
+        <Billboard key={az} position={p}>
+          <Text fontSize={mode === 'orbit' ? 76 : 92} color="#8e949f" renderOrder={4} material-depthTest={false}>
+            {label}
+          </Text>
+        </Billboard>
+      )
+    })}
     {sunTrack.length >= 2 && <Line points={sunTrack} color="#ffc36d" lineWidth={1.2} transparent opacity={.45} dashed dashSize={90} gapSize={60} depthTest={false}/>}
     {earthTrack.length >= 2 && <Line points={earthTrack} color="#8ec9ff" lineWidth={1.2} transparent opacity={.5} dashed dashSize={70} gapSize={50} depthTest={false}/>}
     {([{name:'Sun',v:sun,color:'#ffc36d',margin:sky.sunMargin},{name:'Earth',v:earth,color:'#8ec9ff',margin:sky.earthMargin}]).map(body=>{
@@ -216,7 +249,7 @@ function PadLook({eye,target}:{eye:Vector3;target:Vector3}) {
 }
 
 export default function SkyScene(props:Parameters<typeof Scene>[0]) {
-  return <Canvas shadows camera={{fov:62,near:1,far:40000}} fallback={<p>WebGL unavailable. Use the horizon chart.</p>}>
+  return <Canvas shadows camera={{fov:54,near:1,far:40000}} fallback={<p>WebGL unavailable. Use the horizon chart.</p>}>
     <Scene {...props}/>
   </Canvas>
 }
