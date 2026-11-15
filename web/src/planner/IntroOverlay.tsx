@@ -74,17 +74,7 @@ export function IntroOverlay({
             aria-hidden="true"
           />
           {canRender3D ? (
-            <Suspense
-              fallback={
-                <div className="intro-fallback" role="status" aria-live="polite">
-                  <div className="orbital-loader" aria-hidden="true">
-                    <span className="orbital-ring" />
-                    <span className="orbital-moon" />
-                  </div>
-                  <span className="intro-loading-label">Loading 3D lunar globe…</span>
-                </div>
-              }
-            >
+            <Suspense fallback={null}>
               <IntroScene focus={introFocus} selectedView="orbit" onReady={handleReady} />
             </Suspense>
           ) : (
@@ -92,10 +82,17 @@ export function IntroOverlay({
               <LunarLocator coordinates={[-89.5, 0, 0]} />
             </div>
           )}
-          {canRender3D && !sceneReady && (
-            <div className="intro-loading-pill" role="status" aria-live="polite">
-              <span className="intro-loading-spinner" aria-hidden="true" />
-              Loading 3D lunar relief…
+          {canRender3D && (
+            <div
+              className={sceneReady ? 'intro-stage-loader is-ready' : 'intro-stage-loader'}
+              role="status"
+              aria-live="polite"
+              aria-hidden={sceneReady}
+            >
+              <span className="intro-loading-badge">
+                <span className="intro-loading-spinner" aria-hidden="true" />
+                Loading 3D lunar globe…
+              </span>
             </div>
           )}
           <div className="intro-stage-hud" aria-hidden="true">

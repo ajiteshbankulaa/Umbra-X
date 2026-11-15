@@ -4792,44 +4792,42 @@ body:has(.mission) {
   .decision-brief-actions .decision-btn-primary { order: -1; }
 }
 
-.intro-fallback {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.intro-loading-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-1);
-  letter-spacing: 0.02em;
-}
-
-.intro-loading-pill {
+.intro-stage-loader {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  inset: 0;
   z-index: 3;
+  display: grid;
+  place-items: center;
+  background: rgba(9, 10, 12, 0.38);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 240ms var(--ease-swiss);
+}
+
+.intro-stage-loader.is-ready {
+  opacity: 0;
+}
+
+.intro-loading-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: var(--r-xs);
-  background: rgba(15, 17, 21, 0.88);
-  border: 1px solid var(--rule-strong);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
+  gap: 9px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(15, 17, 21, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--ink-0);
-  pointer-events: none;
+  backdrop-filter: blur(8px);
 }
 
 .intro-loading-spinner {
-  width: 11px;
-  height: 11px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  border: 1.5px solid rgba(0, 212, 170, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
   border-top-color: var(--accent);
   animation: introSpin 0.8s linear infinite;
 }

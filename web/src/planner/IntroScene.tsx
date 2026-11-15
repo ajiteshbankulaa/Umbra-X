@@ -513,7 +513,12 @@ function LdaReliefGlobe({ focus, selectedView, onReady }: { focus: IntroFocus; s
   }, [focus])
 
   useEffect(() => {
-    if (heightReady || albedoTex) onReady?.()
+    if (heightReady || albedoTex) {
+      onReady?.()
+      return
+    }
+    const timer = window.setTimeout(() => onReady?.(), 2500)
+    return () => window.clearTimeout(timer)
   }, [heightReady, albedoTex, onReady])
 
   const ring85 = useMemo(() => latRingPoints(-85, 128, 0.048), [])
@@ -640,7 +645,7 @@ function LdaReliefGlobe({ focus, selectedView, onReady }: { focus: IntroFocus; s
 
 export default function IntroScene({ focus, selectedView = 'orbit', onReady }: { focus: IntroFocus; selectedView?: IntroView; onReady?: () => void }) {
   return (
-    <Canvas camera={{ position: [0.1, 1.35, 8.6], fov: 40, near: 0.1, far: 45 }} dpr={[1, 1.5]} onCreated={() => onReady?.()}>
+    <Canvas camera={{ position: [0.1, 1.35, 8.6], fov: 40, near: 0.1, far: 45 }} dpr={[1, 1.5]}>
       <LdaReliefGlobe focus={focus} selectedView={selectedView} onReady={onReady} />
     </Canvas>
   )
