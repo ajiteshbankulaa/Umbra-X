@@ -59,10 +59,11 @@ const POLAR_SITES: Array<{
   { id: 'mons-mouton', label: 'Mons Mouton', lat: -84.79, lon: 29.2, color: '#60a5fa', labelOffset: [0.56, 0.34, -0.06] },
 ]
 
-// Smooth 3D value noise for seamless equirectangular maria, highlands & terrain normals
+// Fast 32-bit integer hash for seamless 3D value noise (avoids costly Math.sin per lattice corner)
 function hash3(ix: number, iy: number, iz: number): number {
-  const n = Math.sin(ix * 127.1 + iy * 311.7 + iz * 74.7) * 43758.5453123
-  return n - Math.floor(n)
+  let h = (Math.imul(ix | 0, 374761393) + Math.imul(iy | 0, 668265263) + Math.imul(iz | 0, 2147483647)) | 0
+  h = Math.imul(h ^ (h >>> 13), 1274126177)
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296
 }
 
 function noise3(x: number, y: number, z: number): number {
@@ -112,8 +113,8 @@ function fbm3(x: number, y: number, z: number, octaves: number): number {
  * so the globe shows crisp craters, basins, and micro-relief with zero UV seam.
  */
 function createLunarGlobeTextures(): { albedo: CanvasTexture; normal: CanvasTexture } {
-  const w = 1024
-  const h = 512
+  const w = 512
+  const h = 256
   const count = w * h
   const height = new Float32Array(count)
   const tone = new Float32Array(count)
@@ -130,21 +131,26 @@ function createLunarGlobeTextures(): { albedo: CanvasTexture; normal: CanvasText
     cy: number
     cz: number
     r: number
+    maxRange: number
+    maxRangeSq: number
     depth: number
     rayed: number
   }
   const craters: Crater[] = []
-  for (let i = 0; i < 320; i++) {
+  for (let i = 0; i < 180; i++) {
     const u = rand() * Math.PI * 2
     const v = Math.acos(2 * rand() - 1)
-    const r = i < 20 ? 0.095 + rand() * 0.1 : i < 110 ? 0.032 + rand() * 0.055 : 0.011 + rand() * 0.022
+    const r = i < 16 ? 0.095 + rand() * 0.1 : i < 72 ? 0.032 + rand() * 0.055 : 0.012 + rand() * 0.022
+    const maxRange = r * 1.32
     craters.push({
       cx: Math.sin(v) * Math.cos(u),
       cy: Math.cos(v),
       cz: Math.sin(v) * Math.sin(u),
       r,
+      maxRange,
+      maxRangeSq: maxRange * maxRange,
       depth: r * (1.1 + rand() * 0.65),
-      rayed: i >= 20 && i < 65 && rand() > 0.4 ? 1 : 0,
+      rayed: i >= 16 && i < 46 && rand() > 0.4 ? 1 : 0,
     })
   }
 
@@ -153,6 +159,7 @@ function createLunarGlobeTextures(): { albedo: CanvasTexture; normal: CanvasText
     const phi = ((py + 0.5) / h) * Math.PI
     const sinP = Math.sin(phi)
     const ny = Math.cos(phi)
+    const rowCraters = craters.filter(c => Math.abs(ny - c.cy) <= c.maxRange)
 
     for (let px = 0; px < w; px++) {
       const theta = ((px + 0.5) / w) * Math.PI * 2
@@ -161,29 +168,25 @@ function createLunarGlobeTextures(): { albedo: CanvasTexture; normal: CanvasText
       const idx = py * w + px
 
       // Multi-scale mare basins & bright heavily cratered south polar highlands
-      const macro = fbm3(nx * 2.1 + 2.1, ny * 2.1 - 1.3, nz * 2.1 + 0.7, 3)
-      const mid = fbm3(nx * 8.5 - 3.4, ny * 8.5 + 2.2, nz * 8.5 + 1.1, 3)
+      const macro = fbm3(nx * 2.1 + 2.1, ny * 2.1 - 1.3, nz * 2.1 + 0.7, 2)
+      const mid = fbm3(nx * 8.5 - 3.4, ny * 8.5 + 2.2, nz * 8.5 + 1.1, 2)
       const fine = noise3(nx * 28.0, ny * 28.0, nz * 28.0)
-      const grit = noise3(nx * 64.0, ny * 64.0, nz * 64.0)
 
       // Polar highland factor (keeps upper +Y cap bright and highland-rich matching LOLA texture)
       const highlandBias = Math.max(0, Math.min(1, (ny + 0.25) * 0.95))
       const mareMask = Math.max(0, Math.min(1, (macro - 0.42) * 3.3 - highlandBias * 0.5))
 
-      let hVal = (macro - 0.5) * 0.42 + (mid - 0.5) * 0.24 + (fine - 0.5) * 0.1 + (grit - 0.5) * 0.04
+      let hVal = (macro - 0.5) * 0.42 + (mid - 0.5) * 0.24 + (fine - 0.5) * 0.1
       hVal -= mareMask * 0.18
-      let aVal = 0.66 - mareMask * 0.28 + (mid - 0.5) * 0.12 + (fine - 0.5) * 0.06 + (grit - 0.5) * 0.04
+      let aVal = 0.66 - mareMask * 0.28 + (mid - 0.5) * 0.12 + (fine - 0.5) * 0.06
 
-      // Craters culled quickly by |ny - cy| < r * 1.32
-      for (let ci = 0; ci < craters.length; ci++) {
-        const c = craters[ci]
-        const maxRange = c.r * 1.32
-        if (Math.abs(ny - c.cy) > maxRange) continue
+      for (let ci = 0; ci < rowCraters.length; ci++) {
+        const c = rowCraters[ci]
         const dx = nx - c.cx
         const dy = ny - c.cy
         const dz = nz - c.cz
         const dSq = dx * dx + dy * dy + dz * dz
-        if (dSq > maxRange * maxRange) continue
+        if (dSq > c.maxRangeSq) continue
 
         const d = Math.sqrt(dSq) / c.r
         if (d < 0.86) {
@@ -517,7 +520,7 @@ function LdaReliefGlobe({ focus, selectedView, onReady }: { focus: IntroFocus; s
       onReady?.()
       return
     }
-    const timer = window.setTimeout(() => onReady?.(), 2500)
+    const timer = window.setTimeout(() => onReady?.(), 900)
     return () => window.clearTimeout(timer)
   }, [heightReady, albedoTex, onReady])
 
