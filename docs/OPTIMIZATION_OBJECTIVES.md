@@ -6,7 +6,7 @@ Umbra-X refuses to hide engineering compromises behind an opaque "AI confidence 
 
 For a fixed mast height (`mast`), search scope (`same-site`, `all-polar`, or explicit site list), and allowed delay window (`[minStart, maxStart]` in integer hours):
 - **Fast Hard Filter (`collectPassingStartsByPad`)**: Evaluates `obs.slope <= limits.slope` followed by `wasm.searchDual` / `searchObserverDual`, enforcing **both `96 km` regional and `48 km` comparison horizons** simultaneously at the active sigma profile (`power.sigma`).
-- **Full Physics & Energy Balance (`analyze`)**: Evaluates selected candidates spanning all extremity orders (nearest schedule/location, lowest darkness, lowest Earth blackout, flattest slope, highest solar percentage) for closed-loop PV generation, battery sizing (`batteryKg`, `unmetWh`, `headroomKg`), and 3-complex DSN visibility (`DSS-14`, `DSS-65`, `DSS-43`).
+- **Full Physics & Energy Balance (`analyze`)**: Evaluates selected candidates spanning all extremity orders (nearest schedule/location, lowest darkness, lowest Earth blackout, flattest slope, highest solar percentage) for closed-loop PV generation, battery sizing (`batteryKg`, `unmetWh`, `headroomKg`), and 3-complex DSN visibility (`DSS-14`, `DSS-63`, `DSS-43`).
 
 A candidate is marked `feasible = true` **if and only if**:
 1. `complete === true` (`360/360` regional azimuth coverage)

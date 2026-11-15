@@ -1,27 +1,26 @@
 import { lazy, Suspense } from 'react'
 import { ArrowRight } from 'lucide-react'
 import type { IntroFocus } from './IntroScene'
-import type { ArrayMode, Scenario } from './model'
-import { initial, VIEW_CARDS, type TabId } from './missionHelpers'
+import { VIEW_CARDS } from './missionHelpers'
 import { LunarLocator } from './TelemetryCharts'
+import { CursorTriangles } from './CursorTriangles'
 
 const IntroScene = lazy(() => import('./IntroScene'))
 
 type ViewId = 'orbit' | 'pad' | 'polar' | 'chart'
 
+const VIEW_GUIDE: Record<ViewId, string> = {
+  pad: 'Eye-level 3D view across crater rims toward the Sun and Earth.',
+  orbit: 'Local 5.12 km relief with a horizon modeled up to 96 km.',
+  polar: '360° azimuth dome plotting Sun and Earth horizon arcs.',
+  chart: '2D horizon elevation profile chart of ridge obstacle angles.',
+}
+
 interface IntroOverlayProps {
   canRender3D: boolean
   view: ViewId
   setView: (view: ViewId) => void
-  role: 'Planner' | 'Scientist' | 'Educator' | 'Public'
-  experiment: string
   introFocus: IntroFocus
-  selectRole: (role: 'Planner' | 'Scientist' | 'Educator' | 'Public') => void
-  setExperiment: (id: string) => void
-  applyPreset: (
-    nextScenarios: [Scenario, Scenario],
-    options?: { active?: number; tab?: TabId; arrayMode?: ArrayMode; view?: ViewId },
-  ) => void
   onEnter: () => void
 }
 
@@ -29,18 +28,14 @@ export function IntroOverlay({
   canRender3D,
   view,
   setView,
-  role,
-  experiment,
   introFocus,
-  selectRole,
-  setExperiment,
-  applyPreset,
   onEnter,
 }: IntroOverlayProps) {
   return (
     <div className="mission">
       <div className="intro-shell">
         <section className="intro-content" aria-label="Welcome to Umbra-X">
+          <CursorTriangles />
           <div className="intro-topbar">
             <div className="intro-brand">
               <span className="brand-mark" aria-hidden="true">
@@ -68,43 +63,13 @@ export function IntroOverlay({
 
           <div className="intro-main">
             <div className="intro-greeting">
-              <h1>South-Pole Navigator</h1>
-              <p className="intro-subtitle">Solar illumination, Earth visibility &amp; landing pad comparison.</p>
+              <h1>Lunar South Pole Navigator</h1>
+              <p className="intro-subtitle">Compare where and when to land. See how a two-day delay changes what a lunar lander can see from the same pad.</p>
             </div>
 
             <div className="intro-section">
               <div className="intro-section-head">
-                <span className="intro-prompt">Mode</span>
-              </div>
-              <div className="intro-mode-strip" role="group" aria-label="Select workspace mode">
-                {([
-                  { id: 'Planner', title: 'Planner' },
-                  { id: 'Educator', title: 'Learner' },
-                ] as const).map(card => (
-                  <button
-                    key={card.id}
-                    type="button"
-                    className="view-cell"
-                    aria-pressed={card.id === 'Planner' ? role !== 'Educator' : role === 'Educator'}
-                    onClick={() => {
-                      if (card.id === 'Planner') {
-                        selectRole('Planner')
-                        if (experiment === 'apollo') applyPreset(initial, { tab: 'Decision', arrayMode: 'tracked' })
-                        setExperiment('delay')
-                      } else {
-                        selectRole('Educator')
-                      }
-                    }}
-                  >
-                    <strong>{card.title}</strong>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="intro-section">
-              <div className="intro-section-head">
-                <span className="intro-prompt">View</span>
+                <span className="intro-prompt">Starting view (optional)</span>
               </div>
               <div className="intro-view-strip" role="group" aria-label="Select your starting view">
                 {VIEW_CARDS.map(card => (
@@ -112,6 +77,7 @@ export function IntroOverlay({
                     key={card.id}
                     type="button"
                     className="view-cell"
+                    title={VIEW_GUIDE[card.id]}
                     aria-pressed={view === card.id}
                     disabled={(card.id === 'orbit' || card.id === 'pad') && !canRender3D}
                     onClick={() => setView(card.id)}
@@ -124,8 +90,9 @@ export function IntroOverlay({
 
             <div className="intro-actions">
               <button type="button" className="intro-enter-btn" onClick={onEnter}>
-                Enter Navigator <ArrowRight size={14} />
+                Open landing comparison <ArrowRight size={14} />
               </button>
+              <div className="intro-telemetry-meta">NASA lunar terrain · JPL Sun and Earth positions</div>
             </div>
           </div>
 
@@ -158,7 +125,12 @@ export function IntroOverlay({
             </div>
           )}
           <div className="intro-stage-hud" aria-hidden="true">
-            <span className="intro-hint">Drag to orbit</span>
+            <span className="intro-region-legend">
+              <i style={{ background: '#10b981' }} /> Shackleton
+              <i style={{ background: '#f59e0b' }} /> Malapert
+              <i style={{ background: '#60a5fa' }} /> Mons Mouton
+            </span>
+            <span className="intro-hint">{canRender3D ? 'Illustrative globe · LOLA south-pole relief · Drag to orbit' : 'South-pole preview · 2D views available'}</span>
           </div>
         </section>
       </div>

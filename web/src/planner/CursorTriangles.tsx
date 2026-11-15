@@ -16,6 +16,9 @@ export function CursorTriangles() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
+    const reducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (reducedMotion) return
+
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -24,13 +27,13 @@ export function CursorTriangles() {
     let width = 0
     let height = 0
     let tris: Tri[] = []
-    let mouseX = -9999
-    let mouseY = -9999
+    let pending: { x: number; y: number } | null = null
+    let lastFrame: number | null = null
     let raf = 0
 
     const buildGrid = () => {
-      width = canvas.width = window.innerWidth
-      height = canvas.height = window.innerHeight
+      width = canvas.width = canvas.clientWidth
+      height = canvas.height = canvas.clientHeight
       tris = []
 
       const size = 56
@@ -82,64 +85,71 @@ export function CursorTriangles() {
       }
     }
 
-    const onMove = (e: PointerEvent) => {
-      mouseX = e.clientX
-      mouseY = e.clientY
-    }
-
-    const onLeave = () => {
-      mouseX = -9999
-      mouseY = -9999
-    }
-
-    const radius = 145
+    const radius = 155
     const radiusSq = radius * radius
 
-    const render = () => {
+    const ensureLoop = () => {
+      if (!raf) raf = requestAnimationFrame(render)
+    }
+
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return
+      pending = { x: e.clientX, y: e.clientY }
+      ensureLoop()
+    }
+
+    const render = (now: number) => {
+      raf = 0
       ctx.clearRect(0, 0, width, height)
+      const rect = pending && canvas.getBoundingClientRect()
+      const point = pending && rect && { x: pending.x - rect.left, y: pending.y - rect.top }
+      pending = null
+      const decay = Math.exp(-(now - (lastFrame ?? now)) / 180)
+      let anyHot = false
 
       for (let i = 0; i < tris.length; i++) {
         const t = tris[i]
-        const dx = t.cx - mouseX
-        const dy = t.cy - mouseY
-        const dSq = dx * dx + dy * dy
-        if (dSq < radiusSq) {
-          const proximity = 1 - Math.sqrt(dSq) / radius
-          const target = Math.pow(proximity, 1.5)
-          if (target > t.heat) t.heat = target
+        t.heat *= decay
+        if (point) {
+          const dx = t.cx - point.x
+          const dy = t.cy - point.y
+          const dSq = dx * dx + dy * dy
+          if (dSq < radiusSq) {
+            const proximity = 1 - Math.sqrt(dSq) / radius
+            t.heat = Math.max(t.heat, Math.pow(proximity, 1.45))
+          }
         }
 
         if (t.heat > 0.008) {
-          t.heat *= 0.935
+          anyHot = true
           ctx.beginPath()
           ctx.moveTo(t.x1, t.y1)
           ctx.lineTo(t.x2, t.y2)
           ctx.lineTo(t.x3, t.y3)
           ctx.closePath()
-          ctx.fillStyle = `rgba(168, 85, 247, ${t.heat * 0.22})`
+          ctx.fillStyle = `rgba(168, 85, 247, ${t.heat * 0.16})`
           ctx.fill()
-          ctx.strokeStyle = `rgba(192, 132, 252, ${t.heat * 0.55})`
-          ctx.lineWidth = 0.85
+          ctx.strokeStyle = `rgba(192, 132, 252, ${t.heat * 0.44})`
+          ctx.lineWidth = 0.9
           ctx.stroke()
         } else {
           t.heat = 0
         }
       }
 
-      raf = requestAnimationFrame(render)
+      lastFrame = anyHot ? now : null
+      if (anyHot) raf = requestAnimationFrame(render)
     }
 
     buildGrid()
-    window.addEventListener('resize', buildGrid)
+    const resizeObserver = new ResizeObserver(buildGrid)
+    resizeObserver.observe(canvas)
     window.addEventListener('pointermove', onMove, { passive: true })
-    window.addEventListener('pointerleave', onLeave)
-    raf = requestAnimationFrame(render)
 
     return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', buildGrid)
+      if (raf) cancelAnimationFrame(raf)
+      resizeObserver.disconnect()
       window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerleave', onLeave)
     }
   }, [])
 
@@ -148,10 +158,12 @@ export function CursorTriangles() {
       ref={canvasRef}
       aria-hidden="true"
       style={{
-        position: 'fixed',
+        position: 'absolute',
         inset: 0,
+        width: '100%',
+        height: '100%',
         pointerEvents: 'none',
-        zIndex: 55,
+        zIndex: -1,
       }}
     />
   )

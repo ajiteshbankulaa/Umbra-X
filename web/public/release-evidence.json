@@ -57,8 +57,8 @@
   "cases": [
     {
       "id": "launch-delay",
-      "title": "Recover a viable option after a 48-hour launch delay",
-      "query": "?comparison=%7B%22schema%22%3A1%2C%22scenarios%22%3A%5B%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A0%7D%2C%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A180%2C%22start%22%3A48%2C%22mast%22%3A2%7D%5D%2C%22days%22%3A15%2C%22limits%22%3A%7B%22dark%22%3A48%2C%22earth%22%3A72%2C%22slope%22%3A5%7D%2C%22power%22%3A%7B%22arrayW%22%3A400%2C%22loadW%22%3A120%2C%22specificWh%22%3A150%2C%22hardwareKg%22%3A20%2C%22budgetKg%22%3A100%2C%22arrayMode%22%3A%22tracked%22%2C%22sigma%22%3A0%7D%2C%22rates%22%3A%5B%22%22%2C%22%22%2C%22%22%5D%2C%22equipment%22%3A0%2C%22versions%22%3A%5B%22b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%2C%22b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%5D%7D",
+      "title": "Delay the same Shackleton pad by 48 hours",
+      "query": "?comparison=%7B%22schema%22%3A1%2C%22scenarios%22%3A%5B%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A0%7D%2C%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A48%7D%5D%2C%22days%22%3A15%2C%22limits%22%3A%7B%22dark%22%3A48%2C%22earth%22%3A72%2C%22slope%22%3A5%7D%2C%22power%22%3A%7B%22arrayW%22%3A400%2C%22loadW%22%3A120%2C%22specificWh%22%3A150%2C%22hardwareKg%22%3A20%2C%22budgetKg%22%3A100%2C%22arrayMode%22%3A%22tracked%22%2C%22sigma%22%3A0%7D%2C%22rates%22%3A%5B%22%22%2C%22%22%2C%22%22%5D%2C%22equipment%22%3A0%2C%22versions%22%3A%5B%22b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%2C%22b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%5D%7D",
       "inputs": {
         "schema": 1,
         "scenarios": [
@@ -70,9 +70,9 @@
           },
           {
             "site": "shackleton-ridge",
-            "node": 180,
-            "start": 48,
-            "mast": 2
+            "node": 480,
+            "mast": 2,
+            "start": 48
           }
         ],
         "days": 15,
@@ -113,9 +113,76 @@
         },
         {
           "utc": "2026-11-16T00:00:00.000Z",
+          "lowLightHours": 52.25,
+          "earthObstructionHours": 55.666666666666664,
+          "slopeDeg": 5.600488185882568,
+          "requiredBatteryKg": 56.87708270370761,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        }
+      ]
+    },
+    {
+      "id": "nearby",
+      "title": "Keep the delayed date and move 280 m to Pad #479",
+      "query": "?comparison=%7B%22schema%22%3A1%2C%22scenarios%22%3A%5B%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A480%2C%22mast%22%3A2%2C%22start%22%3A48%7D%2C%7B%22site%22%3A%22shackleton-ridge%22%2C%22node%22%3A478%2C%22start%22%3A48%2C%22mast%22%3A2%7D%5D%2C%22days%22%3A15%2C%22limits%22%3A%7B%22dark%22%3A48%2C%22earth%22%3A72%2C%22slope%22%3A5%7D%2C%22power%22%3A%7B%22arrayW%22%3A400%2C%22loadW%22%3A120%2C%22specificWh%22%3A150%2C%22hardwareKg%22%3A20%2C%22budgetKg%22%3A100%2C%22arrayMode%22%3A%22tracked%22%2C%22sigma%22%3A0%7D%2C%22rates%22%3A%5B%22%22%2C%22%22%2C%22%22%5D%2C%22equipment%22%3A0%2C%22versions%22%3A%5B%22b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%2C%22b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321%3Adc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc%3Ae4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1%22%5D%7D",
+      "inputs": {
+        "schema": 1,
+        "scenarios": [
+          {
+            "site": "shackleton-ridge",
+            "node": 480,
+            "mast": 2,
+            "start": 48
+          },
+          {
+            "site": "shackleton-ridge",
+            "node": 478,
+            "start": 48,
+            "mast": 2
+          }
+        ],
+        "days": 15,
+        "limits": {
+          "dark": 48,
+          "earth": 72,
+          "slope": 5
+        },
+        "power": {
+          "arrayW": 400,
+          "loadW": 120,
+          "specificWh": 150,
+          "hardwareKg": 20,
+          "budgetKg": 100,
+          "arrayMode": "tracked",
+          "sigma": 0
+        },
+        "rates": [
+          "",
+          "",
+          ""
+        ],
+        "equipment": 0,
+        "versions": [
+          "b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1",
+          "b7ca9394446e781b5eaab0308b6e4ca58f471a41ac3eb115dc5e314926238321:dc770e6a5a7d062eadd515e7dd1eb501715a5958db4851abbb3ca23a41eecdbc:e4aa3306941f038c96670b04f580ba64d3867081df3f29795cac1f4ab72d68d1"
+        ]
+      },
+      "expected": [
+        {
+          "utc": "2026-11-16T00:00:00.000Z",
+          "lowLightHours": 52.25,
+          "earthObstructionHours": 55.666666666666664,
+          "slopeDeg": 5.600488185882568,
+          "requiredBatteryKg": 56.87708270370761,
+          "batteryFeasible": true,
+          "coverageComplete": true
+        },
+        {
+          "utc": "2026-11-16T00:00:00.000Z",
           "lowLightHours": 0,
-          "earthObstructionHours": 0,
-          "slopeDeg": 4.536265850067139,
+          "earthObstructionHours": 4.833333333333333,
+          "slopeDeg": 0.9412742257118225,
           "requiredBatteryKg": 0,
           "batteryFeasible": true,
           "coverageComplete": true

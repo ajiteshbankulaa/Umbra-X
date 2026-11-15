@@ -66,7 +66,13 @@ const radius = 1737400
 const rad = Math.PI / 180
 
 const DSS14_ITRF: Triple = [-2353621.365667699, -4641341.49114994, 3677052.329319744]
-const DSS65_ITRF: Triple = [4849092.68, -360180.34, 4114913.25]
+// JPL DSN 810-005, 301 Rev. M, table 2 (ITRF93, epoch 2003.0).
+export const MADRID_STATION = {
+  name: 'DSS-63 Madrid',
+  source: 'https://deepspace.jpl.nasa.gov/dsndocs/810-005/301/301M.pdf',
+  itrf93Meters: [4849092.518, -360180.348, 4115109.251],
+} as const
+const DSS63_ITRF: Triple = [...MADRID_STATION.itrf93Meters]
 const DSS43_ITRF: Triple = [-4460894.92, 2682361.55, -3674748.58]
 const WGS84_A2 = 6378137.0 * 6378137.0
 const WGS84_B2 = 6356752.314245 * 6356752.314245
@@ -107,10 +113,10 @@ function toBasisCoords(v: Triple, b: [Triple, Triple, Triple]): Triple {
 }
 
 const dsnItrsBasis = buildDsnFrame(DSS14_ITRF, wgs84Up(DSS14_ITRF))!
-const DSS65_BASIS = { pos: toBasisCoords(DSS65_ITRF, dsnItrsBasis), up: toBasisCoords(wgs84Up(DSS65_ITRF), dsnItrsBasis) }
+const DSS63_BASIS = { pos: toBasisCoords(DSS63_ITRF, dsnItrsBasis), up: toBasisCoords(wgs84Up(DSS63_ITRF), dsnItrsBasis) }
 const DSS43_BASIS = { pos: toBasisCoords(DSS43_ITRF, dsnItrsBasis), up: toBasisCoords(wgs84Up(DSS43_ITRF), dsnItrsBasis) }
 
-export type DsnComplexName = 'DSS-14 Goldstone' | 'DSS-65 Madrid' | 'DSS-43 Canberra'
+export type DsnComplexName = 'DSS-14 Goldstone' | 'DSS-63 Madrid' | 'DSS-43 Canberra'
 
 export function horizonAt(profile: Float32Array, az: number) {
   const i = Math.floor(az)
@@ -205,7 +211,8 @@ export interface Sky {
   sunHorizon: number; earthHorizon: number; sunSigma: number; earthSigma: number
   sunMargin: number; earthMargin: number; stationUp: number
   stationAccess: boolean; stationCovered: boolean
-  dss14Access: boolean; dss65Access: boolean; dss43Access: boolean
+  dss14Access: boolean; dss63Access: boolean; dss43Access: boolean
+  dss63Covered: boolean; dss43Covered: boolean
   dsnAccess: boolean; dsnCovered: boolean; dsnMaxUp: number
   dsnActiveStation: DsnComplexName | null
   solar: number; sunSemiDeg: number; eclipseFactor: number
@@ -258,12 +265,12 @@ function evalDsnComplexes(
   const dss14Covered = cov(stationDir.az)
   const dss14Access = dss14Covered && stationUp >= mask && stationDir.el > stationHorizon
 
-  let dss65Access = false
+  let dss63Access = false
   let dss43Access = false
-  let dss65Covered = true
+  let dss63Covered = true
   let dss43Covered = true
   let dsnMaxUp = stationUp
-  let dss65Up = -90
+  let dss63Up = -90
   let dss43Up = -90
 
   const meFrame = buildDsnFrame(
@@ -287,26 +294,26 @@ function evalDsnComplexes(
       const covAz = cov(dir.az)
       return { upDeg, covAz, access: covAz && upDeg >= mask && dir.el > hor }
     }
-    const c65 = evalComplex(DSS65_BASIS)
+    const c63 = evalComplex(DSS63_BASIS)
     const c43 = evalComplex(DSS43_BASIS)
-    dss65Access = c65.access
-    dss65Covered = c65.covAz
-    dss65Up = c65.upDeg
+    dss63Access = c63.access
+    dss63Covered = c63.covAz
+    dss63Up = c63.upDeg
     dss43Access = c43.access
     dss43Covered = c43.covAz
     dss43Up = c43.upDeg
-    dsnMaxUp = Math.max(stationUp, dss65Up, dss43Up)
+    dsnMaxUp = Math.max(stationUp, dss63Up, dss43Up)
   }
 
-  const dsnAccess = dss14Access || dss65Access || dss43Access
-  const dsnCovered = dsnAccess || (dss14Covered && dss65Covered && dss43Covered)
+  const dsnAccess = dss14Access || dss63Access || dss43Access
+  const dsnCovered = dsnAccess || (dss14Covered && dss63Covered && dss43Covered)
   const candidates: [DsnComplexName, boolean, number][] = [
     ['DSS-14 Goldstone', dss14Access, stationUp],
-    ['DSS-65 Madrid', dss65Access, dss65Up],
+    [MADRID_STATION.name, dss63Access, dss63Up],
     ['DSS-43 Canberra', dss43Access, dss43Up],
   ]
   const active = candidates.filter(([, ok]) => ok).sort((a, b) => b[2] - a[2])[0]?.[0] ?? null
-  return { dss14Covered, dss14Access, dss65Access, dss43Access, dsnAccess, dsnCovered, dsnMaxUp, active }
+  return { dss14Covered, dss14Access, dss63Access, dss43Access, dss63Covered, dss43Covered, dsnAccess, dsnCovered, dsnMaxUp, active }
 }
 
 function sample(
@@ -348,7 +355,9 @@ function sample(
     stationCovered: dsn.dss14Covered,
     stationAccess: dsn.dss14Access,
     dss14Access: dsn.dss14Access,
-    dss65Access: dsn.dss65Access,
+    dss63Access: dsn.dss63Access,
+    dss63Covered: dsn.dss63Covered,
+    dss43Covered: dsn.dss43Covered,
     dss43Access: dsn.dss43Access,
     dsnAccess: dsn.dsnAccess,
     dsnCovered: dsn.dsnCovered,
@@ -433,7 +442,8 @@ export function analyze(observer: Observer, vectors: Float64Array, start: number
   const earth = intervals(sky.map(s=>s.earthMargin<=0),dt)
   const station = intervals(sky.map(s=>s.stationAccess),dt)
   const dsn = intervals(sky.map(s=>s.dsnAccess),dt)
-  const dsnBlackout = intervals(sky.map(s=>!s.dsnAccess),dt)
+  const dsnBlackout = intervals(sky.map(s=>s.dsnCovered && !s.dsnAccess),dt)
+  const dsnUnknown = intervals(sky.map(s=>!s.dsnCovered),dt)
   const longest = (events: typeof dark) => Math.max(0,...events.map(e=>e.hours))
   const generation = sky.map(s=>power.arrayW*s.solar*s.incidenceFactor)
   let referenceDark=0, referenceEarth=0, darkRun=0, earthRun=0, referenceLongestDark=0, referenceLongestEarth=0
@@ -452,7 +462,7 @@ export function analyze(observer: Observer, vectors: Float64Array, start: number
     referenceLongestDark=Math.max(referenceLongestDark,darkRun)
     referenceLongestEarth=Math.max(referenceLongestEarth,earthRun)
   }
-  return {sky,dark,earth,station,dsn,dsnBlackout,generation,solarHours:steps*dt-dark.reduce((n,e)=>n+e.hours,0),
+  return {sky,dark,earth,station,dsn,dsnBlackout,dsnUnknown,generation,solarHours:steps*dt-dark.reduce((n,e)=>n+e.hours,0),
     earthHours:steps*dt-earth.reduce((n,e)=>n+e.hours,0),stationHours:station.reduce((n,e)=>n+e.hours,0),
     dsnHours:dsn.reduce((n,e)=>n+e.hours,0),
     longestDsnBlackout:longest(dsnBlackout),
@@ -460,7 +470,7 @@ export function analyze(observer: Observer, vectors: Float64Array, start: number
     dsnDisagreementHours:sky.filter(s=>s.dsnCovered && s.dsnAccess!==(s.earthMargin>0)).length*dt,
     dsnComplexHours:{
       dss14:sky.filter(s=>s.dss14Access).length*dt,
-      dss65:sky.filter(s=>s.dss65Access).length*dt,
+      dss63:sky.filter(s=>s.dss63Access).length*dt,
       dss43:sky.filter(s=>s.dss43Access).length*dt,
     },
     stationUnknownHours:sky.filter(s=>!s.stationCovered).length*dt,

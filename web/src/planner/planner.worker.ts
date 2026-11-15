@@ -22,6 +22,7 @@ export type Request = { id: number; days: number; power: Power; limits: Limits }
 )
 
 let activeSearch = 0
+let latestComparison = 0
 const cache = new Map<string, ReturnType<typeof analyze>>()
 const viabilityCache = new Map<string, { viability: Uint8Array; solarPct: Uint8Array; earthPct: Uint8Array }>()
 let wasmPromise: Promise<WasmSearchEngine | null> | null = null
@@ -59,7 +60,8 @@ self.onmessage = async ({ data: request }: MessageEvent<Request | { kind: 'cance
   try {
     const steps = request.days * 24 * 12
     if (request.kind === 'compare') {
-      const items = await Promise.all(
+      latestComparison = request.id
+      const prepared = await Promise.all(
         request.scenarios.map(async s => {
           const bundle = await dataset(s.site)
           const pad = observer(bundle, s)
@@ -87,6 +89,22 @@ self.onmessage = async ({ data: request }: MessageEvent<Request | { kind: 'cance
             if (cache.size >= 12) cache.delete(cache.keys().next().value!)
             cache.set(key, report)
           }
+          return { s, bundle, report, pad, liveTerrain }
+        }),
+      )
+      if (request.id !== latestComparison) return
+      self.postMessage({
+        id: request.id, kind: 'compare',
+        items: prepared.map(({ bundle, report, pad, liveTerrain }) => ({
+          report, pad, meta: bundle.meta, terrain: bundle.site, mastSensitivity: [], liveTerrain,
+        })),
+      })
+
+      // Draw the selected plans before computing maps for every pad on each grid.
+      const details = []
+      for (const { s, bundle } of prepared) {
+          await new Promise<void>(resolve => setTimeout(resolve, 0))
+          if (request.id !== latestComparison) return
           const mastSensitivity = bundle.site
             ? [0, 4].map(mast => {
                 const variant = observer(bundle, { ...s, mast })
@@ -127,10 +145,9 @@ self.onmessage = async ({ data: request }: MessageEvent<Request | { kind: 'cance
             padSolarPct = vMap.solarPct
             padEarthPct = vMap.earthPct
           }
-          return { report, pad, meta: bundle.meta, terrain: bundle.site, mastSensitivity, liveTerrain, padViability, padSolarPct, padEarthPct }
-        }),
-      )
-      self.postMessage({ id: request.id, kind: 'compare', items })
+          details.push({ mastSensitivity, padViability, padSolarPct, padEarthPct })
+      }
+      self.postMessage({ id: request.id, kind: 'compare-details', details })
       return
     }
 

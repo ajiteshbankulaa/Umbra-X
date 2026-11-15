@@ -11,7 +11,10 @@ const steps = days * 24 * 12
 const limits = { dark: 48, earth: 72, slope: 5 }
 const wasm = await createWasmSearchEngine(await readFile(wasmPath))
 const bundles = await Promise.all(polarSites.map(loadPolarSiteBundle))
-const beforeDir = process.argv[2]
+const args = process.argv.slice(2)
+const refresh = args[0] === '--refresh'
+const beforeDir = refresh ? undefined : args[0]
+const pinnedUrl = new URL('../../public/release-evidence.json', import.meta.url)
 const root = new URL('../../public/data/planner-release/planner/', import.meta.url)
 
 async function binary(hash, Type) {
@@ -70,7 +73,10 @@ function summarize(bundle, node, mast, start) {
 const baseline = { site: polarSites[0], node: 480, mast: 2, start: 0 }
 const delayed = { ...baseline, start: 48 }
 assert.ok(passing.length, 'No alternative passes at the requested delayed start')
-const better = passing.find(x => x.site === baseline.site) ?? passing[0]
+const nearby = passing.find(x => x.site === baseline.site && x.node === 478)
+assert.ok(nearby, 'The fixed Pad #479 replay must pass the stated geometry limits')
+const nearbyMetrics = summarize(bundles[0], nearby.node, nearby.mast, nearby.start)
+assert.ok(nearbyMetrics.batteryFeasible && nearbyMetrics.coverageComplete, 'Pad #479 no longer meets all replay conditions')
 const baselineMetrics = summarize(bundles[0], baseline.node, baseline.mast, baseline.start)
 let trade
 for (const bundle of bundles) {
@@ -90,7 +96,8 @@ for (const bundle of bundles) {
 assert.ok(trade, 'No reproducible Earth visibility versus storage trade-off found')
 assert.equal(cannotPass, 0, 'Unexpected result for zero-duration, zero-slope search limits')
 const cases = [
-  ['launch-delay', 'Recover a viable option after a 48-hour launch delay', baseline, better, limits],
+  ['launch-delay', 'Delay the same Shackleton pad by 48 hours', baseline, delayed, limits],
+  ['nearby', 'Keep the delayed date and move 280 m to Pad #479', delayed, nearby, limits],
   ['trade-off', 'Compare Earth obstruction and storage under identical power assumptions', baseline, trade, limits],
   ['no-option', 'Stress test zero allowable outages and zero slope', baseline, delayed, { dark: 0, earth: 0, slope: 0 }],
 ].map(([id, title, a, b, caseLimits]) => {
@@ -104,7 +111,10 @@ const cases = [
     expected: scenarios.map(s => summarize(bundles[polarSites.indexOf(s.site)], s.node, s.mast, s.start)) }
 })
 if (!beforeDir) {
-  const pinned = JSON.parse(await readFile(new URL('../../public/release-evidence.json', import.meta.url), 'utf8'))
+  const pinned = JSON.parse(await readFile(pinnedUrl, 'utf8'))
+  assert.deepEqual(changes.map(({ site, eligible }) => [site, eligible]),
+    pinned.changes.map(({ site, eligible }) => [site, eligible]), 'Pinned eligibility counts changed')
+  if (!refresh) {
   assert.equal(cases.length, pinned.cases.length)
   for (const [i, item] of cases.entries()) {
     const expected = pinned.cases[i]
@@ -117,9 +127,12 @@ if (!beforeDir) {
       }
     }
   }
-  assert.deepEqual(changes.map(({ site, eligible }) => [site, eligible]),
-    pinned.changes.map(({ site, eligible }) => [site, eligible]), 'Pinned eligibility counts changed')
+  } else {
+    // Preserve the historical overlap experiment: the old terrain was not rerun.
+    changes.splice(0, changes.length, ...pinned.changes)
+  }
 }
 const payload = { days, limits, mastM: 5, startsPerPad: 361, changes, cases }
 console.log(JSON.stringify(payload, null, 2))
-if (process.argv[3]) await writeFile(process.argv[3], JSON.stringify(payload, null, 2) + '\n')
+if (refresh) await writeFile(pinnedUrl, JSON.stringify(payload, null, 2) + '\n')
+else if (args[1]) await writeFile(args[1], JSON.stringify(payload, null, 2) + '\n')

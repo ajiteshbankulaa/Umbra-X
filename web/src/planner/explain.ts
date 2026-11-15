@@ -38,7 +38,7 @@ export const CURATED_SOURCES: SourcePassage[] = [
     url: 'https://ssd.jpl.nasa.gov/doc/de440_de441.html',
     keywords: ['earth', 'dte', 'comm', 'communication', 'dss-14', 'dss-65', 'dss-43', 'dsn', 'goldstone', 'madrid', 'canberra', 'complex', 'rf', 'link', 'libration', 'de440', 'horizons'],
     summary:
-      'DE440 kernels track 5-minute geometric Sun, Earth, and 3-complex NASA DSN vectors (Goldstone DSS-14, Madrid DSS-65, Canberra DSS-43) including Earth +/-6.5 deg optical libration. Geometric line-of-sight with a >=10 deg ground mask screens visibility only; RF link budget, antenna scheduling, light-time, and aberration remain outside the geometric screen.',
+      'DE440 kernels track 5-minute geometric Sun, Earth, and 3-complex NASA DSN vectors (Goldstone DSS-14, Madrid DSS-63, Canberra DSS-43) including lunar orientation in the DE440 frame. Apparent Sun and Earth directions include light-time and stellar aberration. Candidate station geometry uses a simplified 10 degree Earth-side mask; RF and scheduling are outside the screen.',
   },
   {
     id: 'psr-ice-shadowcam',
@@ -84,7 +84,7 @@ export interface ScenarioRecordSide {
   dsnHours?: number
   longestDsnBlackout?: number
   dsnDisagreementHours?: number
-  dsnComplexHours?: { dss14: number; dss65: number; dss43: number }
+  dsnComplexHours?: { dss14: number; dss63: number; dss43: number }
   disagreementHours: number
   longestDark: number
   longestEarth: number
@@ -175,7 +175,7 @@ function buildSide(
     dsnHours: report.dsnHours ?? report.stationHours,
     longestDsnBlackout: report.longestDsnBlackout ?? report.longestEarth,
     dsnDisagreementHours: report.dsnDisagreementHours ?? report.disagreementHours,
-    dsnComplexHours: report.dsnComplexHours ?? { dss14: report.stationHours, dss65: 0, dss43: 0 },
+    dsnComplexHours: report.dsnComplexHours ?? { dss14: report.stationHours, dss63: 0, dss43: 0 },
     disagreementHours: report.disagreementHours,
     longestDark: report.longestDark,
     longestEarth: report.longestEarth,
@@ -378,7 +378,7 @@ export function answerScenarioQuestion(record: ScenarioComparisonRecord, questio
     const aDsnGap = a.dsnDisagreementHours ?? a.disagreementHours
     const bDsnGap = b.dsnDisagreementHours ?? b.disagreementHours
     caveats.push(
-      `Geometric screening only: 3-complex NASA DSN (Goldstone DSS-14, Madrid DSS-65, Canberra DSS-43) access checks lunar terrain clearance plus a >=${assumptions.stationMaskDeg} deg Earth-station horizon mask. Actual RF link budget, EIRP/noise margin, DSN scheduling conflicts, light-time, and aberration are not modeled.`,
+      `Geometric screening only: 3-complex NASA DSN (Goldstone DSS-14, Madrid DSS-63, Canberra DSS-43) access checks lunar terrain clearance plus a >=${assumptions.stationMaskDeg} deg Earth-station horizon mask. Actual RF link budget, EIRP/noise margin, DSN scheduling conflicts and station-specific masks are not modeled.`,
     )
     factsUsed.push({
       label: 'Earth vs. 3-Complex DSN & DSS-14',

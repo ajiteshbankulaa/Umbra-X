@@ -237,7 +237,7 @@ def eval_mission_metrics(az_el: dict, horizons: np.ndarray, step_hours: float, s
     hs_sun = interp_horizon(h_sun, az_el["sun"][0])
     hs_earth = interp_horizon(h_sun, az_el["earth"][0])
     sfrac = disk_fraction_1d(az_el["sun"][1], hs_sun)
-    lit = sfrac > SOLAR_THRESHOLD
+    lit = sfrac >= SOLAR_THRESHOLD
     earth_ok = az_el["earth"][1] > hs_earth
     return {
         "solarHours": round(float(np.sum(lit) * step_hours), 3),
@@ -248,7 +248,7 @@ def eval_mission_metrics(az_el: dict, horizons: np.ndarray, step_hours: float, s
 
 
 def compute_1min_vectors(kernels_dir: Path, start_dt: datetime, total_minutes: int) -> np.ndarray:
-    """Evaluate 43,201 geometric Sun/Earth vectors in MOON_ME_DE440_ME421 at 1-minute cadence."""
+    """Evaluate apparent Sun/Earth vectors using the same conventions as the release."""
     constants = PlanetaryConstants()
     for name in ("moon_de440_250416.tf", "pck00011.tpc"):
         with (kernels_dir / name).open("rb") as stream:
@@ -272,8 +272,8 @@ def compute_1min_vectors(kernels_dir: Path, start_dt: datetime, total_minutes: i
             t = times[mask]
             frame = constants.build_frame(frame_id, _segment=segment)
             moon_at = planets["moon"].at(t)
-            out[mask, 0:3] = (planets["sun"].at(t) - moon_at).frame_xyz(frame).m.T
-            out[mask, 3:6] = (planets["earth"].at(t) - moon_at).frame_xyz(frame).m.T
+            out[mask, 0:3] = moon_at.observe(planets["sun"]).apparent().frame_xyz(frame).m.T
+            out[mask, 3:6] = moon_at.observe(planets["earth"]).apparent().frame_xyz(frame).m.T
             remaining[mask] = False
     if remaining.any():
         raise ValueError("Kernels do not cover 1-minute mission window")
@@ -293,6 +293,7 @@ def run_benchmark() -> dict:
     vhash = sample_planner["vectorHash"]
     vecs_5m = np.frombuffer((RELEASE_DIR / "planner" / f"{vhash}.bin").read_bytes(), dtype="<f8").reshape(-1, 12)
     vecs_1m = compute_1min_vectors(CACHE / "kernels", start_dt, (len(vecs_5m) - 1) * 5)
+    np.testing.assert_allclose(vecs_1m[::5], vecs_5m[:, :6], rtol=1e-12, atol=0.01)
 
     results = []
     for release_site, cache_site, node in BENCHMARK_PADS:
@@ -318,8 +319,9 @@ def run_benchmark() -> dict:
         rel_hor_5m = reg_bin[node, 2, :].astype(np.float64)
         hor_sigma = herr_bin[node, :].astype(np.float64)
 
-        az_el_5m = pad_az_el(vecs_5m[:, 0:6], lat, lon, base_h, 5.0)
-        az_el_1m = pad_az_el(vecs_1m, lat, lon, base_h, 5.0)
+        # The terminal timestamp has no following interval in the catalog.
+        az_el_5m = pad_az_el(vecs_5m[:-1, 0:6], lat, lon, base_h, 5.0)
+        az_el_1m = pad_az_el(vecs_1m[:-1], lat, lon, base_h, 5.0)
 
         # 1. Azimuth discretization convergence at 96 km hybrid (default 5m mast).
         h_1440 = raymarch_pad_hybrid(local_dem, local_left, local_top, local_pix, local_bounds, reg_dem, reg_left, reg_top, reg_pix, lat, lon, base_h, 5.0, 96000.0, 1440, True)
@@ -412,7 +414,7 @@ def run_benchmark() -> dict:
                     "mastM": 5,
                     "solarThreshold": SOLAR_THRESHOLD,
                     "vectorHash": vhash,
-                    "release96km": eval_mission_metrics(window, rel_hor_5m, 1 / 12),
+                    "fixedDiskOnRelease96km": eval_mission_metrics(window, rel_hor_5m, 1 / 12),
                     "extentMetrics": {str(km): eval_mission_metrics(window, ext_horizons[km], 1 / 12) for km in (48, 96, 144)},
                     "height2Sigma": eval_mission_metrics(window, rel_hor_5m, 1 / 12, 2, hor_sigma),
                     "quarterDegree": eval_mission_metrics(window, h_1440, 1 / 12),
@@ -471,7 +473,9 @@ def run_benchmark() -> dict:
         })
 
     output = {
-        "schema": 1,
+        "schema": 2,
+        "vectorHash": vhash,
+        "benchmarkNote": "Fixed solar disk, no eclipse attenuation. Numerical terrain sensitivity, not the exact browser power model or observational validation.",
         "padCount": len(results),
         "pads": results,
     }

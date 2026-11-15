@@ -1,8 +1,9 @@
 import { Canvas, useThree } from '@react-three/fiber'
-import { Line, OrbitControls, Billboard, Text } from '@react-three/drei'
-import { Component, useEffect, useMemo, useState } from 'react'
+import { Line, OrbitControls } from '@react-three/drei'
+import { Component, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { BufferGeometry, Float32BufferAttribute, DoubleSide, PlaneGeometry, Vector3 } from 'three'
+import { BufferGeometry, CanvasTexture, Float32BufferAttribute, DoubleSide, PlaneGeometry, SRGBColorSpace, Vector3 } from 'three'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import type { SiteData } from '../types/helios'
 import type { Observer, Sky } from './model'
 import { padPixel } from './data'
@@ -14,6 +15,36 @@ const rad=Math.PI/180
 function ray(az:number, el:number, d:number) {
   return new Vector3(Math.sin(az*rad)*Math.cos(el*rad)*d,Math.sin(el*rad)*d,-Math.cos(az*rad)*Math.cos(el*rad)*d)
 }
+
+function SkyLabel({ text, color, size, position }: { text: string; color: string; size: number; position: [number, number, number] | Vector3 }) {
+  // Canvas uses local system fonts. A network font must never hold the scene in Suspense.
+  const label = useMemo(() => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+    const font = '700 34px system-ui, sans-serif'
+    ctx.font = font
+    canvas.width = Math.ceil(ctx.measureText(text).width) + 28
+    canvas.height = 52
+    ctx.font = font
+    ctx.textBaseline = 'middle'
+    ctx.fillStyle = '#080b12db'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = color
+    ctx.fillText(text, 14, 26)
+    const texture = new CanvasTexture(canvas)
+    texture.colorSpace = SRGBColorSpace
+    return { texture, ratio: canvas.width / canvas.height }
+  }, [text, color])
+  useEffect(() => () => label?.texture.dispose(), [label])
+  if (!label) return null
+  return (
+    <sprite position={position} scale={[size * label.ratio, size, 1]} renderOrder={6}>
+      <spriteMaterial map={label.texture} transparent depthTest={false} depthWrite={false} toneMapped={false} />
+    </sprite>
+  )
+}
+
 function Scene({
   site,
   node,
@@ -27,6 +58,7 @@ function Scene({
   padViability,
   padSolarPct,
   padEarthPct,
+  slopeLimit = 5,
 }: {
   site: SiteData | null
   node: number
@@ -40,6 +72,7 @@ function Scene({
   padViability?: Uint8Array
   padSolarPct?: Uint8Array
   padEarthPct?: Uint8Array
+  slopeLimit?: number
 }) {
   const lng=site?pad.coordinates[1]:0
   const pixel = site ? padPixel(site, node) : 0
@@ -83,6 +116,7 @@ function Scene({
         padViability,
         padSolarPct,
         padEarthPct,
+        slopeLimit,
         mode: 'vertex3d',
       })
       for (let i = 0; i < count; i++) {
@@ -91,8 +125,9 @@ function Scene({
       }
     }
     colors.needsUpdate = true
-  },[terrain, site, overlay, sky, lng, padViability, padSolarPct, padEarthPct])
+  },[terrain, site, overlay, sky, lng, padViability, padSolarPct, padEarthPct, slopeLimit])
   const camera=useThree(s=>s.camera)
+  const controlsRef = useRef<OrbitControlsImpl>(null)
   const eye=useMemo(()=>new Vector3(0,pad.mast+(site?0:1.5),0),[pad.mast,site])
   const sun=ray(sky.sun.az,sky.sun.el,1)
   const earth=ray(sky.earth.az,sky.earth.el,1)
@@ -106,6 +141,7 @@ function Scene({
     camera.position.copy(mode==='orbit'?new Vector3(2550,1680,2850):eye)
     camera.lookAt(target)
     camera.updateProjectionMatrix()
+    controlsRef.current?.update()
   },[camera,mode,eye,target])
   const skyline=useMemo(()=>Array.from({length:361},(_,i)=>ray(i,pad.horizon[i%360],7500).add(eye)),[pad,eye])
   const silhouette=useMemo(()=>{
@@ -166,7 +202,7 @@ function Scene({
     <points geometry={stars}>
       <pointsMaterial color="#dce6f5" size={1.75} transparent opacity={0.78} sizeAttenuation={false} depthWrite={false} />
     </points>
-    <ambientLight intensity={0.14} color="#7e98b8" />
+    <ambientLight intensity={overlay === 'relief' ? 0.14 : 0.75} color={overlay === 'relief' ? "#7e98b8" : "#e2e8f0"} />
     <directionalLight position={[-3000, 5000, 3000]} intensity={0.22} color="#6ea5db"/>
     <directionalLight
       position={sun.clone().multiplyScalar(9000)}
@@ -187,7 +223,7 @@ function Scene({
       {mode === 'orbit' && secondaryPos && (
         <group position={secondaryPos}>
           <mesh position={[0, 12, 0]}><cylinderGeometry args={[13, 20, 24, 12]}/><meshBasicMaterial color="#06b6d4"/></mesh>
-          <Billboard position={[0, 65, 0]}><Text fontSize={54} color="#7fe3f5" material-depthTest={false}>Alt pad #{secondaryNode! + 1}</Text></Billboard>
+          <SkyLabel position={[0, 65, 0]} size={76} color="#7fe3f5" text={`Other pad #${secondaryNode! + 1}`} />
         </group>
       )}
     </group>
@@ -195,16 +231,12 @@ function Scene({
       <group>
         <mesh position={[0,12,0]}><cylinderGeometry args={[14,22,Math.max(24, pad.mast * 6),12]}/><meshBasicMaterial color="#ffc36d"/></mesh>
         <mesh position={[0,4,0]} rotation={[-Math.PI/2, 0, 0]}><ringGeometry args={[36, 48, 32]}/><meshBasicMaterial color="#ffc36d" transparent opacity={0.8}/></mesh>
-        <Billboard position={[0, Math.max(84, pad.mast * 6 + 44), 0]}>
-          <Text fontSize={54} color="#ffc36d" material-depthTest={false}>
-            Observer Pad #{node + 1} · {pad.mast}m mast
-          </Text>
-        </Billboard>
+        <SkyLabel position={[0, Math.max(84, pad.mast * 6 + 44), 0]} size={76} color="#ffc36d" text={`Pad #${node + 1} · ${pad.mast} m mast`} />
       </group>
     )}
     {mode==='orbit'&&<>
       <Line points={[[0,8,0],[0,8,-500]]} color="#e3e5e8" depthTest={false}/>
-      <Billboard position={[0,65,-500]}><Text fontSize={62} color="#e3e5e8" material-depthTest={false}>N · 500 m</Text></Billboard>
+      <SkyLabel position={[0, 65, -500]} size={82} color="#e3e5e8" text="N · 500 m" />
     </>}
     {mode==='pad'&&<mesh geometry={silhouette}><meshBasicMaterial color="#141923" side={DoubleSide}/></mesh>}
     <Line points={skyline} color="#9fb2c9" lineWidth={1.1} transparent opacity={.72} depthTest={false}/>
@@ -212,11 +244,7 @@ function Scene({
       const label = az === 0 ? 'N' : az === 90 ? 'E' : az === 180 ? 'S' : 'W'
       const p = ray(az, pad.horizon[az] + 2.5, mode === 'orbit' ? 3100 : 4200).add(eye)
       return (
-        <Billboard key={az} position={p}>
-          <Text fontSize={mode === 'orbit' ? 76 : 92} color="#8e949f" renderOrder={4} material-depthTest={false}>
-            {label}
-          </Text>
-        </Billboard>
+        <SkyLabel key={az} position={p} size={mode === 'orbit' ? 92 : 106} color="#d2d7df" text={label} />
       )
     })}
     {sunTrack.length >= 2 && <Line points={sunTrack} color="#ffc36d" lineWidth={1.2} transparent opacity={.45} dashed dashSize={90} gapSize={60} depthTest={false}/>}
@@ -230,21 +258,18 @@ function Scene({
         <group position={p}>
           <mesh renderOrder={5}>
             <sphereGeometry args={[radius, 24, 24]} />
-            <meshBasicMaterial color={isSun ? '#ffe29a' : '#4a9eff'} transparent opacity={body.margin < 0 ? 0.35 : 1} depthTest={false} />
+            <meshBasicMaterial color={isSun ? '#ffe29a' : '#4a9eff'} transparent opacity={body.margin < 0 ? 0.65 : 1} depthTest={false} />
           </mesh>
           <mesh renderOrder={4}>
             <sphereGeometry args={[radius * 1.45, 24, 24]} />
             <meshBasicMaterial color={body.color} transparent opacity={body.margin < 0 ? 0.1 : 0.22} depthTest={false} />
           </mesh>
-          <Billboard position={[0, radius * 2.2, 0]}>
-            <Text fontSize={88} color={body.color} renderOrder={6} material-depthTest={false}>
-              {body.name}{body.margin<0?' · below skyline':''}
-            </Text>
-          </Billboard>
+          <SkyLabel position={[0, radius * 2.2, 0]} size={165} color={body.color}
+            text={body.name + (body.margin < 0 ? ' · below skyline' : '')} />
         </group>
       </group>
     })}
-    <OrbitControls target={target} enablePan={mode==='orbit'} enableZoom={mode==='orbit'}
+    <OrbitControls ref={controlsRef} target={target} enablePan={mode==='orbit'} enableZoom={mode==='orbit'}
       minDistance={mode==='pad'?1000:30} maxDistance={mode==='pad'?1000:22000}
       mouseButtons={undefined} enabled={mode==='orbit'}/>
     {mode==='pad' && <PadLook eye={eye} target={target}/>}
@@ -341,7 +366,7 @@ export default function SkyScene(props: Parameters<typeof Scene>[0]) {
   if (!glOk) return fallback
   return (
     <WebGLErrorBoundary fallback={fallback}>
-      <Canvas shadows dpr={[1, 1.5]} camera={{ fov: 54, near: 1, far: 40000 }} fallback={fallback}>
+      <Canvas shadows dpr={[1, 1.5]} camera={{ fov: 54, near: 1, far: 40000 }}>
         <Scene {...props} />
       </Canvas>
     </WebGLErrorBoundary>

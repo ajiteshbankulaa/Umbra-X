@@ -36,7 +36,7 @@ await readFile(resolve(root, 'index.html'))
 await readFile(resolve(root, 'wasm/umbra_core.wasm'))
 for (const site of ['shackleton-ridge', 'mons-mouton', 'malapert-massif']) {
   const manifest = JSON.parse(await readFile(resolve(release, site, 'planner.json'), 'utf8'))
-  for (const hash of [manifest.vectorHash, manifest.regional?.regional]) {
+  for (const hash of [manifest.vectorHash, ...['regional', 'distance', 'coverage', 'sensitivity'].map(key => manifest.regional?.[key])]) {
     if (!/^[a-f0-9]{64}$/.test(hash || '')) throw new Error(`Missing release hash for ${site}`)
     await stat(resolve(release, 'planner', `${hash}.bin`))
   }

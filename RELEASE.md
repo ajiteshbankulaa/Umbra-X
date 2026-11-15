@@ -2,9 +2,9 @@
 
 ## Decision walkthrough
 
-Open the default 15-day Shackleton comparison. A delay from 14 to 16 November 2026 reduces the longest in-window Earth-center obstruction from 103.7 to 55.7 hours at pad 481, crossing the 72-hour limit. The 52.25-hour (52.3 h) low-light interval still exceeds the 48-hour limit, and the pad exceeds the 5-degree slope limit. Inspect the obstruction, then compare the delayed start at pad 181. The corrected terrain model gives 0 hours of low light, 0 hours of Earth-center obstruction, and 4.54 degrees of coarse slope at pad 181. Battery estimates use the shared example load and ideal tracked solar array.
+Open the default 15-day Shackleton comparison. A delay from 14 to 16 November 2026 reduces the longest in-window Earth-center obstruction from 103.7 to 55.7 hours at pad 481, crossing the 72-hour limit. The 52.25-hour (52.3 h) low-light interval still exceeds the 48-hour limit, and the pad exceeds the 5-degree slope limit. Inspect the obstruction, then select **Try nearby Pad #479**. The app holds the November 16 start fixed across both pads and computes 0 hours of low light, 4.83 hours of Earth-center obstruction, and 0.94 degrees of coarse slope at Pad #479. Use `?replay=delay` and `?replay=nearby` to enter either step directly. Battery estimates use the shared example load and ideal tracked solar array.
 
-The app's **Reproduce a decision** section has three version-pinned links. Pad 217 is the trade-off case. It improves Earth-center visibility while raising required storage mass from 56.9 to 96.1 kg. The zero-outage, zero-slope case is a deliberately strict stress test with zero eligible pairs in the searched domain.
+The app’s **Reproduce a decision** section (open Detailed display) has four version-pinned links. Pad 217 is the trade-off case. It improves Earth-center visibility while raising required storage mass from 56.9 to 96.1 kg. The zero-outage, zero-slope case is a deliberately strict stress test with zero eligible pairs in the searched domain.
 
 ## Validation
 
@@ -26,7 +26,15 @@ Ask the technical reviewer to reproduce one export using the recorded source pro
 
 ## Deploy the frozen build
 
-Unzip the release and serve the contents at an HTTPS site root. Keep the data and wasm directories adjacent to index.html. For local review, serve the same files at localhost. Verify the public URL from a fresh private browser on desktop and mobile, click each replay link, switch to the 2D chart and inspect the timeline. Publish the captioned demo separately from the app host.
+Build and stage a clean public directory. The staging script selects only the terrain binaries referenced by the three active manifests; it leaves historic bundles in the development cache.
+
+```powershell
+npm.cmd --prefix web run build
+node infra/scripts/stage_static_release.mjs web/dist public-release
+node infra/scripts/check_static_package.mjs public-release
+```
+
+The last two commands require a new staging directory. Upload its contents (or unpack the generated deployment archive) at an HTTPS site root. Keep `assets/`, `data/`, `textures/` and `wasm/` adjacent to `index.html`. Open `?replay=delay` in a private window, follow Pad #479, inspect the 2D chart, and download Events CSV on desktop and mobile. Submit the captioned demo as a separate public link. The two judge replays need no API keys or remote services; the agent and live custom-coordinate terrain use the optional services in `infra/docker-compose.yml`.
 
 ## Corrected search benchmark
 

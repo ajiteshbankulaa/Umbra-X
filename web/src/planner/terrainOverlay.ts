@@ -30,9 +30,10 @@ export function computeOverlayRgba(opts: {
   padViability?: Uint8Array
   padSolarPct?: Uint8Array
   padEarthPct?: Uint8Array
+  slopeLimit?: number
   mode: 'hillshade' | 'vertex3d'
 }): Uint8ClampedArray {
-  const { site, overlay, sky, lngDeg = 0, padViability, padSolarPct, padEarthPct, mode } = opts
+  const { site, overlay, sky, lngDeg = 0, padViability, padSolarPct, padEarthPct, slopeLimit = 5, mode } = opts
   const count = 65536
   const out = new Uint8ClampedArray(count * 4)
   const elev = site.dem_elev
@@ -91,7 +92,7 @@ export function computeOverlayRgba(opts: {
       const eD = elev[Math.min(255, py + 1) * 256 + px]
       const dx = (eR - eL) * 0.5
       const dy = (eD - eU) * 0.5
-      const gray = Math.max(20, Math.min(245, 132 + (110 * (0.6 + dx / 70 + dy / 70)) / Math.hypot(1, dx / 40, dy / 40)))
+      const gray = Math.max(28, Math.min(223, 83 + (106 * (0.68 + dx / 45 + dy / 45)) / Math.hypot(1, dx / 40, dy / 40)))
       r = gray
       g = gray
       b = gray
@@ -123,7 +124,7 @@ export function computeOverlayRgba(opts: {
       }
     } else if (overlay === 'slope') {
       const sl = slope[i]
-      if (sl < 5) {
+      if (sl <= slopeLimit) {
         [r, g, b] = mixRgb(r, g, b, 16, 185, 129, 0.5)
       } else {
         const w = Math.min(0.75, 0.26 + sl / 42)

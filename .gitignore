@@ -4,6 +4,7 @@ __pycache__/
 *.egg-info/
 node_modules/
 dist/
+/public-release/
 *.tsbuildinfo
 web/public/data/*/
 pipeline/cache/

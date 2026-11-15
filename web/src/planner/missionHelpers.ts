@@ -102,10 +102,22 @@ export type ChatMessage = {
   report?: { title?: string; summary?: string; recommendations?: string[] } | null
   facts?: Array<{ label: string; baseline: string; alternative: string }>
   citations?: Array<{ id: string; title: string; url: string }>
+  certificate?: {
+    fingerprint: string
+    statusCategory?: string
+    runSettings?: {
+      scope?: string[]
+      delayWindowHours?: { minStart: number; maxStart: number }
+      robustnessPreference?: string
+      maxFullEval?: number
+      days?: number
+      calculationVersion?: string
+    }
+  } | null
 }
 
 export function robustnessLabel(cls: RobustnessClassification): { label: string; className: string } {
-  if (cls === 'passes_all_tested') return { label: 'Passes All Tested', className: 'badge-meets' }
+  if (cls === 'passes_all_tested') return { label: 'Passes tested settings', className: 'badge-meets' }
   if (cls === 'nominal_only_sensitivity_fails') return { label: 'Nominal Only · Sensitivity Fails', className: 'badge-warn' }
   if (cls === 'unassessed_missing_data') return { label: 'Unassessed · Missing Data', className: 'badge-muted' }
   return { label: 'Fails Constraints', className: 'badge-exceeds' }
@@ -133,7 +145,11 @@ export function validScenario(s: Scenario, days: number) {
 export function restore(): Snapshot {
   try {
     const encoded = new URLSearchParams(location.search).get('comparison')
-    if (!encoded) return defaults
+    if (!encoded) {
+      return new URLSearchParams(location.search).get('replay') === 'nearby'
+        ? { ...defaults, scenarios: [initial[1], delayedAlternative] }
+        : defaults
+    }
     const x = JSON.parse(encoded)
     if (x.schema !== 1 || !Number.isInteger(x.days) || x.days < 1 || x.days > 15 || x.scenarios?.length !== 2) {
       return defaults
@@ -183,7 +199,7 @@ export const money = new Intl.NumberFormat('en-US', { style: 'currency', currenc
 export const utc = (epochIso: string, hours: number) =>
   new Date(Date.parse(epochIso) + hours * 3600000).toISOString().slice(0, 16).replace('T', ' ') + ' UTC'
 export const epoch = '2026-11-14T00:00:00Z'
-export const delayedAlternative: Scenario = { ...initial[1], node: 180 }
+export const delayedAlternative: Scenario = { ...initial[1], node: 478 }
 
 export const fingerprint = (x: Result) => [x.meta.vectorHash, x.meta.localHash, x.meta.regional?.regional ?? 'local'].join(':')
 

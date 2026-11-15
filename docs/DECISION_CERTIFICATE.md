@@ -7,14 +7,14 @@ Every Mission Recovery execution synthesizes an exportable, deterministically fi
 To ensure independent auditing and regression comparison:
 - **Zero wall-clock variance**: Certificates exclude wall-clock `Date.now()` timestamps (`generatedWithoutWallClockTimestamp: true`).
 - **Canonical 128-bit Fingerprint (`deterministicFingerprint`)**: Computed by `canonicalFingerprint(corePayload)` via recursive sorted-key canonical JSON serialization with `1e-6` numeric stabilization and dual 64-bit FNV-1a accumulators (`fnv1a128:<32-hex>`).
-- **WASM / TS Bit-Identity Verified**: `node web/src/planner/recovery-benchmark.mjs` verifies that `Rust/WASM` (`umbra_core.wasm`) and `Optimized TS` (`searchObserverDual`) produce identical certificates and identical fingerprint `fnv1a128:67097cdf27ade73b81ce7ccee73370aa` for the Shackleton Ridge `+48h` reference problem.
+- **WASM / TS Bit-Identity Verified**: `node web/src/planner/recovery-benchmark.mjs` verifies that `Rust/WASM` (`umbra_core.wasm`) and `Optimized TS` (`searchObserverDual`) produce identical certificates and an identical fingerprint for the Shackleton Ridge `+48h` reference problem.
 
 ## 2. Certificate Top-Level Schema
 
 | Key | Purpose |
 | --- | --- |
 | `schema` | Fixed schema tag `'umbra-x.decision-certificate/v2'` |
-| `calculationVersion` | Calculation version tag `'umbra-x-recovery-v2.0'` |
+| `calculationVersion` | Calculation version tag `'umbra-x-recovery-v2.1-dss63'` |
 | `deterministicFingerprint` | Reproducible `fnv1a128:...` digest over entire core payload |
 | `problem` | Full typed `MissionRecoveryProblem` input specification |
 | `validation` | Structured validation outcome (`ok`, resolved `sites`, simulation `steps`) |

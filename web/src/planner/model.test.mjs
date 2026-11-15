@@ -111,14 +111,14 @@ test('station azimuth can lack terrain coverage while Sun and Earth remain cover
 
 test('3-complex NASA DSN hands off across Goldstone, Madrid, and Canberra when DSS-14 is on Earth far side', () => {
   const DSS14 = [-2353621.365667699, -4641341.49114994, 3677052.329319744]
-  const DSS65 = [4849092.68, -360180.34, 4114913.25]
+  const DSS63 = [4849092.518, -360180.348, 4115109.251]
   const wgs = [6378137 ** 2, 6378137 ** 2, 6356752.314245 ** 2]
   const norm = (v) => { const m = Math.hypot(v[0], v[1], v[2]); return [v[0] / m, v[1] / m, v[2] / m] }
   const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
   const up14 = norm([DSS14[0] / wgs[0], DSS14[1] / wgs[1], DSS14[2] / wgs[2]])
-  const up65 = norm([DSS65[0] / wgs[0], DSS65[1] / wgs[1], DSS65[2] / wgs[2]])
+  const up65 = norm([DSS63[0] / wgs[0], DSS63[1] / wgs[1], DSS63[2] / wgs[2]])
 
-  // Construct an orthonormal rotation mapping DSS-65 zenith directly toward the Moon (-X in Moon_ME)
+  // Construct an orthonormal rotation mapping DSS-63 zenith directly toward the Moon (-X in Moon_ME)
   const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
   const r0 = [-up65[0], -up65[1], -up65[2]]
   const zTry = Math.abs(r0[2]) < 0.9 ? [0, 0, 1] : [0, 1, 0]
@@ -141,9 +141,9 @@ test('3-complex NASA DSN hands off across Goldstone, Madrid, and Canberra when D
   const r = analyze(observer, vectors, 0, 1, { stepMinutes: 5, station: { maskDeg: 10 } }, defaultPower)
   assert.equal(r.stationHours, 0)
   assert.equal(r.sky[0].dss14Access, false)
-  assert.equal(r.sky[0].dss65Access, true)
+  assert.equal(r.sky[0].dss63Access, true)
   assert.equal(r.sky[0].dsnAccess, true)
-  assert.equal(r.sky[0].dsnActiveStation, 'DSS-65 Madrid')
+  assert.equal(r.sky[0].dsnActiveStation, 'DSS-63 Madrid')
   assert.equal(r.dsnHours, 1 / 12)
   assert.equal(r.longestDsnBlackout, 0)
 })

@@ -271,14 +271,65 @@ export async function createUmbraServer(options = {}) {
         if (typeof question !== 'string' || !question.trim() || question.length > 800) {
           throw new Error('Enter a question of up to 800 characters.')
         }
+        const wantsSse = String(req.headers.accept ?? '').includes('text/event-stream')
+        const reqAc = new AbortController()
+        res.on('close', () => {
+          if (!res.writableEnded) reqAc.abort('user_cancelled')
+        })
+        const signal = AbortSignal.any([AbortSignal.timeout(70_000), reqAc.signal])
         const t0 = performance.now()
+
+        if (wantsSse) {
+          applySecurityHeaders(res)
+          statusCode = 200
+          res.writeHead(200, {
+            ...resHeaders,
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-store',
+            Connection: 'keep-alive',
+          })
+          const writeEvent = (eventName, payload) => {
+            if (!res.writableEnded) res.write(`event: ${eventName}\ndata: ${JSON.stringify(payload)}\n\n`)
+          }
+          try {
+            const answer = await runConstrainedResearchAgent(question, context ?? {}, {
+              toolbox,
+              provider: researchProvider,
+              cache: responseCache,
+              history,
+              solverVersion,
+              signal,
+              onProgress: ev => writeEvent('progress', ev),
+            })
+            const dt = performance.now() - t0
+            metrics.incCounter('umbrax_model_invocations_total', 'Constrained research agent invocations', {
+              provider: answer.providerMode,
+              status: answer.status,
+              cache_hit: String(Boolean(answer.cacheHit)),
+            })
+            metrics.incCounter('umbrax_cache_events_total', 'Response cache outcomes', {
+              cache: 'research_response',
+              outcome: answer.cacheHit ? 'hit' : 'miss',
+            })
+            metrics.observeHistogram('umbrax_model_latency_ms', 'Constrained research agent latency in ms', { provider: answer.providerMode }, dt)
+            writeEvent('result', answer)
+          } catch (err) {
+            if (!reqAc.signal.aborted) {
+              writeEvent('error', { error: err?.message ?? 'Agent request failed.' })
+            }
+          } finally {
+            if (!res.writableEnded) res.end()
+          }
+          return
+        }
+
         const answer = await runConstrainedResearchAgent(question, context ?? {}, {
           toolbox,
           provider: researchProvider,
           cache: responseCache,
           history,
           solverVersion,
-          signal: AbortSignal.timeout(65_000),
+          signal,
         })
         const dt = performance.now() - t0
         metrics.incCounter('umbrax_model_invocations_total', 'Constrained research agent invocations', {

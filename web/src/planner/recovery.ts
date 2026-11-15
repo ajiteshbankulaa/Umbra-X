@@ -1169,7 +1169,7 @@ export function buildDecisionCertificate(input: {
   }
 
   const totalHours = firstSiteMeta ? ((firstSiteMeta.count - 1) * firstSiteMeta.stepMinutes) / 60 : 720
-  const calculationVersion = input.calculationVersion ?? 'umbra-x-recovery-v2.0'
+  const calculationVersion = input.calculationVersion ?? 'umbra-x-recovery-v2.1-dss63'
 
   const corePayload = {
     schema: 'umbra-x.decision-certificate/v2',

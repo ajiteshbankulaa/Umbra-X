@@ -22,7 +22,7 @@ Umbra-X is a lunar south pole **mission-screening** tool designed to compare can
 
 - **5-Minute State Vectors (`vectors.bin`):** `pipeline/compile_planner.py` writes `8,641` UTC steps (`stepMinutes = 5`, `float64` `<f8`, shape `[8641, 12]`) containing instantaneous geometric Moon-center to Sun (`0:3`) and Earth-center (`3:6`) vectors in `MOON_ME_DE440_ME421`, plus Goldstone `DSS-14` (`ITRF = [-2353621.365667699, -4641341.49114994, 3677052.329319744]` m) Moon-relative position (`6:9`) and WGS84 surface normal (`9:12`).
 - **Per-Pad Topocentric Basis (`web/src/planner/model.ts`):** For each pad (`961` nodes at `140 m` spacing across `31 × 31`), observer position $(R + h + h_{\mathrm{mast}})\,\hat{u}$ shifts parallax cleanly to every corner and flank pad, projecting relative vectors onto local East-North-Up `(east, north, up)` axes.
-- **3-Complex NASA DSN Check (`model.ts` `evalDsnComplexes`):** Evaluates geometric Earth-station visibility simultaneously across `DSS-14` (Goldstone), `DSS-65` (Madrid: `[4849092.68, -360180.34, 4114913.25]` m), and `DSS-43` (Canberra: `[-4460894.92, 2682361.55, -3674748.58]` m) against a `10°` local station elevation mask using WGS84 normals. Geometric visibility is **not** an RF link budget or DSN schedule allocation.
+- **3-Complex NASA DSN Check (`model.ts` `evalDsnComplexes`):** Evaluates geometric Earth-station visibility simultaneously across `DSS-14` (Goldstone), `DSS-63` (Madrid: `[4849092.518, -360180.348, 4115109.251]` m), and `DSS-43` (Canberra: `[-4460894.92, 2682361.55, -3674748.58]` m) against a `10°` local station elevation mask using WGS84 normals. Geometric visibility is **not** an RF link budget or DSN schedule allocation.
 
 ## 4. Solar Disk, Power, & Uncertainty Models
 

@@ -12,9 +12,9 @@
 
   /* Crisp Monochrome Ink & Hard Structural Rules */
   --ink-0: #f5f5f5;
-  --ink-1: #d0d0d0;
-  --ink-2: #8c8c8c;
-  --ink-3: #666666;
+  --ink-1: #d4d8df;
+  --ink-2: #a6adb8;
+  --ink-3: #858d99;
   --rule-subtle: #242424;
   --rule-strong: #333333;
   --rule-heavy: #454545;
@@ -23,7 +23,7 @@
   --plate-bg: #0a0a0a;
   --plate-surface: #141414;
   --plate-ink: #f5f5f5;
-  --plate-muted: #8c8c8c;
+  --plate-muted: #a6adb8;
   --plate-rule: #2e2e2e;
   --canvas-plate: #0a0a0a;
   --surface-glass: #141414;

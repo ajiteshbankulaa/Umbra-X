@@ -8,7 +8,7 @@ Compares compiled DE440/MOON_ME_DE440_ME421 planner vectors (`vectors.bin`) agai
    - Light-time residual (astrometric `.observe()` minus geometric),
    - Stellar/planetary aberration residual (`.apparent()` minus `.observe()`),
    - Total apparent residual (`vectors.bin` vs JPL Horizons `APPARENT='AIRLESS'`).
-3. Independent 3-complex NASA DSN (`DSS-14`, `DSS-65`, `DSS-43`) vector/normal orientation check
+3. Independent 3-complex NASA DSN (`DSS-14`, `DSS-63`, `DSS-43`) vector/normal orientation check
    and verification of `vectors.bin` Goldstone `DSS-14` columns.
 """
 from __future__ import annotations
@@ -43,7 +43,7 @@ WGS84_A = 6378137.0
 WGS84_B = 6356752.314245
 DSN_COMPLEXES = {
     "DSS-14": [-2353621.365667699, -4641341.49114994, 3677052.329319744],
-    "DSS-65": [4849092.68, -360180.34, 4114913.25],
+    "DSS-63": [4849092.518, -360180.348, 4115109.251],
     "DSS-43": [-4460894.92, 2682361.55, -3674748.58],
 }
 DEFAULT_MAST_M = 5.0

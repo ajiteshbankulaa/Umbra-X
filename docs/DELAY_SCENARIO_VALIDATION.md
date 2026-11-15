@@ -10,13 +10,13 @@ Pad 301 ranks first. Pad 479 remains a 280 m alternative. Counts refer to this
 specific configuration and dataset, and must be regenerated after model changes.
 
 Both WASM and TypeScript generated the same decision fingerprint in this run
-(`fnv1a128:67097cdf27ade73b81ce7ccee73370aa`). Across the full `[0..360 h]` window (`benchmark.mjs`), the bundle yields 61,824 passing pairs at `5.0 m / 0-sigma` and does not isolate post-delay starts.
+(`fnv1a128:33c0caec6858f9c01ab631c2d3e95f74`). Across the full `[0..360 h]` window (`benchmark.mjs`), the bundle yields 61,824 passing pairs at `5.0 m / 0-sigma` and does not isolate post-delay starts.
 
 ## Pad 479 numerical comparison
 
 Run `python pipeline/benchmark_convergence.py` to regenerate the source report in
 `pipeline/benchmarks/convergence_benchmark.json`. Its `missionWindows` entries use
-the exact 15-day, +48-hour scenario, with a 10% solar-disk low-light threshold.
+the exact 15-day, +48-hour scenario, with a 10% solar-disk low-light threshold. The benchmark uses the current apparent ephemeris, a fixed solar disk and no eclipse attenuation; the exact browser uses a distance-dependent disk and an eclipse model.
 
 | Calculation | Longest low light | Longest Earth obstruction |
 | --- | ---: | ---: |

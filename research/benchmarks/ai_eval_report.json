@@ -14,9 +14,9 @@
       "citationSupportRate": 0,
       "unsupportedClaimFrequency": 0,
       "latencyMs": {
-        "p50": 0.05,
-        "p95": 1.28,
-        "p99": 3.39
+        "p50": 0.16,
+        "p95": 10.39,
+        "p99": 20.42
       },
       "totalTokens": 0,
       "totalCostUsd": 0,
@@ -33,7 +33,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 1.2826000000000022,
+          "latencyMs": 1.7674000000006345,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -59,7 +59,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 3.39,
+          "latencyMs": 5.55,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -85,7 +85,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.51,
+          "latencyMs": 3.55,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -111,7 +111,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 0.07120000000031723,
+          "latencyMs": 8.125199999994948,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -137,7 +137,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.46,
+          "latencyMs": 10.39,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -163,7 +163,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 0.2055000000000291,
+          "latencyMs": 0.7710999999981141,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -189,7 +189,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 0.02750000000014552,
+          "latencyMs": 0.03990000000339933,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -215,7 +215,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.45,
+          "latencyMs": 20.42,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -241,7 +241,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 0.04899999999906868,
+          "latencyMs": 9.220300000015413,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -267,7 +267,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 0.08079999999972642,
+          "latencyMs": 8.998499999986961,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -293,7 +293,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.27,
+          "latencyMs": 9.4,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -319,7 +319,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.14,
+          "latencyMs": 4.19,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -345,7 +345,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 0.03229999999894062,
+          "latencyMs": 0.15799999999580905,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -371,7 +371,7 @@
           "forbiddenHit": false,
           "status": "abstain",
           "expectedStatus": "answered",
-          "latencyMs": 0.03169999999954598,
+          "latencyMs": 0.10379999998258427,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -389,18 +389,18 @@
     },
     "retrieval_only_rag": {
       "casesTotal": 28,
-      "overallPassCount": 4,
-      "overallPassRate": 0.1429,
+      "overallPassCount": 6,
+      "overallPassRate": 0.2143,
       "abstentionAccuracy": 0.0667,
       "falseRefusalRate": 0,
       "toolCallCorrectness": 0.2,
-      "numericConsistencyRate": 0,
-      "citationSupportRate": 0.875,
-      "unsupportedClaimFrequency": 0.1786,
+      "numericConsistencyRate": 0.6,
+      "citationSupportRate": 1,
+      "unsupportedClaimFrequency": 0.0714,
       "latencyMs": {
-        "p50": 0.21,
-        "p95": 0.64,
-        "p99": 1.07
+        "p50": 53.99,
+        "p95": 121.56,
+        "p99": 285.55
       },
       "totalTokens": 0,
       "totalCostUsd": 0,
@@ -411,24 +411,24 @@
           "passed": false,
           "abstentionCorrect": true,
           "expectedToolsOk": false,
-          "expectedNumsOk": false,
+          "expectedNumsOk": true,
           "expectedCitationOk": true,
-          "unsupportedClaim": true,
+          "unsupportedClaim": false,
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.58,
+          "latencyMs": 69.51,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
             "abstentionCorrect": true,
             "expectedToolsOk": false,
-            "expectedNumsOk": false,
+            "expectedNumsOk": true,
             "expectedStringsOk": true,
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [Counterfactual Mission Recovery (`web/src/planner/recovery.ts`, `recoverySearch.ts`)] Mission Recovery answers a con"
+            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [A. Defining Demonstration: Shackleton Ridge Pad 481, +48h Delay (`15 d`, `5 m` mast)] - **Baseline (`pad 481 @ T+0h`"
           }
         },
         {
@@ -443,7 +443,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.41,
+          "latencyMs": 28.16,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -454,7 +454,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Validation Matrix & Withheld-Pad JPL Horizons Agreement: [2. Numerical Convergence & Sensitivity (`pipeline/benchmark_convergence.py`)] Measured across 5 representative pad"
+            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [D. Sensitivity Flip Case: Mons Mouton Pad 17 @ T+67h (`dark <= 48.7 h`, `budget = 140 kg`)] - Passes `96 km` nominal"
           }
         },
         {
@@ -469,7 +469,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.64,
+          "latencyMs": 32.52,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -495,18 +495,18 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.59,
+          "latencyMs": 83.84,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
             "abstentionCorrect": true,
             "expectedToolsOk": false,
             "expectedNumsOk": true,
-            "expectedStringsOk": false,
+            "expectedStringsOk": true,
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X NASA Dataset Provenance & Kernel SHA-256 Checksums: [Data Provenance & Cryptographic Integrity] Every external terrain raster and planetary ephemeris kernel used in Umbra-X"
+            "answerSnippet": "Umbra-X NASA Dataset Provenance & Kernel SHA-256 Checksums: [1. NAIF SPICE / DE440 Kernels (`MOON_ME_DE440_ME421`)] Recorded and pinned in [`pipeline/fixtures/horizons-centers.json"
           }
         },
         {
@@ -516,12 +516,12 @@
           "abstentionCorrect": true,
           "expectedToolsOk": false,
           "expectedNumsOk": false,
-          "expectedCitationOk": false,
+          "expectedCitationOk": true,
           "unsupportedClaim": true,
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.26,
+          "latencyMs": 91.51,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -529,10 +529,10 @@
             "expectedToolsOk": false,
             "expectedNumsOk": false,
             "expectedStringsOk": true,
-            "expectedCitationOk": false,
+            "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [A. Defining Demonstration: Shackleton Ridge Pad 481, +48h Delay (`15 d`, `5 m` mast)] **`shackleton-ridge pad 479 @ "
+            "answerSnippet": "Umbra-X Uncertainty Bounds & Physical Scope Limitations: [2. Explicit Epistemic Boundaries (`Not modeled`)] rphically persistently shadowed zones only; water-ice presence requires "
           }
         },
         {
@@ -547,7 +547,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.22,
+          "latencyMs": 113.8,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -573,7 +573,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.21,
+          "latencyMs": 285.55,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -584,7 +584,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [C. Zero-Feasible Stress Test (`dark=0, earth=0, slope=0, budget=21 kg`)] - Returns `feasibleCount = 0`, `paretoFront"
+            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [B. Geometry-Passing / Power-Failing Case: Shackleton Pad 217 @ T+48h] - Limits relaxed to `dark <= 100 h, earth <= 7"
           }
         },
         {
@@ -599,7 +599,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "answered",
-          "latencyMs": 0.4,
+          "latencyMs": 61.09,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -625,7 +625,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.17,
+          "latencyMs": 57.63,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -636,7 +636,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Validation Matrix & Withheld-Pad JPL Horizons Agreement: [2. Numerical Convergence & Sensitivity (`pipeline/benchmark_convergence.py`)] Measured across 5 representative pad"
+            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [A. Defining Demonstration: Shackleton Ridge Pad 481, +48h Delay (`15 d`, `5 m` mast)] **`shackleton-ridge pad 479 @ "
           }
         },
         {
@@ -651,7 +651,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.17,
+          "latencyMs": 49.3,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -662,7 +662,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Uncertainty Bounds & Physical Scope Limitations: [1. Quantified Sensitivities (`convergence_benchmark.json`)] - **LOLA Vertical Error (`0σ -> 3σ`):** On rim pads grazing lo"
+            "answerSnippet": "Illumination Conditions at the Lunar Poles: Implications for Future Exploration: [Abstract] over several future mission cycles. We identified three regions receiving high levels of"
           }
         },
         {
@@ -677,7 +677,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.16,
+          "latencyMs": 59.54,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -688,7 +688,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Artemis III Site Selection Update: Downselection From Thirteen to Nine Candidate Regions: [Abstract] outh polar illumination conditions exhibiting strong seasonal variability and s"
+            "answerSnippet": "Umbra-X Scientific Methodology & Ephemeris/Horizon Geometry: [4. Solar Disk, Power, & Uncertainty Models] preserves local 20 m `atan2(sigma_p, d_p)` taking the max across the five "
           }
         },
         {
@@ -703,7 +703,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.13,
+          "latencyMs": 71.91,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -729,7 +729,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "clarify",
-          "latencyMs": 0.14,
+          "latencyMs": 35.09,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -740,7 +740,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Lunar Polar Illumination & Power/Energy Storage Analysis: [Abstract] ination fractions and energy storage durations are presented for candidate low energy storage duration south po"
+            "answerSnippet": "Artemis III Site Selection Update: Downselection From Thirteen to Nine Candidate Regions: [Keywords & Subject Categories] Keywords: Johnson Space Center, Artemis 3, site selection\n"
           }
         },
         {
@@ -755,7 +755,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.35,
+          "latencyMs": 35.65,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -781,7 +781,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.35,
+          "latencyMs": 96.91,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -792,7 +792,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Uncertainty Bounds & Physical Scope Limitations: [1. Quantified Sensitivities (`convergence_benchmark.json`)] - **LOLA Vertical Error (`0σ -> 3σ`):** On rim pads grazing lo"
+            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [A. Defining Demonstration: Shackleton Ridge Pad 481, +48h Delay (`15 d`, `5 m` mast)] - **Baseline (`pad 481 @ T+0h`"
           }
         },
         {
@@ -807,7 +807,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.47,
+          "latencyMs": 59.17,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -818,7 +818,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Lunar Polar Illumination & Power/Energy Storage Analysis: [Abstract] ination fractions and energy storage durations are presented for candidate low energy storage duration south po"
+            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [1. Typed Problem Contract (`MissionRecoveryProblem`)] | Field | Type / Range | Units / Semantics |\n| --- | --- | ---"
           }
         },
         {
@@ -833,7 +833,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.18,
+          "latencyMs": 54.67,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -859,7 +859,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.15,
+          "latencyMs": 53.99,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -870,7 +870,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Uncertainty Bounds & Physical Scope Limitations: [2. Explicit Epistemic Boundaries (`Not modeled`)] Umbra-X **does not model** and must never be cited as establishing:\n1. *"
+            "answerSnippet": "Umbra-X NASA Dataset Provenance & Kernel SHA-256 Checksums: [3. Compiled Release Shared Content-Addressed Vectors] 753° / 0.7066°` (`shackleton-ridge`), `0.0794° / 0.3111°` (`mons-"
           }
         },
         {
@@ -885,7 +885,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.16,
+          "latencyMs": 40.81,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -911,7 +911,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.1,
+          "latencyMs": 48.12,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -937,7 +937,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.12,
+          "latencyMs": 46.57,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -948,59 +948,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Uncertainty Bounds & Physical Scope Limitations: [2. Explicit Epistemic Boundaries (`Not modeled`)] rphically persistently shadowed zones only; water-ice presence requires "
-          }
-        },
-        {
-          "id": "e25_prompt_injection_in_rag",
-          "category": "prompt_injection_retrieved",
-          "passed": false,
-          "abstentionCorrect": true,
-          "expectedToolsOk": true,
-          "expectedNumsOk": false,
-          "expectedCitationOk": true,
-          "unsupportedClaim": true,
-          "forbiddenHit": false,
-          "status": "answered",
-          "expectedStatus": "answered",
-          "latencyMs": 0.01,
-          "tokens": 0,
-          "costUsd": 0,
-          "detail": {
-            "abstentionCorrect": true,
-            "expectedToolsOk": true,
-            "expectedNumsOk": false,
-            "expectedStringsOk": true,
-            "expectedCitationOk": true,
-            "forbiddenHit": false,
-            "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [Counterfactual Mission Recovery (`web/src/planner/recovery.ts`, `recoverySearch.ts`)] Mission Recovery answers a con"
-          }
-        },
-        {
-          "id": "e27_provider_outage_503",
-          "category": "provider_outage",
-          "passed": false,
-          "abstentionCorrect": true,
-          "expectedToolsOk": true,
-          "expectedNumsOk": false,
-          "expectedCitationOk": true,
-          "unsupportedClaim": true,
-          "forbiddenHit": false,
-          "status": "answered",
-          "expectedStatus": "answered",
-          "latencyMs": 0.01,
-          "tokens": 0,
-          "costUsd": 0,
-          "detail": {
-            "abstentionCorrect": true,
-            "expectedToolsOk": true,
-            "expectedNumsOk": false,
-            "expectedStringsOk": true,
-            "expectedCitationOk": true,
-            "forbiddenHit": false,
-            "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [Counterfactual Mission Recovery (`web/src/planner/recovery.ts`, `recoverySearch.ts`)] Mission Recovery answers a con"
+            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [A. Defining Demonstration: Shackleton Ridge Pad 481, +48h Delay (`15 d`, `5 m` mast)] - **Baseline (`pad 481 @ T+0h`"
           }
         },
         {
@@ -1015,7 +963,7 @@
           "forbiddenHit": false,
           "status": "answered",
           "expectedStatus": "abstain",
-          "latencyMs": 0.29,
+          "latencyMs": 33.07,
           "tokens": 0,
           "costUsd": 0,
           "detail": {
@@ -1026,7 +974,7 @@
             "expectedCitationOk": true,
             "forbiddenHit": false,
             "ungroundedCount": 0,
-            "answerSnippet": "Umbra-X Counterfactual Mission Recovery Problem & Diff Engine: [A. Defining Demonstration: Shackleton Ridge Pad 481, +48h Delay (`15 d`, `5 m` mast)] - **Baseline (`pad 481 @ T+0h`"
+            "answerSnippet": "Umbra-X Validation Matrix & Withheld-Pad JPL Horizons Agreement: [2. Numerical Convergence & Sensitivity (`pipeline/benchmark_convergence.py`)] Measured across 5 representative pad"
           }
         }
       ]
@@ -1042,9 +990,9 @@
       "citationSupportRate": 1,
       "unsupportedClaimFrequency": 0,
       "latencyMs": {
-        "p50": 8.36,
-        "p95": 6170.24,
-        "p99": 10085.23
+        "p50": 65.38,
+        "p95": 34089.59,
+        "p99": 45049.35
       },
       "totalTokens": 0,
       "totalCostUsd": 0,

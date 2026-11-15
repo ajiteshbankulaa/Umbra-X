@@ -6,18 +6,22 @@ import type { ChatMessage } from './missionHelpers'
 interface AgentDrawerProps {
   chatMessages: ChatMessage[]
   agentBusy: boolean
+  agentStatus: string
   chatInput: string
   setChatInput: (val: string) => void
   onSend: (query: string, displayLabel?: string) => Promise<void> | void
+  onCancel: () => void
   threadRef: RefObject<HTMLDivElement | null>
 }
 
 export function AgentDrawer({
   chatMessages,
   agentBusy,
+  agentStatus,
   chatInput,
   setChatInput,
   onSend,
+  onCancel,
   threadRef,
 }: AgentDrawerProps) {
   return (
@@ -27,7 +31,9 @@ export function AgentDrawer({
           <div key={msg.id} className={msg.sender === 'user' ? 'agent-msg user' : 'agent-msg assistant'}>
             {msg.headline && <div className="agent-msg-headline">{msg.headline}</div>}
             {msg.sender === 'agent' ? (
-              <AgentMarkdown text={msg.text} />
+              <div className="agent-answer-top">
+                <AgentMarkdown text={msg.text} />
+              </div>
             ) : (
               <p className="agent-msg-text">{msg.text}</p>
             )}
@@ -94,6 +100,25 @@ export function AgentDrawer({
                 </div>
               )
             })}
+            {msg.certificate && (
+              <div className="agent-cert-card">
+                <div className="agent-cert-head">
+                  <strong>Decision Certificate</strong>
+                  {msg.certificate.statusCategory && (
+                    <span className="agent-action-chip">{msg.certificate.statusCategory.replace(/_/g, ' ')}</span>
+                  )}
+                </div>
+                <code className="agent-cert-fp">{msg.certificate.fingerprint}</code>
+                {msg.certificate.runSettings && (
+                  <p className="agent-cert-meta">
+                    Scope: {(msg.certificate.runSettings.scope ?? []).length} site(s) · Window{' '}
+                    {msg.certificate.runSettings.delayWindowHours?.minStart ?? 0}–{msg.certificate.runSettings.delayWindowHours?.maxStart ?? 360} h ·{' '}
+                    {msg.certificate.runSettings.robustnessPreference ?? 'dual-extent-and-sigma'} ·{' '}
+                    {msg.certificate.runSettings.maxFullEval ?? 64} full evals
+                  </p>
+                )}
+              </div>
+            )}
             {msg.report && (msg.report.title || msg.report.summary) && (
               <div className="agent-report-card">
                 {msg.report.title && <div className="agent-report-title">{msg.report.title}</div>}
@@ -107,9 +132,12 @@ export function AgentDrawer({
                 )}
               </div>
             )}
-            {((msg.facts && msg.facts.length > 0) || (msg.citations && msg.citations.length > 0)) && (
-              <details className="agent-msg-details">
-                <summary>Verified data &amp; sources</summary>
+            {(msg.facts?.length || msg.citations?.length) ? (
+              <details className="agent-msg-details" open={Boolean(msg.citations?.length)}>
+                <summary>
+                  Sources &amp; Verified Data
+                  {msg.citations?.length ? ` (${msg.citations.length})` : ''}
+                </summary>
                 {msg.facts && msg.facts.length > 0 && (
                   <table className="agent-facts-table">
                     <thead>
@@ -140,13 +168,16 @@ export function AgentDrawer({
                   </div>
                 )}
               </details>
-            )}
+            ) : null}
           </div>
         ))}
         {agentBusy && (
-          <div className="agent-msg assistant agent-thinking">
+          <div className="agent-msg assistant agent-thinking" role="status" aria-live="polite">
             <span className="thinking-dots"><i /><i /><i /></span>
-            <span>Umbra Agent analyzing &amp; executing tools…</span>
+            <span>{agentStatus || 'Umbra Agent analyzing & executing tools…'}</span>
+            <button type="button" className="link-btn agent-cancel-btn" onClick={onCancel}>
+              Cancel
+            </button>
           </div>
         )}
       </div>

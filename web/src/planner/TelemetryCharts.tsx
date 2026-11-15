@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { padPixel } from './data'
-import type { Observer, Power, Report } from './model'
-import { azTrackSegments, coveredCount, n, requirement, sign, statusClass, type Result } from './missionHelpers'
+import type { Observer, Power, Report, Scenario } from './model'
+import { azTrackSegments, coveredCount, n, requirement, sign, statusClass, utc, type Result } from './missionHelpers'
 import { computeOverlayRgba, type TerrainOverlay } from './terrainOverlay'
 import type { SiteData } from '../types/helios'
 
@@ -244,8 +244,8 @@ export function Horizon({
       {showAlt &&
         otherSky &&
         [
-          ['Alt Sun', otherSky.sun, '#ffc36d'],
-          ['Alt Earth', otherSky.earth, '#8ec9ff'],
+          [active === 0 ? 'Alt Sun' : 'Base Sun', otherSky.sun, '#ffc36d'],
+          [active === 0 ? 'Alt Earth' : 'Base Earth', otherSky.earth, '#8ec9ff'],
         ].map(([label, p, color]) => {
           const body = p as typeof sky.sun
           return (
@@ -446,11 +446,11 @@ export function PolarSky({
           <span>{hoverAz !== null ? 'Cursor Azimuth' : 'Solar Azimuth'}</span>
           <strong>{String(inspectAz).padStart(3, '0')}° · Rim {sign(inspectRim)}°</strong>
         </div>
-        <p>Solid ring marks 0° level horizon; center is +{n(span, 0)}° zenith; outer ring is −{n(span, 0)}°.</p>
+        <p>Solid ring marks 0° level horizon; center is the upper plot limit (+{n(span, 0)}°); outer ring is −{n(span, 0)}°.</p>
         <ul>
           <li><i style={{ background: '#ecebe6' }} /> Active terrain skyline (96 km LOLA)</li>
           {hasRegional && <li><i style={{ background: '#8e949f' }} /> 48 km terrain sensitivity</li>}
-          {showAlt && <li><i style={{ background: '#8ec9ff' }} /> Alternative scenario skyline &amp; bodies</li>}
+          {showAlt && <li><i style={{ background: '#8ec9ff' }} /> Other scenario skyline &amp; bodies</li>}
           <li><i style={{ background: '#ffc36d' }} /> Sun path &amp; position ({sign(sky.sun.el)}°)</li>
           <li><i style={{ background: '#60a5fa' }} /> Earth libration loop ({sign(sky.earth.el)}°)</li>
           <li><i style={{ background: '#34d399' }} /> Goldstone DSS-14 line of sight</li>
@@ -479,17 +479,7 @@ export function LunarLocator({ coordinates }: { coordinates: Observer['coordinat
 }
 
 export function Hillshade({
-  site,
-  node,
-  secondaryNode,
-  overlay,
-  sky,
-  lngDeg,
-  padViability,
-  padSolarPct,
-  padEarthPct,
-  hoverAz,
-  onSelect,
+  site, node, secondaryNode, overlay, sky, lngDeg, padViability, padSolarPct, padEarthPct, hoverAz, slopeLimit, onSelect,
 }: {
   site: SiteData
   node: number
@@ -501,75 +491,67 @@ export function Hillshade({
   padSolarPct?: Uint8Array
   padEarthPct?: Uint8Array
   hoverAz?: number | null
+  slopeLimit: number
   onSelect: (i: number) => void
 }) {
-  const canvas = useRef<HTMLCanvasElement>(null)
-  useEffect(() => {
-    const context = canvas.current?.getContext('2d')
-    if (!context) return
-    const im = context.createImageData(256, 256)
-    const rgba = computeOverlayRgba({
-      site,
-      overlay,
-      sky,
-      lngDeg,
-      padViability,
-      padSolarPct,
-      padEarthPct,
-      mode: 'hillshade',
-    })
-    im.data.set(rgba)
-    context.putImageData(im, 0, 0)
-    const g = site.manifest.analysis_grid
-    context.strokeStyle = '#8eaecf'
-    context.strokeRect(g.start_pixel, g.start_pixel, 30 * g.step_pixel, 30 * g.step_pixel)
-    if (secondaryNode != null && secondaryNode !== node) {
-      const sec = padPixel(site, secondaryNode)
-      context.fillStyle = '#8ec9ff'
-      context.beginPath()
-      context.arc(sec % 256, Math.floor(sec / 256), 4, 0, Math.PI * 2)
-      context.fill()
-    }
-    const pixel = padPixel(site, node)
-    const px0 = pixel % 256
-    const py0 = Math.floor(pixel / 256)
-    if (hoverAz !== null && hoverAz !== undefined) {
-      const a = (hoverAz * Math.PI) / 180
-      context.save()
-      context.strokeStyle = 'rgba(255, 195, 109, 0.85)'
-      context.lineWidth = 1.4
-      context.setLineDash([4, 3])
-      context.beginPath()
-      context.moveTo(px0, py0)
-      context.lineTo(px0 + Math.sin(a) * 140, py0 - Math.cos(a) * 140)
-      context.stroke()
-      context.restore()
-    }
-    context.fillStyle = '#ffc36d'
-    context.beginPath()
-    context.arc(px0, py0, 4.5, 0, Math.PI * 2)
-    context.fill()
-  }, [site, node, secondaryNode, overlay, sky, lngDeg, padViability, padSolarPct, padEarthPct, hoverAz])
-
+  const g = site.manifest.analysis_grid
+  const mapSky = overlay === 'illumination' ? sky : undefined
+  // Paint offscreen, then mount a single immutable image. The visible SVG owns the
+  // pad markers and selection, so WebGL and the map never share a canvas context.
+  const raster = useMemo(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 256
+    const context = canvas.getContext('2d')
+    if (!context) return null
+    const image = context.createImageData(256, 256)
+    image.data.set(computeOverlayRgba({ site, overlay, sky: mapSky, lngDeg, padViability, padSolarPct, padEarthPct, slopeLimit, mode: 'hillshade' }))
+    context.putImageData(image, 0, 0)
+    return canvas.toDataURL('image/png')
+  }, [site, overlay, mapSky, lngDeg, padViability, padSolarPct, padEarthPct, slopeLimit])
+  const pixel = padPixel(site, node)
+  const x = pixel % 256
+  const y = Math.floor(pixel / 256)
+  const secondary = secondaryNode != null && secondaryNode !== node ? padPixel(site, secondaryNode) : null
+  const az = hoverAz == null ? null : hoverAz * Math.PI / 180
+  const clamp = (n: number, size: number) => Math.max(0, Math.min(size - 1, Math.round(n)))
+  if (!raster) return <p className="hillshade-unavailable" role="status">Terrain map unavailable. Use the horizon chart or enter a pad number.</p>
   return (
     <div className="hillshade-frame">
-      <div className="hillshade-meta">
-        <span>20m LOLA DEM</span>
-        <span>Pad #{node + 1}</span>
-      </div>
-      <canvas
-        width="256"
-        height="256"
-        aria-label="Selectable 5.12 kilometer landing site hillshade map"
+      <div className="hillshade-meta"><span>LOLA relief · 5.12 km</span><span>Pad #{node + 1}</span></div>
+      <svg className="hillshade-map" viewBox="0 0 256 256" role="img" tabIndex={0}
+        aria-label={`Selectable lunar terrain map. Pad ${node + 1}. Use arrow keys to choose an adjacent pad.`}
+        onKeyDown={e => {
+          const step = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[e.key]
+          if (!step) return
+          e.preventDefault()
+          const row = clamp(Math.floor(node / g.cols) + step[0], g.rows)
+          const col = clamp(node % g.cols + step[1], g.cols)
+          const next = row * g.cols + col
+          if (next !== node) onSelect(next)
+        }}
         onClick={e => {
           const r = e.currentTarget.getBoundingClientRect()
-          const g = site.manifest.analysis_grid
-          const clamp = (v: number) => Math.max(0, Math.min(g.cols - 1, Math.round(v)))
-          onSelect(clamp(((e.clientY - r.top) * 256 / r.height - g.start_pixel) / g.step_pixel) * g.cols + clamp(((e.clientX - r.left) * 256 / r.width - g.start_pixel) / g.step_pixel))
-        }}
-      />
+          const row = clamp(((e.clientY - r.top) * 256 / r.height - g.start_pixel) / g.step_pixel, g.rows)
+          const col = clamp(((e.clientX - r.left) * 256 / r.width - g.start_pixel) / g.step_pixel, g.cols)
+          onSelect(row * g.cols + col)
+        }}>
+        <image href={raster} width="256" height="256" />
+        <rect x={g.start_pixel} y={g.start_pixel} width={(g.cols - 1) * g.step_pixel} height={(g.rows - 1) * g.step_pixel} fill="none" stroke="#79a8d0" />
+        {secondary !== null && <circle cx={secondary % 256} cy={Math.floor(secondary / 256)} r="4" fill="#8ec9ff" stroke="#111" />}
+        {az !== null && <line x1={x} y1={y} x2={x + Math.sin(az) * 150} y2={y - Math.cos(az) * 150} stroke="#ffc36d" strokeWidth="1.4" strokeDasharray="4 3" />}
+        <circle cx={x} cy={y} r="4.5" fill="#ffc36d" stroke="#251900" strokeWidth="1.2" />
+      </svg>
     </div>
   )
+}
+
+export type TimelineEventSelection = {
+  scenario: number
+  key: 'dark' | 'earth' | 'dsn' | 'station'
+  label: string
+  start: number
+  end: number
+  hours: number
 }
 
 export function Timeline({
@@ -577,23 +559,46 @@ export function Timeline({
   index,
   onIndex,
   power,
+  scenarios,
+  start,
+  alignMode = 'met',
+  active = 0,
+  showExtraTracks = false,
+  selectedEvent,
+  onSelectEvent,
 }: {
   items: Result[]
   index: number
   onIndex: (i: number, scenario?: number) => void
   power: Power
+  scenarios?: [Scenario, Scenario]
+  start?: string
+  alignMode?: 'met' | 'utc'
+  active?: number
+  showExtraTracks?: boolean
+  selectedEvent?: TimelineEventSelection | null
+  onSelectEvent?: (ev: TimelineEventSelection | null) => void
 }) {
   const count = items[0].report.sky.length
   const totalDays = Math.max(1, Math.round(count / 288))
   const dayTicks = Array.from({ length: Math.min(6, totalDays + 1) }, (_, idx) =>
     Math.round((idx * totalDays) / Math.max(1, Math.min(5, totalDays))),
   )
+  const useUtc = alignMode === 'utc' && Boolean(scenarios?.length)
+  const minStartH = useUtc ? Math.min(...scenarios!.map(s => s.start)) : 0
+  const maxEndH = useUtc ? Math.max(...scenarios!.map(s => s.start + count / 12)) : count / 12
+  const spanH = Math.max(1, maxEndH - minStartH)
+  const activeStart = scenarios?.[active]?.start ?? 0
+  const cursorLabel = useUtc && start && scenarios
+    ? `${utc(start, activeStart + index / 12)} · ${active === 0 ? 'Baseline' : 'Alternative'} +${n(index / 12)} h`
+    : `Elapsed mission time (MET): +${n(index / 12)} h (Day ${n(index / 288, 2)})`
+
   return (
     <div className="mission-timeline">
       <label className="timeline-scrubber">
         <span className="timeline-scrubber-head">
           <span>
-            Elapsed mission time: <strong>{n(index / 12)} h</strong> (Day {n(index / 288, 2)})
+            <strong>{cursorLabel}</strong>
           </span>
           <output>Step {index + 1} / {count}</output>
         </span>
@@ -602,64 +607,120 @@ export function Timeline({
       <div className="timeline-axis" aria-hidden="true">
         <span />
         <div className="timeline-ticks">
-          {dayTicks.map((d, idx) => (
-            <span key={idx}>Day {d}</span>
-          ))}
+          {useUtc && start
+            ? Array.from({ length: 6 }, (_, idx) => minStartH + (spanH * idx) / 5).map((h, idx) => (
+                <span key={idx}>{utc(start, h).slice(5, 11)}</span>
+              ))
+            : dayTicks.map((d, idx) => (
+                <span key={idx}>Day {d}</span>
+              ))}
         </div>
       </div>
-      {items.map(({ report }, j) => (
-        <div key={j} className="timeline-group">
-          <b>{j ? '02 / Alternative' : '01 / Baseline'}</b>
-          {[
-            { label: 'Solar exposure', events: report.dark, color: '#d97706', unknownHours: 0 },
-            { label: 'Earth-center visibility', events: report.earth, color: '#2563eb', unknownHours: 0 },
-            { label: 'NASA DSN (3-Complex)', events: report.dsn, color: '#0f766e', available: true, unknownHours: report.dsnUnknownHours },
-            { label: 'Goldstone DSS-14 only', events: report.station, color: '#525760', available: true, unknownHours: report.stationUnknownHours },
-          ].map(track => (
-            <div className="lane" key={track.label}>
-              <span>{track.label}{track.available && track.unknownHours > 0 && ` (${n(track.unknownHours)} h unk)`}</span>
-              <div className="lane-track" style={{ background: track.available ? '#0e1014' : track.color }}>
-                {track.events.map(e => (
-                  <button
-                    key={e.start}
-                    className={track.available ? 'available' : 'outage'}
-                    style={{ left: (e.start / count) * 100 + '%', width: ((e.end - e.start) / count) * 100 + '%' }}
-                    aria-label={track.label + ' ' + (track.available ? 'window' : 'obstruction') + ' at ' + n(e.start / 12) + ' hours, ' + n(e.hours) + ' hours long'}
-                    onClick={() => onIndex(e.start, j)}
+      {items.map(({ report }, j) => {
+        const scenarioStartH = useUtc && scenarios ? scenarios[j].start : 0
+        const laneCursor = useUtc ? index + (activeStart - scenarioStartH) * 12 : index
+        const cursorOnLane = laneCursor >= 0 && laneCursor < count
+        const laneLeftPct = useUtc ? ((scenarioStartH - minStartH) / spanH) * 100 : 0
+        const laneWidthPct = useUtc ? ((count / 12) / spanH) * 100 : 100
+        return (
+          <div key={j} className="timeline-group">
+            <b>
+              {j ? '02 / Alternative' : '01 / Baseline'}
+              {scenarios ? ` (${scenarios[j].start >= 0 ? `T+${scenarios[j].start}h` : ''})` : ''}
+            </b>
+            {([
+              { key: 'dark' as const, label: 'Solar exposure', events: report.dark, color: '#d97706', unknownHours: 0 },
+              { key: 'earth' as const, label: 'Earth-center visibility', events: report.earth, color: '#2563eb', unknownHours: 0 },
+              { key: 'dsn' as const, label: 'Three-station geometry', events: report.dsn, color: '#0f766e', available: true, unknownHours: report.dsnUnknownHours },
+              { key: 'station' as const, label: 'Goldstone DSS-14 only', events: report.station, color: '#525760', available: true, unknownHours: report.stationUnknownHours },
+            ]).filter(track => showExtraTracks || !track.available).map(track => (
+              <div className="lane" key={track.key}>
+                <span>{track.label}{track.available && track.unknownHours > 0 && ` (${n(track.unknownHours)} h unk)`}</span>
+                <div className="lane-track lane-track-host">
+                  <div
+                    className="lane-track"
+                    style={{
+                      background: track.available ? '#0e1014' : track.color,
+                      marginLeft: `${laneLeftPct}%`,
+                      width: `${laneWidthPct}%`,
+                    }}
+                  >
+                    {track.events.map(e => {
+                      const isSelected =
+                        selectedEvent?.scenario === j &&
+                        selectedEvent.key === track.key &&
+                        selectedEvent.start === e.start
+                      return (
+                        <button
+                          key={e.start}
+                          type="button"
+                          className={`${track.available ? 'available' : 'outage'}${isSelected ? ' is-selected' : ''}`}
+                          style={{ left: (e.start / count) * 100 + '%', width: Math.max(0.4, ((e.end - e.start) / count) * 100) + '%' }}
+                          aria-label={track.label + ' ' + (track.available ? 'window' : 'obstruction') + ' at ' + n(e.start / 12) + ' hours, ' + n(e.hours) + ' hours long'}
+                          onClick={() => {
+                            onIndex(e.start, j)
+                            onSelectEvent?.({
+                              scenario: j,
+                              key: track.key,
+                              label: track.label,
+                              start: e.start,
+                              end: e.end,
+                              hours: e.hours,
+                            })
+                          }}
+                        />
+                      )
+                    })}
+                    {cursorOnLane && <i style={{ left: (laneCursor / count) * 100 + '%' }} />}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {showExtraTracks && <><div className="lane">
+              <span>PV generation{cursorOnLane ? ` (${n(report.generation[laneCursor], 0)} W)` : ''}</span>
+              <div className="lane-track-host">
+                <svg
+                  style={{ marginLeft: `${laneLeftPct}%`, width: `${laneWidthPct}%` }}
+                  viewBox="0 0 1000 24"
+                  preserveAspectRatio="none"
+                  aria-label={cursorOnLane ? n(report.generation[laneCursor], 0) + ' watts at the cursor' : 'PV generation trend'}
+                  role="img"
+                >
+                  <polyline
+                    points={report.generation.map((v, i) => [(i * 1000) / count, 23 - (v / Math.max(1, power.arrayW)) * 21].join(',')).join(' ')}
+                    fill="none"
+                    stroke="#ffc36d"
+                    strokeWidth="1.5"
+                    vectorEffect="non-scaling-stroke"
                   />
-                ))}
-                <i style={{ left: (index / count) * 100 + '%' }} />
+                  {cursorOnLane && <line x1={(laneCursor * 1000) / count} x2={(laneCursor * 1000) / count} y1={0} y2={24} stroke="#f87171" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />}
+                </svg>
               </div>
             </div>
-          ))}
-          <div className="lane">
-            <span>PV generation ({n(report.generation[index], 0)} W)</span>
-            <svg viewBox="0 0 1000 24" preserveAspectRatio="none" aria-label={n(report.generation[index], 0) + ' watts at the cursor'} role="img">
-              <polyline
-                points={report.generation.map((v, i) => [(i * 1000) / count, 23 - (v / Math.max(1, power.arrayW)) * 21].join(',')).join(' ')}
-                fill="none"
-                stroke="#ffc36d"
-                strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-              />
-              <line x1={(index * 1000) / count} x2={(index * 1000) / count} y1={0} y2={24} stroke="#f87171" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-            </svg>
+            <div className="lane">
+              <span>Battery charge{cursorOnLane ? ` (${n(report.soc[laneCursor] * 100, 0)}%)` : ''}</span>
+              <div className="lane-track-host">
+                <svg
+                  style={{ marginLeft: `${laneLeftPct}%`, width: `${laneWidthPct}%` }}
+                  viewBox="0 0 1000 24"
+                  preserveAspectRatio="none"
+                  aria-label="Battery charge trend"
+                  role="img"
+                >
+                  <polyline
+                    points={report.soc.map((v, i) => [(i * 1000) / count, 23 - v * 21].join(',')).join(' ')}
+                    fill="none"
+                    stroke="#34d399"
+                    strokeWidth="1.5"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {cursorOnLane && <line x1={(laneCursor * 1000) / count} x2={(laneCursor * 1000) / count} y1={0} y2={24} stroke="#f87171" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />}
+                </svg>
+              </div>
+            </div></>}
           </div>
-          <div className="lane">
-            <span>Battery charge ({n(report.soc[index] * 100, 0)}%)</span>
-            <svg viewBox="0 0 1000 24" preserveAspectRatio="none" aria-label="Battery charge trend" role="img">
-              <polyline
-                points={report.soc.map((v, i) => [(i * 1000) / count, 23 - v * 21].join(',')).join(' ')}
-                fill="none"
-                stroke="#34d399"
-                strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-              />
-              <line x1={(index * 1000) / count} x2={(index * 1000) / count} y1={0} y2={24} stroke="#f87171" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-            </svg>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

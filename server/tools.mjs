@@ -7,7 +7,7 @@ import { classifyScenarioConfidence } from '../web/src/planner/confidence.ts'
 import { runMissionRecovery } from '../web/src/planner/recoverySearch.ts'
 import { horizonEpoch, mastHeights, validatePlan } from './study.mjs'
 
-export const CALCULATION_VERSION = 'umbra-x-phase4-tools-v1.0'
+export const CALCULATION_VERSION = 'umbra-x-phase4-tools-v1.1-dss63'
 const defaultLimits = { dark: 48, earth: 72, slope: 5 }
 
 const SITE_BUNDLE_CACHE = new Map()
@@ -576,15 +576,25 @@ export function createScientificToolbox({ retriever, coverageMeta }) {
               robustnessPreference: 'dual-extent-and-sigma',
             },
             loadRecoveryBundle,
-            { wasm, maxFullEval: 36 },
+            { wasm, maxFullEval: 64 },
           )
           if (!out.ok) throw new Error(out.errors?.join(' ') ?? 'Recovery search failed.')
           const meta = await getSolverMetadata()
+          const runSettings = {
+            scope: sites,
+            delayWindowHours: { minStart: from, maxStart: through },
+            robustnessPreference: 'dual-extent-and-sigma',
+            maxFullEval: 64,
+            limits: lim,
+            days,
+            calculationVersion: CALCULATION_VERSION,
+          }
           result = {
             calculationVersion: CALCULATION_VERSION,
             engine: out.engine,
             coverageStatus: 'complete',
-            dataProvenance: { releaseSha256: meta.releaseSha256, sitesSearched: sites },
+            runSettings,
+            dataProvenance: { releaseSha256: meta.releaseSha256, sitesSearched: sites, runSettings },
             passingPairCount: out.count,
             paretoCount: out.selection.paretoFrontier.length,
             recommended: out.selection.recommended
@@ -729,20 +739,32 @@ export function createScientificToolbox({ retriever, coverageMeta }) {
               robustnessPreference: 'dual-extent-and-sigma',
             },
             loadRecoveryBundle,
-            { wasm, maxFullEval: 36 },
+            { wasm, maxFullEval: 64 },
           )
           if (!out.ok) throw new Error(out.errors?.join(' ') ?? 'Certificate generation failed.')
+          const runSettings = {
+            scope: sites,
+            delayWindowHours: { minStart: 0, maxStart: 720 - days * 24 },
+            robustnessPreference: 'dual-extent-and-sigma',
+            maxFullEval: 64,
+            limits: lim,
+            days,
+            calculationVersion: CALCULATION_VERSION,
+          }
           result = {
             calculationVersion: CALCULATION_VERSION,
             coverageStatus: 'complete',
+            runSettings,
             dataProvenance: {
               deterministicFingerprint: out.certificate.deterministicFingerprint,
               schema: out.certificate.schema,
               engine: out.engine,
+              runSettings,
             },
             certificateSummary: {
               deterministicFingerprint: out.certificate.deterministicFingerprint,
               schema: out.certificate.schema,
+              runSettings,
               statusCategory: out.diff.statusCategory,
               recommendedSite: out.selection.recommended?.site ?? null,
               recommendedPad: out.selection.recommended ? out.selection.recommended.pad : null,

@@ -18,23 +18,16 @@ Evaluated across **15 targets × 6 epochs** (`90` Sun + `90` Earth topocentric c
 
 ## 2. Numerical Convergence & Sensitivity (`pipeline/benchmark_convergence.py`)
 
-Measured across 5 representative pads (`5.0 m` mast, 30-day catalog unless noted). Artifact: [`pipeline/benchmarks/convergence_benchmark.json`](../pipeline/benchmarks/convergence_benchmark.json).
+The refreshed [machine-readable convergence benchmark](../pipeline/benchmarks/convergence_benchmark.json) uses the same pinned apparent DE440 Sun and Earth vectors as the browser. The 1-minute series is checked against all matching 5-minute timestamps. The numerical benchmark uses a fixed solar disk with no eclipse attenuation; exact operational replay values come from [the browser solver and release evidence](../web/public/release-evidence.json). Neither test observes real lunar shadows.
 
-| Sensitivity Axis | Shackleton Pad 481 | Shackleton Pad 181 | Mons Mouton Pad 17 | Mons Mouton Pad 481 | Malapert Pad 481 |
-| --- | --- | --- | --- | --- | --- |
-| Release vs benchmark raymarch MAE | `0.00134°` | `0.00299°` | `0.00470°` | `0.00835°` | `0.00823°` |
-| Azimuth `1.0° -> 0.25°` max interp delta | `0.0572°` (`MAE 0.00377°`) | `0.1014°` (`MAE 0.00525°`) | `0.0440°` (`MAE 0.00302°`) | `0.0454°` (`MAE 0.00356°`) | `0.0389°` (`MAE 0.00172°`) |
-| `1.0° -> 0.25°` longest dark / Earth shift | `52.333 -> 52.250 h` / `0 h` | `0 h` / `238.667 -> 239.000 h` | `0 h` / `143.083 -> 143.500 h` | `0 h` / `124.250 -> 124.750 h` | `0.0 -> 0.0 h` / `339.500 -> 339.583 h` |
-| Extent `48 -> 96 km` max delta (bins >0.05°) | `1.4297°` (`47`) | `2.0533°` (`63`) | `0.0000°` (`0`) | `0.0000°` (`0`) | `0.0000°` (`0`) |
-| Extent `96 -> 144 km` max delta (bins >0.05°) | `0.0080°` (`0`) | `3.5602°` (`65`) | `0.0000°` (`0`) | `0.0000°` (`0`) | `0.1251°` (`4`) |
-| Extent `96 -> 144 km` Earth blackout shift | `345.667 -> 345.667 h` | **`238.667 -> 323.833 h`** | `143.083 -> 143.083 h` | `124.250 -> 124.250 h` | `339.500 -> 339.500 h` |
-| Pure `80 m` vs `20 m + 80 m` hybrid max delta | `0.6020°` (`16` bins `>0.5°`) | `1.0687°` (`70` bins `>0.5°`) | `0.2155°` (`0` bins) | `0.1675°` (`0` bins) | `1.2309°` (`75` bins `>0.5°`) |
-| Pure `80 m` longest dark impact | **`52.333 -> 0.000 h`** | `167.083 -> 153.750 h` | `341.917 -> 341.917 h` | `308.667 -> 308.333 h` | `0.000 -> 0.000 h` |
-| `5-min` vs `1-min` (`43,201` epochs) ΔSun / ΔDark | `-0.083 h / +0.017 h` | `-0.033 h / -0.033 h` | `0.000 h / -0.017 h` | `+0.034 h / -0.034 h` | `-0.066 h / 0.000 h` |
-| 1D chord vs 2D solar disk max frac diff (ΔDark) | `0.0280` (`-0.667 h`) | `0.0159` (`-0.166 h`) | `0.0290` (`0.000 h`) | `0.0235` (`0.000 h`) | `0.0000` (`0.000 h`) |
-| Mast `1.5 m -> 20.0 m` longest dark | `279.333 -> 0.000 h` | `259.833 -> 107.250 h` | `344.167 -> 330.000 h` | `314.917 -> 296.500 h` | `306.417 -> 0.000 h` |
-| Slope (`compiled / geodetic / PGDA LDSM`) | `5.601° / 5.601° / 5.659°` | `15.139° / 15.139° / 14.607°` | `5.709° / 5.721° / 5.741°` | `2.457° / 2.462° / 2.436°` | **`5.289° / 5.295° / 4.853°`** |
-| Height error `0σ -> 3σ` longest dark | **`52.250 -> 73.833 h`** | `167.000 -> 183.167 h` | `341.583 -> 347.000 h` | `308.583 -> 310.833 h` | **`0.000 -> 8.000 h`** |
+| Sensitivity | What this release checked |
+| --- | --- |
+| Spatial sampling | Across six site/pad cases, changing 1° to 0.25° skyline sampling changed interpolated elevations by up to 0.1014°. |
+| 5-minute vs 1-minute | The machine-readable report compares solar and Earth durations and longest events on identical horizons and ephemeris conventions. |
+| Regional extent | More distant terrain can matter. Full-catalog Shackleton Pad #181 changes in longest Earth obstruction by about 85 h from 96 to 144 km. That is a catalog result, not the 15-day demo. |
+| Pad #479 replay | At the delayed start, 4.833 h in the browser; 4.917 h in the independent 96 km raymarch, 17.583 h at 144 km, and 8.750 h with the 2σ height margin. The numerical 144 km result does not certify complete coverage. |
+| Coarse slope | Shackleton Pad #481: 5.6005° compiled, 5.6006° geodetic-scale check, 5.6592° archived LDSM. Pad #479: 0.9413°, 0.9414°, 0.9039°. Pad #181: 4.5363°, 4.5364°, 4.7363°. |
+| Finer terrain and uncertainty | A regional 80 m grid can smooth a local ridge. Height perturbations can change low-light durations; the 2σ and 3σ cases are sensitivity tests, not failure probabilities or worst-case bounds. |
 
 ## 3. Automated Parity & Regression Suites
 

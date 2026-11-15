@@ -1,5 +1,6 @@
 import { ArrowUpRight, Download } from 'lucide-react'
-import { complementaryPower, costTradeoff, type ArrayMode, type Limits, type Power, type Report, type Scenario, type Sky } from './model'
+import { polarSites } from './data'
+import { complementaryPower, costTradeoff, MADRID_STATION, type ArrayMode, type Limits, type Power, type Report, type Scenario, type Sky } from './model'
 import { coveredCount, money, n, name, requirement, sign, statusClass, utc, type Result } from './missionHelpers'
 import { NumberField } from './TelemetryCharts'
 
@@ -61,6 +62,9 @@ export function PowerDrawer({
                 <div style={{ width: `${Math.min(100, (two[0].batteryKg / Math.max(1, power.budgetKg)) * 100)}%`, background: two[0].feasible ? 'var(--accent)' : 'var(--danger-ink)' }} title="Battery mass" />
               </div>
             </div>
+            <p className="tool-muted-note">
+              Gray: other hardware. Color: modeled battery. Alternative uses {n(two[1].totalKg)} of {power.budgetKg} kg.
+            </p>
             <div className="tool-form-grid">
               {(
                 [
@@ -124,11 +128,17 @@ export function PowerDrawer({
                 ))}
               </tbody>
             </table>
+            {two.some(x => x.batteryKg <= 0.05) && (
+              <p className="tool-muted-note">
+                0.0 kg modeled battery means sunlight stays continuously above load across the mission window under current assumptions; add hardware margin manually if contingency storage is required.
+              </p>
+            )}
           </div>
 
           <div className="tool-card">
             <div className="tool-card-head">
               <strong>Launch Delivery Trade-Off</strong>
+              <span className="tool-tag">User-supplied $/kg</span>
             </div>
             <div className="tool-form-grid">
               {rates.map((r, i) => (
@@ -150,7 +160,7 @@ export function PowerDrawer({
               ))}
               <NumberField label="Extra equipment ($)" min={-10000000} value={equipment} onChange={setEquipment} />
             </div>
-            {two.every(x => x.feasible) && (
+            {two.every(x => x.feasible) && (rates.some(Boolean) || equipment !== 0) && (
               <div className="cost-output">
                 {rates.map(
                   (r, i) =>
@@ -197,6 +207,7 @@ interface MethodsDrawerProps {
   sky: Sky | undefined
   scenarios: [Scenario, Scenario]
   active: number
+  cursor: number
   sigma: number
   limits: Limits
   onExportSamples: () => void
@@ -207,6 +218,7 @@ export function MethodsDrawer({
   sky,
   scenarios,
   active,
+  cursor,
   sigma,
   limits,
   onExportSamples,
@@ -221,6 +233,15 @@ export function MethodsDrawer({
       ) : (
         <>
           <div className="tool-card">
+            <div className="tool-meta-banner" role="status">
+              <strong>
+                Following: {active === 0 ? '01 Baseline' : '02 Alternative'} · {name(scenarios[active].site)}
+                {polarSites.includes(scenarios[active].site) ? ` Pad #${scenarios[active].node + 1}` : ''}
+              </strong>
+              <span>
+                MET +{n(cursor / 12)} h ({utc(result.meta.start, scenarios[active].start + cursor / 12)})
+              </span>
+            </div>
             <div className="tool-card-head">
               <strong>
                 {result.terrain
@@ -229,7 +250,7 @@ export function MethodsDrawer({
                     : 'Local 5.12 km LOLA Horizon'
                   : result.liveTerrain
                     ? `Live 80 m LOLA (${coveredCount(result.pad.coverage)}/360°)`
-                    : `${name(scenarios[active].site)} Reference`}
+                    : `${name(scenarios[active].site)} Reference (Level Sphere)`}
               </strong>
             </div>
             <div className="tool-cand-metrics">
@@ -244,7 +265,7 @@ export function MethodsDrawer({
                   <th>Body</th>
                   <th>Azimuth</th>
                   <th>Elevation</th>
-                  <th>Rim</th>
+                  <th>Terrain Rim</th>
                 </tr>
               </thead>
               <tbody>
@@ -255,7 +276,7 @@ export function MethodsDrawer({
                   <td>{n(sky.sunHorizon, 2)}°</td>
                 </tr>
                 <tr>
-                  <th scope="row">Earth</th>
+                  <th scope="row">Earth (LoS)</th>
                   <td>{n(sky.earth.az, 1)}°</td>
                   <td>{n(sky.earth.el, 2)}°</td>
                   <td>{n(sky.earthHorizon, 2)}°</td>
@@ -263,7 +284,10 @@ export function MethodsDrawer({
               </tbody>
             </table>
             <p className="tool-muted-note">
-              Model: {result.meta.ephemerisModel ?? 'DE440 apparent (LT+S)'} · Posting: 20 m local + 80 m regional LRO LOLA DEM.
+              Earth-center visibility uses the lunar terrain horizon. Station geometry adds a simple 10° Earth-side elevation mask for Goldstone DSS-14, Madrid DSS-63, and Canberra DSS-43. Station availability, antenna schedules, and RF performance are outside the model.
+            </p>
+            <p className="tool-muted-note">
+              Model: {result.meta.ephemerisModel ?? 'DE440 apparent (LT+S)'} · {result.terrain ? '20 m local + 80 m regional LRO LOLA elevation' : result.liveTerrain ? 'Live 80 m polar LOLA elevation' : 'Level-sphere reference; no terrain or slope model'}.
             </p>
             <p className="tool-muted-note">
               {utc(result.meta.start, 0)} → {utc(result.meta.start, 720)} · SHA {result.meta.vectorHash.slice(0, 12)}
@@ -287,6 +311,9 @@ export function MethodsDrawer({
             <button type="button" className="tool-cta-btn" onClick={onExportSamples}>
               <Download size={13} /> Download 5-minute Samples (CSV)
             </button>
+            <p className="tool-muted-note">
+              Five-minute samples include Sun/Earth direction, terrain angle, solar disk fraction, estimated watts, and each station’s geometry. Unknown terrain coverage is marked explicitly.
+            </p>
           </div>
 
           {result.mastSensitivity.length > 0 && (
@@ -299,7 +326,7 @@ export function MethodsDrawer({
                   <tr>
                     <th>Mast</th>
                     <th>Low light</th>
-                    <th>Earth outage</th>
+                    <th>Earth obstruction</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -327,6 +354,8 @@ export function MethodsDrawer({
               <a href="https://pgda.gsfc.nasa.gov/products/90" target="_blank" rel="noreferrer">NASA LOLA terrain archive <ArrowUpRight size={10} /></a>
               <a href="https://ssd.jpl.nasa.gov/doc/de440_de441.html" target="_blank" rel="noreferrer">JPL DE440 ephemerides <ArrowUpRight size={10} /></a>
               <a href={result.meta.station.source} target="_blank" rel="noreferrer">NAIF DSS-14 ITRF position <ArrowUpRight size={10} /></a>
+              <a href={MADRID_STATION.source} target="_blank" rel="noreferrer">JPL station coordinates · table 2 <ArrowUpRight size={10} /></a>
+              <a href="https://ssd-api.jpl.nasa.gov/doc/horizons.html" target="_blank" rel="noreferrer">Horizons validation reference <ArrowUpRight size={10} /></a>
               <a href="https://www.nasa.gov/wp-content/uploads/2024/01/lunar-site-selection.pdf" target="_blank" rel="noreferrer">NASA lunar site selection &amp; constraints <ArrowUpRight size={10} /></a>
               <a href="https://ntrs.nasa.gov/citations/20080045536" target="_blank" rel="noreferrer">NASA polar illumination &amp; energy analysis <ArrowUpRight size={10} /></a>
               <a href="https://www.nasa.gov/wp-content/uploads/2024/01/lunar-communications-and-navigation-architecture.pdf" target="_blank" rel="noreferrer">NASA lunar communications architecture <ArrowUpRight size={10} /></a>

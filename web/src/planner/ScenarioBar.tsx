@@ -1,8 +1,8 @@
 import { Fragment } from 'react'
 import { ArrowLeftRight, Compass } from 'lucide-react'
 import { findNearestPolarPad, names, polarSites, referenceSites } from './data'
-import type { Limits, Power, Scenario } from './model'
-import { coveredCount, n, name, sign, utc, type ComparisonRecord, type Result } from './missionHelpers'
+import type { Scenario } from './model'
+import { coveredCount, n, name, utc, type ComparisonRecord, type Result } from './missionHelpers'
 import { NumberField } from './TelemetryCharts'
 
 interface ScenarioBarProps {
@@ -11,10 +11,7 @@ interface ScenarioBarProps {
   comparisonRecord: ComparisonRecord | null
   active: number
   setActive: (index: number) => void
-  role: 'Planner' | 'Scientist' | 'Educator' | 'Public'
   days: number
-  power: Power
-  limits: Limits
   pending: boolean
   error: string
   start: string
@@ -30,10 +27,7 @@ export function ScenarioBar({
   comparisonRecord,
   active,
   setActive,
-  role,
   days,
-  power,
-  limits,
   pending,
   error,
   start,
@@ -52,7 +46,6 @@ export function ScenarioBar({
           const covNum = itemResult ? coveredCount(itemResult.pad.coverage) : 360
           const hasRegional = Boolean(itemResult && (itemResult.terrain || itemResult.liveTerrain) && itemResult.meta.regional)
           const sideRecord = comparisonRecord ? (i === 0 ? comparisonRecord.baseline : comparisonRecord.alternative) : null
-          const baseRecord = comparisonRecord?.baseline ?? null
           const statusDot = !sideRecord
             ? 'dot-muted'
             : !sideRecord.hasRegionalTerrain || !sideRecord.complete
@@ -69,9 +62,6 @@ export function ScenarioBar({
               : sideRecord.viable
                 ? 'Meets limits'
                 : 'Exceeds limits'
-          const darkDelta = i === 1 && sideRecord && baseRecord ? sideRecord.longestDark - baseRecord.longestDark : 0
-          const earthDelta = i === 1 && sideRecord && baseRecord ? sideRecord.longestEarth - baseRecord.longestEarth : 0
-
           return (
             <Fragment key={i}>
               <section
@@ -81,7 +71,7 @@ export function ScenarioBar({
               >
                 <div className="compare-pill-top">
                   <span className="compare-pill-idx">
-                    <span className="mono-idx">{i ? '02' : '01'}</span> {i ? 'Alternative' : 'Baseline'}
+                    {i ? 'Alternative' : 'Baseline'}
                     {itemResult && (
                       <span className="scenario-grid-meta">
                         {' · '}
@@ -96,7 +86,7 @@ export function ScenarioBar({
                       </span>
                     )}
                   </span>
-                  {sideRecord && (
+                  {sideRecord && !pending && !error && (
                     <span className={`status-pill status-${statusDot}`}>
                       {statusText}
                     </span>
@@ -137,7 +127,7 @@ export function ScenarioBar({
                   </select>
 
                   <div className="inline-quick-controls">
-                    {isPolar && role !== 'Public' && (
+                    {isPolar && (
                       <>
                         <NumberField
                           className="inline-mini-field"
@@ -153,12 +143,13 @@ export function ScenarioBar({
                           onChange={e => update(i, { mast: +e.target.value })}
                         >
                           {[1.5, 3, 5, 10, 20].map((m, j) => (
-                            <option key={m} value={j}>{m}m</option>
+                            <option key={m} value={j}>{m} m</option>
                           ))}
                         </select>
                       </>
                     )}
-                    <input
+                    <label className="inline-utc-field">
+                      <input
                       id={`start-utc-${i}`}
                       aria-label={`${i ? 'Alternative' : 'Baseline'} start UTC`}
                       className="inline-dt-input"
@@ -171,14 +162,17 @@ export function ScenarioBar({
                         const elapsed = Math.round((Date.parse(e.target.value + 'Z') - Date.parse(start)) / 3600000)
                         if (Number.isFinite(elapsed)) update(i, { start: Math.max(0, Math.min(720 - days * 24, elapsed)) })
                       }}
-                    />
+                      />
+                      <span>UTC</span>
+                    </label>
                     <div className="shift-inline">
                       {[-24, 24, 48].map(deltaH => (
                         <button
                           key={deltaH}
                           type="button"
                           className="inline-shift-btn"
-                          title={`Shift ${deltaH > 0 ? '+' : ''}${deltaH}h`}
+                          aria-label={`Shift ${i ? 'alternative' : 'baseline'} start ${deltaH} hours`}
+                          disabled={s.start + deltaH < 0 || s.start + deltaH > 720 - days * 24}
                           onClick={() => update(i, { start: Math.max(0, Math.min(720 - days * 24, s.start + deltaH)) })}
                         >
                           {deltaH > 0 ? `+${deltaH}h` : `${deltaH}h`}
@@ -208,6 +202,7 @@ export function ScenarioBar({
                       value={s.customLon ?? -138.0}
                       onChange={v => update(i, { customLon: v })}
                     />
+                    <p className="coordinate-coverage">Terrain queries cover −90° to −80°; other coordinates use a level-sphere reference.</p>
                     <button
                       type="button"
                       onClick={async () => {
@@ -230,38 +225,6 @@ export function ScenarioBar({
                     >
                       <Compass size={12} /> Snap to nearest LOLA pad
                     </button>
-                  </div>
-                )}
-
-                {sideRecord && !pending && !error && (
-                  <div className="scenario-kpis">
-                    <div className="scenario-kpi">
-                      <span>Low light</span>
-                      <strong>{n(sideRecord.longestDark)} h</strong>
-                      <small className={i === 1 && darkDelta !== 0 ? (darkDelta < 0 ? 'delta-good' : 'delta-warn') : undefined}>
-                        {i === 1 && darkDelta !== 0
-                          ? `${sign(darkDelta)} h vs Base · ≤${limits.dark} h`
-                          : `Limit ≤ ${limits.dark} h`}
-                      </small>
-                    </div>
-                    <div className="scenario-kpi">
-                      <span>Earth outage</span>
-                      <strong>{n(sideRecord.longestEarth)} h</strong>
-                      <small className={i === 1 && earthDelta !== 0 ? (earthDelta < 0 ? 'delta-good' : 'delta-danger') : undefined}>
-                        {i === 1 && earthDelta !== 0
-                          ? `${sign(earthDelta)} h vs Base · ≤${limits.earth} h`
-                          : `Limit ≤ ${limits.earth} h`}
-                      </small>
-                    </div>
-                    <div className="scenario-kpi">
-                      <span>Slope · Batt</span>
-                      <strong>
-                        {sideRecord.slopeDeg === null ? '—' : `${n(sideRecord.slopeDeg)}°`} · {n(sideRecord.batteryKg)} kg
-                      </strong>
-                      <small className={!sideRecord.feasible ? 'delta-danger' : undefined}>
-                        {n(sideRecord.totalKg)} / {power.budgetKg} kg total
-                      </small>
-                    </div>
                   </div>
                 )}
               </section>
