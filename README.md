@@ -1,8 +1,30 @@
-# Umbra-X
+# Umbra-X · Lunar Landing Site Navigator
 
-Umbra-X is a lunar south pole terrain and mission-screening prototype for the 2026 NASA Space Apps Challenge. The Decision Planner (`web/public/data/planner-release/`) compiles hybrid `20 m + 80 m` LOLA horizons out to `96 km` (`48 km` comparison) and five-minute `DE440` (`MOON_ME_DE440_ME421`) ephemeris vectors across a 30-day catalog (supporting 1–15 day landing windows), plus on-demand `80 m` polar terrain queries via `pipeline/terrain_server.py`.
+At the Moon’s south pole, a landing site can spend days in shadow or lose its line of sight to Earth. Umbra-X lets you compare where and when to land, see what changes, and look for alternatives when a plan exceeds your limits. We built it for the **2026 NASA Space Apps Challenge**.
 
-See [docs/SCIENTIFIC_METHOD.md](docs/SCIENTIFIC_METHOD.md), [docs/VALIDATION_MATRIX.md](docs/VALIDATION_MATRIX.md), [docs/UNCERTAINTY_AND_LIMITATIONS.md](docs/UNCERTAINTY_AND_LIMITATIONS.md), [docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md), and [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) for the mathematical specification, independent verification results, epistemic confidence tiers, upstream SHA-256 provenance, and exact rebuild workflow.
+**[Open the live app](https://umbra-x.mbra.workers.dev/?intro=1)** · [Watch the 30-second demo](https://drive.google.com/file/d/1cpj0_d-CM5Xud4Ygjr8SgGVeh15giEzl/view?usp=sharing) · [Space Apps submission](https://www.spaceappschallenge.org/2026/find-a-team/team-trace/?tab=project)
+
+## Try a landing comparison
+
+1. **[Change the date](https://umbra-x.mbra.workers.dev/?replay=delay).** At Shackleton Ridge Pad #481, shifting the landing by 48 hours cuts the longest modeled Earth obstruction from **103.7 to 55.7 hours**. Low light and coarse slope still exceed the study limits.
+2. **[Change the pad](https://umbra-x.mbra.workers.dev/?replay=nearby).** Keep the later date and move **280 meters** to Pad #479. In this study, the longest Earth obstruction falls to **4.8 hours**, with **0 hours** below the low-light threshold and a **0.94°** coarse slope.
+
+Use the **Study** menu to switch comparisons. Move through the **Mission Timeline** and switch between the 3D terrain, pad view, polar sky plot, and horizon chart to see when sunlight or Earth visibility changes.
+
+## What you can do
+
+- Compare **2,883 sampled sites** across Shackleton Ridge, Malapert Massif, and Mons Mouton. Change the pad, start date, or mast height and compare two scenarios side by side.
+- Use **Recover Pads** to search other pads and start times within your constraints. Compare trade-offs in darkness, Earth visibility, slope, battery mass, relocation distance, schedule shift, and sensitivity.
+- Open **Power & Cost** to estimate battery mass and compare delivery costs using your own price per kilogram.
+- Ask **Umbra Agent** about the results, inspect assumptions in **Methods & Data**, or export events and analysis.
+
+## Data and model limits
+
+The planner combines NASA LRO LOLA elevation data at **20 m locally and 80 m regionally** with JPL DE440 Sun and Earth positions at **five-minute intervals**. The terrain model traces the horizon in every direction, out to 96 km for the compiled studies. The catalog spans 30 days and supports mission windows of 1–15 days. An optional terrain service supports on-demand polar queries.
+
+Umbra-X supports early mission screening, research, and teaching. Earth visibility is geometric line of sight. Radio performance and station scheduling require separate analysis. Grid-scale slope helps compare terrain, while individual landing hazards require finer measurements.
+
+[Scientific method](docs/SCIENTIFIC_METHOD.md) · [Validation](docs/VALIDATION_MATRIX.md) · [Data provenance](docs/DATA_PROVENANCE.md) · [Uncertainty and limitations](docs/UNCERTAINTY_AND_LIMITATIONS.md) · [Reproducibility](docs/REPRODUCIBILITY.md)
 
 ## Setup and verification
 
@@ -39,7 +61,7 @@ Sources for submission credits:
 
 - NASA GSFC PGDA / LRO LOLA supplies elevation, height uncertainty, archived slope and the PSR classification. Umbra-X also derives slope independently from the 20 m elevation gradient. [Data DOI](https://doi.org/10.60903/gsfcpgda-lola-spole) · [Barker et al.](https://doi.org/10.3847/PSJ/acf3e1)
 - NASA/JPL Horizons supplies observer tables and JPL NAIF supplies the DE440 SPK and lunar orientation kernels. NSSDCA supplies the Apollo 11 reference coordinates. [Horizons API](https://ssd-api.jpl.nasa.gov/doc/horizons.html) · [NAIF kernels](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/) · [NSSDCA](https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html)
-- QuickMap and Moon Trek provide interactive map references. CSA's Moon Exploration portal provides partner mission context. [QuickMap](https://quickmap.lroc.asu.edu/) · [Moon Trek](https://trek.nasa.gov/moon/) · [CSA Moon Exploration](https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/)
+- QuickMap and Moon Trek provide interactive map references. CSA's Moon Exploration portal provides partner mission context. [QuickMap](https://quickmap.lroc.im-ldi.com/) · [Moon Trek](https://trek.nasa.gov/moon/) · [CSA Moon Exploration](https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/)
 - Mons Mouton's center matches NASA PDS's rounded IM-2 Athena landing coordinates. Malapert Massif is a regional benchmark, with IM-1's landing site in the Malapert A region farther north. A mapped PSR indicates terrain classified as persistently shadowed. Ice presence requires independent evidence. [NASA PDS Athena record](https://pds.nasa.gov/ds-view/pds/viewContext.jsp?identifier=urn%3Anasa%3Apds%3Acontext%3Ainstrument_host%3Aspacecraft.clps_to_prime1_athena&version=1.0) · [NASA CLPS deliveries](https://www.nasa.gov/commercial-lunar-payload-services/clps-providers/)
 
 ### Build a web bundle
