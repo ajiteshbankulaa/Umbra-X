@@ -1,87 +1,98 @@
 # Umbra-X · Lunar Landing Site Navigator
 
-At the Moon’s south pole, a landing site can spend days in shadow or lose its line of sight to Earth. Umbra-X lets you compare where and when to land, see what changes, and look for alternatives when a plan exceeds your limits. We built it for the **2026 NASA Space Apps Challenge**.
+Umbra-X is a browser-based tool for comparing lunar landing plans. Explore a site in 3D, compare two landing dates or pads, and see how the terrain affects sunlight, Earth visibility, and battery requirements. We built it for the **2026 NASA Space Apps Challenge — Lunar Landing Site Navigator**.
 
-**[Open the live app](https://umbra-x.mbra.workers.dev/?intro=1)** · [Watch the 30-second demo](https://drive.google.com/file/d/1cpj0_d-CM5Xud4Ygjr8SgGVeh15giEzl/view?usp=sharing) · [Space Apps submission](https://www.spaceappschallenge.org/2026/find-a-team/team-trace/?tab=project)
+**[Live app](https://umbra-x.mbra.workers.dev/?intro=1)** · [30-second demo](https://drive.google.com/file/d/1cpj0_d-CM5Xud4Ygjr8SgGVeh15giEzl/view?usp=sharing) · [Space Apps project](https://www.spaceappschallenge.org/2026/find-a-team/team-trace/?tab=project)
 
-## Try a landing comparison
+## Try it
 
-1. **[Change the date](https://umbra-x.mbra.workers.dev/?replay=delay).** At Shackleton Ridge Pad #481, shifting the landing by 48 hours cuts the longest modeled Earth obstruction from **103.7 to 55.7 hours**. Low light and coarse slope still exceed the study limits.
-2. **[Change the pad](https://umbra-x.mbra.workers.dev/?replay=nearby).** Keep the later date and move **280 meters** to Pad #479. In this study, the longest Earth obstruction falls to **4.8 hours**, with **0 hours** below the low-light threshold and a **0.94°** coarse slope.
+1. **[Change the date](https://umbra-x.mbra.workers.dev/?replay=delay).** At Shackleton Ridge Pad #481, shifting the landing by 48 hours cuts the longest modeled Earth obstruction from **103.7 to 55.7 hours**. Low light and coarse slope still exceed the example limits.
+2. **[Change the pad](https://umbra-x.mbra.workers.dev/?replay=nearby).** Hold the later date fixed and move **280 meters** to Pad #479. This study reports **4.8 hours** of Earth obstruction, **0 hours** below the low-light threshold, and a **0.94°** coarse slope.
 
-Use the **Study** menu to switch comparisons. Move through the **Mission Timeline** and switch between the 3D terrain, pad view, polar sky plot, and horizon chart to see when sunlight or Earth visibility changes.
+These results apply to the illustrated 15-day window and model settings. [Scenario validation](docs/DELAY_SCENARIO_VALIDATION.md)
 
-## What you can do
+## Tools
 
-- Compare **2,883 sampled sites** across Shackleton Ridge, Malapert Massif, and Mons Mouton. Change the pad, start date, or mast height and compare two scenarios side by side.
-- Use **Recover Pads** to search other pads and start times within your constraints. Compare trade-offs in darkness, Earth visibility, slope, battery mass, relocation distance, schedule shift, and sensitivity.
-- Open **Power & Cost** to estimate battery mass and compare delivery costs using your own price per kilogram.
-- Ask **Umbra Agent** about the results, inspect assumptions in **Methods & Data**, or export events and analysis.
+| Tool | What it does |
+| --- | --- |
+| **Study and scenario controls** | Compare a baseline and an alternative by changing the pad, landing date, mast height, or mission limits. The compiled catalog covers 2,883 sampled pads across Shackleton Ridge, Malapert Massif, and Mons Mouton. |
+| **Terrain, sky views, and Mission Timeline** | Switch between 3D orbit, a view from the pad, a polar sky plot, and a 2D horizon chart. Use map overlays and move through the timeline to see when the terrain blocks sunlight or the view of Earth. |
+| **Recover Pads** | Search alternate pads and start times, then compare trade-offs in darkness, Earth obstruction, slope, battery mass, relocation, schedule shift, and sensitivity. |
+| **Power & Cost** | Adjust the electrical load, array assumptions, and mass budget. Compare estimated battery mass and use your own delivery price per kilogram. |
+| **Umbra Agent** | Ask questions about the active comparison. The agent can use scientific analysis tools and retrieve source passages to explain results. |
+| **Methods & Data and exports** | Inspect data sources, modeling assumptions, and coverage. Export events or analysis for further review. |
 
-## Data and model limits
+## Run locally
 
-The planner combines NASA LRO LOLA elevation data at **20 m locally and 80 m regionally** with JPL DE440 Sun and Earth positions at **five-minute intervals**. The terrain model traces the horizon in every direction, out to 96 km for the compiled studies. The catalog spans 30 days and supports mission windows of 1–15 days. An optional terrain service supports on-demand polar queries.
+The live site is the quickest way to try Umbra-X. A local checkout needs the **generated NASA planner data**, which is excluded from Git. A build can succeed without those files, so check that the data is available before testing a landing comparison.
 
-Umbra-X supports early mission screening, research, and teaching. Earth visibility is geometric line of sight. Radio performance and station scheduling require separate analysis. Grid-scale slope helps compare terrain, while individual landing hazards require finer measurements.
-
-[Scientific method](docs/SCIENTIFIC_METHOD.md) · [Validation](docs/VALIDATION_MATRIX.md) · [Data provenance](docs/DATA_PROVENANCE.md) · [Uncertainty and limitations](docs/UNCERTAINTY_AND_LIMITATIONS.md) · [Reproducibility](docs/REPRODUCIBILITY.md)
-
-## Setup and verification
-
-From the repository root on Windows with Python 3.11+ and Node 20.19+ or 22.12+ installed:
+Install **Node.js 24+** and **Python 3.11+**. Run the following from the repository root in PowerShell. If you already have the compiled data, place it under `web/public/data/planner-release/` and skip the fetch and compile commands after installing the Python dependencies.
 
 ```powershell
+git clone https://github.com/ajiteshbankulaa/Umbra-X.git
+cd Umbra-X
+
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ./pipeline
-Push-Location pipeline
-..\.venv\Scripts\python.exe -m pytest
-Pop-Location
-Push-Location web
-npm.cmd ci
-npm.cmd run build
-npm.cmd run dev
-```
-
-## Compile a site
-
-### Fetch and verify NASA inputs
-
-From the repository root, with the pipeline installed:
-
-```powershell
 .\.venv\Scripts\python.exe pipeline/fetch_nasa_data.py
-.\.venv\Scripts\python.exe -m pytest pipeline
+.\.venv\Scripts\python.exe pipeline/compile_horizons.py --grid expanded --output web/public/data/planner-release
+.\.venv\Scripts\python.exe pipeline/compile_planner.py --output web/public/data/planner-release
 ```
 
-The fetcher defaults to 2026-11-14 00:00 UTC. Pass `--start-utc` to choose another epoch. It caches raw JPL Horizons responses, four site ephemeris JSON files, four DE440 kernels, three georeferenced terrain arrays in NPZ files, source URLs and PSR coverage in `provenance.json`, and `verify_dem_and_slope.png`. Terrain outputs include elevation, height uncertainty, the archived and gradient-derived slopes, and the mapped PSR mask. Use `--raster-dir` for local copies of the four named GeoTIFFs if remote range reads fail.
-
-The fetcher uses Horizons `CENTER='coord@301'` with geodetic `SITE_COORD` for the Moon. It requests 720 samples including the start timestamp, with the final sample at start + 719 hours. Apollo 11 is an ephemeris-only educator reference. The comparison checks both Sun and Earth apparent airless azimuth and elevation at every epoch against Skyfield's DE440 solution.
-
-Sources for submission credits:
-
-- NASA GSFC PGDA / LRO LOLA supplies elevation, height uncertainty, archived slope and the PSR classification. Umbra-X also derives slope independently from the 20 m elevation gradient. [Data DOI](https://doi.org/10.60903/gsfcpgda-lola-spole) · [Barker et al.](https://doi.org/10.3847/PSJ/acf3e1)
-- NASA/JPL Horizons supplies observer tables and JPL NAIF supplies the DE440 SPK and lunar orientation kernels. NSSDCA supplies the Apollo 11 reference coordinates. [Horizons API](https://ssd-api.jpl.nasa.gov/doc/horizons.html) · [NAIF kernels](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/) · [NSSDCA](https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html)
-- QuickMap and Moon Trek provide interactive map references. CSA's Moon Exploration portal provides partner mission context. [QuickMap](https://quickmap.lroc.im-ldi.com/) · [Moon Trek](https://trek.nasa.gov/moon/) · [CSA Moon Exploration](https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/)
-- Mons Mouton's center matches NASA PDS's rounded IM-2 Athena landing coordinates. Malapert Massif is a regional benchmark, with IM-1's landing site in the Malapert A region farther north. A mapped PSR indicates terrain classified as persistently shadowed. Ice presence requires independent evidence. [NASA PDS Athena record](https://pds.nasa.gov/ds-view/pds/viewContext.jsp?identifier=urn%3Anasa%3Apds%3Acontext%3Ainstrument_host%3Aspacecraft.clps_to_prime1_athena&version=1.0) · [NASA CLPS deliveries](https://www.nasa.gov/commercial-lunar-payload-services/clps-providers/)
-
-### Build a web bundle
-
-To rebuild all three browser bundles with the compact 40 m candidate grid and PSR mask after fetching:
+The upstream terrain products are large. The [planner guide](PLANNER.md) explains what to do if remote raster reads fail. After the data is in place, validate it and start Vite.
 
 ```powershell
-.\.venv\Scripts\python.exe pipeline/compile_horizons.py
+.\.venv\Scripts\python.exe pipeline/check_planner_release.py web/public/data/planner-release
+npm.cmd --prefix web ci
+npm.cmd --prefix web run dev -- --host 127.0.0.1 --port 5174
 ```
 
-Pass `--grid expanded` to use 140 m candidate spacing. The verification plot from the fetcher shows the expanded footprint.
+Open [the local app](http://127.0.0.1:5174/). The compiled comparisons run in the browser. Optional services provide the research API and on-demand polar terrain. See the [service configuration](infra/docker-compose.yml) for running those services.
 
-Supply an elevation GeoTIFF and a height-sigma GeoTIFF in the same lunar ME/DE421 coordinate frame, with valid embedded lunar CRS definitions and coverage across the complete tile. Elevation must be relative to the 1,737,400 m reference sphere. The compiler applies source GDAL scale and offset. The [NASA Goddard south-polar LOLA archive](https://pgda.gsfc.nasa.gov/products/90) lists the `LDEM_80S_20MPP_ADJ.TIF` elevation and `LDEM_80S_20MPP_ADJ_ERR.TIF` height error products.
+## Architecture and technology
 
-For the 5-minute Planner Release (`compile_planner.py`), use the DE440/ME421 kernel set: `de440s.bsp`, `moon_de440_250416.tf`, `moon_pa_de440_200625.bpc`, and `pck00011.tpc` (`MOON_ME_DE440_ME421`, checked in [docs/DATA_PROVENANCE.md](docs/DATA_PROVENANCE.md)). The complete mission period must fall within kernel coverage.
+| Layer | Implementation |
+| --- | --- |
+| **Data preparation** | Python, Rasterio, NumPy, pyproj, and Skyfield process LOLA terrain and JPL kernels. The pipeline builds horizon profiles in 360 directions using 20 m local and 80 m regional elevations, and prepares Sun and Earth positions at five-minute intervals. |
+| **Simulation and search** | A TypeScript Web Worker runs the scenario calculations. A Rust kernel compiled to WebAssembly accelerates pad searches, with a TypeScript fallback. Recovery ranks alternatives across seven objectives. |
+| **Interface** | React and TypeScript handle the scenario controls, timeline, and analysis panels. Three.js and React Three Fiber render the lunar terrain. Vite handles development and builds. |
+| **Optional services** | A Node.js API supports Umbra Agent and study jobs. The agent combines deterministic analysis tools with research retrieval over a local corpus. A Python terrain service provides on-demand horizons where supported. |
 
-## Client engine, backend services, & live terrain
+The model treats Earth visibility as geometric line of sight. Radio performance and ground-station scheduling require separate analysis. Grid-scale slope helps compare sites, while individual landing hazards require finer measurements. Mapped permanently shadowed regions indicate shadow classification. Confirming ice requires separate evidence.
 
-- **Client Scientific & Recovery Engine (`web/src/planner/`):** `model.ts` (`analyze`, `searchObserverDual`), `recovery.ts` (7-objective Pareto frontier + `buildDecisionCertificate`), `recoverySearch.ts`, `confidence.ts`, `planner.worker.ts`, and `wasmSearch.ts` (backed by `web/public/wasm/umbra_core.wasm`, built from `rust/umbra-core/` with `SitePack` batch scanning). Run `npm.cmd --prefix web test` and `npm.cmd --prefix web run build`.
-- **Interactive UI (`web/src/planner/`):** Modular React + Three.js workspace (`Planner.tsx`, `IntroOverlay.tsx`, `IntroScene.tsx`, `ScenarioBar.tsx`, `TelemetryPanel.tsx`, `TelemetryCharts.tsx`, `SkyScene.tsx`, `terrainOverlay.ts`, `AgentDrawer.tsx`, `RecoveryDrawer.tsx`, `PowerMethodsDrawers.tsx`). Supports `Planner` / `Learner` modes, `Minimal` / `Moderate` / `Detailed` verbosity, and 7 terrain overlays (`relief`, `viable`, `illumination`, `earth`, `solar_hours`, `slope`, `psr`).
-- **API, Worker Queue & Live Terrain (`server/`, `pipeline/terrain_server.py`):** Optional Node HTTP server (`server/server.mjs`, port `8787`) provides `Umbra Agent` (`researchAgent.mjs` + BM25/vector RAG over `research/rag/`), Prometheus/OTLP metrics, and durable `node:sqlite` WAL `StudyQueueStore` jobs. `pipeline/terrain_server.py` (port `8788`) serves on-demand `80 m/px` LOLA horizons (`/api/polar-horizon`). See `infra/docker-compose.yml` for the containerized `web` / `api` / `worker` / `terrain` / `prometheus` / `grafana` stack.
+## Verification
 
-The decision planner and the reproducible NASA release-data build are documented in [PLANNER.md](PLANNER.md).
+With the required dependencies and data in place, run these from the repository root.
+
+```powershell
+npm.cmd --prefix web test
+npm.cmd --prefix web run build
+.\.venv\Scripts\python.exe -m pytest pipeline -q
+cargo test --locked --manifest-path rust/umbra-core/Cargo.toml
+```
+
+[Scientific method](docs/SCIENTIFIC_METHOD.md) · [Validation matrix](docs/VALIDATION_MATRIX.md) · [Reproducibility guide](docs/REPRODUCIBILITY.md) · [Release notes](RELEASE.md)
+
+## Sources and citations
+
+| Source | Use in Umbra-X |
+| --- | --- |
+| [NASA GSFC / LRO LOLA south-pole products](https://pgda.gsfc.nasa.gov/products/90) | Elevation, elevation uncertainty, published slopes for comparison, and permanently shadowed region classification. |
+| [NASA/JPL NAIF SPICE kernels](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/) and [JPL DE440 documentation](https://ssd.jpl.nasa.gov/doc/de440_de441.html) | Sun and Earth positions and lunar orientation. |
+| [NASA/JPL Horizons](https://ssd-api.jpl.nasa.gov/doc/horizons.html) | Independent reference for checking apparent Sun and Earth directions. |
+| [NASA/JPL Deep Space Network Coverage and Geometry](https://deepspace.jpl.nasa.gov/dsndocs/810-005/301/301M.pdf) | Station coordinates and geometry reference. |
+| [NASA NSSDCA Apollo landing coordinates](https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html) and [NASA PDS IM-2 Athena record](https://pds.nasa.gov/ds-view/pds/viewContext.jsp?identifier=urn%3Anasa%3Apds%3Acontext%3Ainstrument_host%3Aspacecraft.clps_to_prime1_athena&version=1.0) | Location references for Apollo and Mons Mouton. |
+| [Mazarico et al., lunar polar illumination](https://ntrs.nasa.gov/citations/20120010094) | Research behind the use of horizon profiles to estimate illumination. |
+| [Barker et al., LOLA elevation uncertainty](https://ntrs.nasa.gov/citations/20205009660) | How elevation errors can affect predicted lighting. |
+| [Fincannon, lunar polar illumination for power analysis](https://ntrs.nasa.gov/citations/20080045536) | Research context for connecting illumination and shade duration to energy storage. |
+| [LROC QuickMap](https://quickmap.lroc.im-ldi.com/), [NASA Moon Trek](https://trek.nasa.gov/moon/), and [Canadian Space Agency Moon Exploration](https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/) | Map references and mission context. |
+
+See [data provenance](docs/DATA_PROVENANCE.md) for the input filenames, kernel hashes, and release sources, and [uncertainty and limitations](docs/UNCERTAINTY_AND_LIMITATIONS.md) for the scope of the model. Library versions are recorded in the [web dependencies](web/package.json), [API dependencies](server/package.json), and [Python dependencies](pipeline/pyproject.toml).
+
+## AI disclosure
+
+We used AI tools during development to help write boilerplate code, draft and revise text, and debug issues. Umbra Agent also uses research retrieval and can use a configured language model to help explain results. The geometry, power estimates, and recovery search are computed by the simulation and search code.
+
+## License
+
+Umbra-X source code is licensed under the [Apache License 2.0](LICENSE). External datasets and research retain their original terms.
